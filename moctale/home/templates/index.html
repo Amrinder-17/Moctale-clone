@@ -1,0 +1,18 @@
+{% extends "layout.html" %}
+{% load static %}
+
+{% block extra_css %}
+    <link rel="stylesheet" href="{% static 'home/style.css' %}">
+{% endblock %}
+
+{% block content %}
+<div class="el">
+</div>
+<div>
+<div class="logo-wrapper">
+    <img src="{% static 'home/images/logo.png' %}" alt="Moctale Logo" class="app-logo">
+</div>
+<h1>MOCTALE</h1>
+</div>
+
+{% endblock %}

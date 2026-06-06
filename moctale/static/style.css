@@ -1,0 +1,33 @@
+/* Custom Dark Blue Theme overrides */
+[data-bs-theme="dark"] {
+    /* Main body background (Deep Midnight Blue) */
+    --bs-body-bg: #000000 !important; 
+    --bs-body-bg-rgb: 11, 19, 43 !important;
+
+    /* Text colors (Crisp ice-blue) */
+    --bs-body-color: #c9d0db !important;
+    --bs-body-color-rgb: 226, 232, 240 !important;
+
+    /* Surface containers (Cards, Navbars, Modals) */
+    --bs-surface-color: #0c000a;
+    --bs-tertiary-bg: #000000 !important;
+    --bs-secondary-bg: #000000 !important;
+
+    /* Borders and Links */
+    --bs-border-color: #283749 !important;
+    --bs-link-color: #eaf2f2 !important;
+}
+
+/* Force Bootstrap components to use your dark blue surface color */
+[data-bs-theme="dark"] body {
+    background-color: #000000 !important;
+}
+
+[data-bs-theme="dark"] .card,
+[data-bs-theme="dark"] .navbar,
+[data-bs-theme="dark"] .modal-content,
+[data-bs-theme="dark"] .list-group-item {
+    background-color: #010615 !important;
+    color: #e2e8f0 !important;
+    border-color: #283c55 !important;
+}
