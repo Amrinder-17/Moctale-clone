@@ -6,13 +6,169 @@
 {% endblock %}
 
 {% block content %}
-<div class="el">
-</div>
-<div>
-<div class="logo-wrapper">
-    <img src="{% static 'home/images/logo.png' %}" alt="Moctale Logo" class="app-logo">
-</div>
-<h1>MOCTALE</h1>
+<div class="home-page">
+  <div class="el">
+    <div class="el-darken"></div>
+  </div>
+
+  <div class="hero-brand">
+    <div class="logo-wrapper">
+      <img src="{% static 'home/images/logo.png' %}" alt="Moctale Logo" class="app-logo">
+    </div>
+    <h1>MOCTALE</h1>
+  </div>
+
+  <section class="hero-spacer" aria-hidden="true"></section>
+
+  <section class="poster-section">
+    <div class="poster-columns">
+      <div class="poster-column">
+        <div class="poster-card">
+          <img src="{% static 'home/images/f1.png' %}" alt="Formula-1">
+        </div>
+        <div class="poster-card">
+          <img src="{% static 'home/images/bleach.png' %}" alt="Bleach">
+        </div>
+        <div class="poster-card">
+          <img src="{% static 'home/images/1917.png' %}" alt="1917">
+        </div>
+      </div>
+
+      <div class="poster-column">
+        <div class="poster-card">
+          <img src="{% static 'home/images/interstellar.png' %}" alt="Interstellar">
+        </div>
+        <div class="poster-card">
+          <img src="{% static 'home/images/monster.png' %}" alt="Monster">
+        </div>
+        <div class="poster-card">
+          <img src="{% static 'home/images/loki.png' %}" alt="Loki">
+        </div>
+      </div>
+
+      <div class="poster-column">
+        <div class="poster-card">
+          <img src="{% static 'home/images/pluto.png' %}" alt="Pluto">
+        </div>
+        <div class="poster-card">
+          <img src="{% static 'home/images/inception.png' %}" alt="Inception">
+        </div>
+        <div class="poster-card">
+          <img src="{% static 'home/images/onepiece.png' %}" alt="One Piece">
+        </div>
+      </div>
+
+      <div class="poster-column">
+        <div class="poster-card">
+          <img src="{% static 'home/images/Batman.png' %}" alt="The Batman">
+        </div>
+        <div class="poster-card">
+          <img src="{% static 'home/images/12th.png' %}" alt="12th Fail">
+        </div>
+        <div class="poster-card">
+          <img src="{% static 'home/images/andhadhun.png' %}" alt="Andhadhun">
+        </div>
+      </div>
+
+      <div class="poster-column poster-column--last">
+        <div class="poster-card">
+          <img src="{% static 'home/images/truman.png' %}" alt="The Truman Show">
+        </div>
+        <div class="poster-card">
+          <img src="{% static 'home/images/whiplash.png' %}" alt="Whiplash">
+        </div>
+        <div class="poster-card poster-card--peek">
+          <img src="{% static 'home/images/mayasabha.png' %}" alt="Mayasabha">
+        </div>
+      </div>
+    </div>
+
+    <div class="poster-fade" aria-hidden="true"></div>
+  </section>
+
+  <section class="feature-section">
+    <div class="feature-block">
+      <div class="phone-mockup">
+        <div class="phone-frame">
+          <div class="phone-notch"></div>
+          <div class="phone-screen phone-screen--search">
+            <span class="phone-screen-icon">⌕</span>
+            <p class="phone-screen-tagline">Search across<br>all platforms</p>
+          </div>
+        </div>
+      </div>
+      <div class="feature-copy">
+        <h2>Discover content across all OTT apps</h2>
+        <p>One search to find where to stream any movie or show across all platforms.</p>
+      </div>
+    </div>
+
+    <div class="feature-block feature-block--reverse">
+      <div class="phone-mockup">
+        <div class="phone-frame">
+          <div class="phone-notch"></div>
+          <div class="phone-screen phone-screen--lists">
+            <span class="phone-screen-icon">☰</span>
+            <p class="phone-screen-tagline">Your personal<br>watchlists</p>
+          </div>
+        </div>
+      </div>
+      <div class="feature-copy">
+        <h2>Create your personal watchlists</h2>
+        <p>Build custom lists to track what you've watched and plan what to watch next.</p>
+      </div>
+    </div>
+
+    <div class="feature-block">
+      <div class="phone-mockup">
+        <div class="phone-frame">
+          <div class="phone-notch"></div>
+          <div class="phone-screen phone-screen--spaces">
+            <span class="phone-screen-icon">◉</span>
+            <p class="phone-screen-tagline">Discuss in<br>Spaces</p>
+          </div>
+        </div>
+      </div>
+      <div class="feature-copy">
+        <h2>Discuss movies and shows in Spaces</h2>
+        <p>Checkout different posts in Spaces to discuss and share your love for your favorite fandoms.</p>
+      </div>
+    </div>
+  </section>
+
+  <section class="cta-section">
+    <div class="cta-inner">
+      <div class="cta-brand">
+        <img src="{% static 'home/images/logo.png' %}" alt="Moctale Logo" class="cta-logo">
+        <span class="cta-name">Moctale</span>
+      </div>
+      <div class="cta-join">
+        <div class="cta-text">
+          <h2>Create your account</h2>
+          <p>and experience Moctale for yourself</p>
+        </div>
+        <a href="#" class="cta-button">Join Moctale</a>
+      </div>
+    </div>
+  </section>
 </div>
 
+<script>
+  (function () {
+    const root = document.documentElement;
+    const section = document.querySelector(".poster-section");
+
+    function onScroll() {
+      const sectionEnd = section.offsetTop + section.offsetHeight;
+      const scrollEnd = Math.max(sectionEnd - window.innerHeight, 1);
+      const progress = Math.min(window.scrollY / scrollEnd, 1);
+
+      root.style.setProperty("--scroll-darken", progress);
+    }
+
+    window.addEventListener("scroll", onScroll, { passive: true });
+    window.addEventListener("resize", onScroll);
+    onScroll();
+  })();
+</script>
 {% endblock %}
