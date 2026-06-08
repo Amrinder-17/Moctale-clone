@@ -9,7 +9,7 @@
     --bs-body-color-rgb: 226, 232, 240 !important;
 
     /* Surface containers (Cards, Navbars, Modals) */
-    --bs-surface-color: #0c000a;
+    --bs-surface-color: #000000e5;
     --bs-tertiary-bg: #000000 !important;
     --bs-secondary-bg: #000000 !important;
 
@@ -27,7 +27,7 @@
 [data-bs-theme="dark"] .navbar,
 [data-bs-theme="dark"] .modal-content,
 [data-bs-theme="dark"] .list-group-item {
-    background-color: #010615 !important;
+    background-color: #180120 !important;
     color: #e2e8f0 !important;
     border-color: #283c55 !important;
 }

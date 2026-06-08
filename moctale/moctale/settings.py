@@ -12,6 +12,13 @@ https://docs.djangoproject.com/en/6.0/ref/settings/
 
 from pathlib import Path
 import os
+from dotenv import load_dotenv
+
+# Load the contents of the .env file
+load_dotenv()
+
+# Fetch the key from the environment
+TMDB_API_KEY = os.environ.get("TMDB_API_KEY")
 
 # Build paths inside the project like this: BASE_DIR / 'subdir'.
 BASE_DIR = Path(__file__).resolve().parent.parent
@@ -40,6 +47,7 @@ INSTALLED_APPS = [
     'django.contrib.staticfiles',
     "django_browser_reload",
     'home',
+    'users'
 ]
 
 MIDDLEWARE = [
@@ -117,6 +125,11 @@ USE_TZ = True
 
 # Static files (CSS, JavaScript, Images)
 # https://docs.djangoproject.com/en/6.0/howto/static-files/
+
+LOGIN_REDIRECT_URL = '/'
+
+# If an unauthenticated user tries to visit a private page, send them here
+LOGIN_URL = '/accounts/login/'
 
 STATIC_URL = 'static/'
 STATICFILES_DIRS=[os.path.join(BASE_DIR,'static')]

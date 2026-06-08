@@ -1,0 +1,104 @@
+/* Center wrapper for the authentication screen */
+.auth-wrapper {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  min-height: 80vh;
+  padding: 20px;
+}
+
+/* Card layout matching dark UI rules */
+.auth-card {
+  background-color: #12131a; /* Elevated deep dark surface color */
+  border: 1px solid #232530;
+  border-radius: 16px;
+  padding: 40px;
+  width: 100%;
+  max-width: 420px;
+  box-shadow: 0 20px 40px rgba(0, 0, 0, 0.4);
+}
+
+.auth-card h2 {
+  color: #ffffff;
+  font-family: "Geist", sans-serif;
+  margin-bottom: 24px;
+  font-size: 1.8rem;
+  text-align: center;
+}
+
+/* Individual form rows */
+.form-group {
+  margin-bottom: 20px;
+  display: flex;
+  flex-direction: column;
+}
+
+.form-group label {
+  color: #a0a5b5;
+  font-size: 0.9rem;
+  margin-bottom: 8px;
+}
+
+/* Style the auto-generated inputs from Django's form object */
+.form-group input {
+  background-color: #0b0c10;
+  border: 1px solid #323545;
+  border-radius: 8px;
+  color: #ffffff;
+  padding: 12px 16px;
+  font-size: 1rem;
+  transition: border-color 0.2s ease;
+}
+
+.form-group input:focus {
+  outline: none;
+  border-color: #eec32d; /* Highlight accent color from background theme */
+}
+
+/* CTA Submit Button with fixed structural constraints */
+.btn-primary {
+  width: 100%;
+  background-color: #eec32d;
+  color: #0b0c10;
+  border: none;
+  border-radius: 8px;
+  padding: 14px;
+  font-size: 1rem;
+  font-weight: 600;
+  cursor: pointer;
+  transition: background-color 0.2s ease;
+  margin-top: 10px;
+}
+
+.btn-primary:hover {
+  background-color: #dcb324;
+}
+
+/* Switching context anchor layout */
+.auth-switch {
+  color: #707585;
+  text-align: center;
+  margin-top: 24px;
+  font-size: 0.9rem;
+}
+
+.auth-switch a {
+  color: #eec32d;
+  text-decoration: none;
+  font-weight: 500;
+}
+
+.auth-switch a:hover {
+  text-decoration: underline;
+}
+
+/* Form warning boxes */
+.error-msg {
+  background-color: rgba(236, 75, 75, 0.1);
+  border: 1px solid #ec4b4b;
+  border-radius: 8px;
+  padding: 12px;
+  margin-bottom: 20px;
+  color: #ec4b4b;
+  font-size: 0.9rem;
+}
