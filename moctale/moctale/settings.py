@@ -47,7 +47,8 @@ INSTALLED_APPS = [
     'django.contrib.staticfiles',
     "django_browser_reload",
     'home',
-    'users'
+    'users',
+    'movies'
 ]
 
 MIDDLEWARE = [

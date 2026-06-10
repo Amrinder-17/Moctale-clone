@@ -25,5 +25,6 @@ urlpatterns = [
     path('admin/', admin.site.urls),
     path('', include('home.urls')),
     path("__reload__/", include("django_browser_reload.urls")),
-    path('accounts/', include('users.urls'))
+    path('accounts/', include('users.urls')),
+    path('media/', include('movies.urls')),
 ]+static(settings.MEDIA_URL,document_root=settings.MEDIA_ROOT)
