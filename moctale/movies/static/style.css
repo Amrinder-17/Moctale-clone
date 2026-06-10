@@ -38,12 +38,12 @@
 }
 
 /* Section header with icon */
-.section-header {
+/* .section-header {
   display: flex;
   align-items: center;
   gap: 12px;
   margin-bottom: 16px;
-}
+} */
 
 .section-icon {
   font-size: 1.6rem;
