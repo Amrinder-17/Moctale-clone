@@ -1,112 +1,74 @@
 {% extends "layout.html" %}
 
 {% block content %}
-<div class="dashboard-wrapper">
-    <div class="dashboard-container">
+<div class="moctale-dashboard-split">
+
+    <main class="main-content-stream">
         
-        <!-- Left Section: Scrolling Categories -->
-        <div class="left-section">
-            
-            <!-- Talk Of The Town -->
-            <section class="movie-section">
-                <div class="section-header">
-                    <span class="section-icon">🔥</span>
-                    <h2 class="section-title">Talk Of The Town</h2>
-                </div>
-                <div class="scroll-row">
-                    {% for media in sections.popular %}
-                        {% include "movies/partials/card.html" %}
-                    {% endfor %}
-                </div>
-            </section>
-
-            <!-- Editors' Choice -->
-            <section class="movie-section">
-                <div class="section-header">
-                    <span class="section-icon">⭐</span>
-                    <h2 class="section-title">Editors' Choice</h2>
-                </div>
-                <div class="scroll-row">
-                    {% for media in sections.editors_choice %}
-                        {% include "movies/partials/card.html" %}
-                    {% endfor %}
-                </div>
-            </section>
-
-            <!-- Popular on Netflix -->
-            <section class="movie-section">
-                <div class="section-header">
-                    <span class="section-icon">📺</span>
-                    <h2 class="section-title">Popular on Netflix</h2>
-                </div>
-                <div class="scroll-row">
-                    {% for media in sections.netflix %}
-                        {% include "movies/partials/card.html" %}
-                    {% endfor %}
-                </div>
-            </section>
-
-            <!-- Featured on Prime Video -->
-            <section class="movie-section">
-                <div class="section-header">
-                    <span class="section-icon">🎬</span>
-                    <h2 class="section-title">Featured on Prime Video</h2>
-                </div>
-                <div class="scroll-row">
-                    {% for media in sections.prime_video %}
-                        {% include "movies/partials/card.html" %}
-                    {% endfor %}
-                </div>
-            </section>
-
-            <!-- Anime Central -->
-            <section class="movie-section">
-                <div class="section-header">
-                    <span class="section-icon">🐉</span>
-                    <h2 class="section-title">Anime Central</h2>
-                </div>
-                <div class="scroll-row">
-                    {% for media in sections.crunchyroll %}
-                        {% include "movies/partials/card.html" %}
-                    {% endfor %}
-                </div>
-            </section>
-
-        </div>
-
-        <!-- Right Section: Most Interested -->
-        <aside class="right-section">
-            <div class="most-interested-header">
-                <span class="interested-icon">🔥</span>
-                <h2>Most Interested</h2>
-                <div class="time-filter">This Week</div>
-            </div>
-            
-            <div class="interested-list">
-                {% for media in sections.editors_choice|slice:":3" %}
-                    <div class="interested-item">
-                        <div class="item-rank">{{ forloop.counter }}</div>
-                        <div class="item-image">
-                            {% if media.poster_path %}
-                                <img src="https://image.tmdb.org/t/p/w185{{ media.poster_path }}" alt="{% if media.title %}{{ media.title }}{% else %}{{ media.name }}{% endif %}">
-                            {% else %}
-                                <div class="no-poster-small">{% if media.title %}{{ media.title }}{% else %}{{ media.name }}{% endif %}</div>
-                            {% endif %}
-                        </div>
-                        <div class="item-details">
-                            <h3>{% if media.title %}{{ media.title }}{% else %}{{ media.name }}{% endif %}</h3>
-                            <p class="item-date">12 Jun, 2026 • In Theatre</p>
-                            <p class="item-interested">
-                                <span class="interested-badge">🔥</span>
-                                <span class="interested-count">{{ media.popularity|floatformat:"1f"|add:"1000"|stringformat:"d" }}</span>
-                                Interested
-                            </p>
-                        </div>
-                    </div>
+        <section class="movie-section">
+            <h2 class="section-title"><span class="icon">📢</span> Talk Of The Town</h2>
+            <div class="scroll-row">
+                {% for media in sections.popular %}
+                    {% include "movies/partials/card.html" %}
                 {% endfor %}
             </div>
-        </aside>
+        </section>
 
-    </div>
+        <section class="movie-section">
+            <h2 class="section-title"><span class="icon">🤍</span> Editor's Pick Of The Week</h2>
+            <div class="scroll-row">
+                {% for media in sections.editors_choice %}
+                    {% include "movies/partials/card.html" %}
+                {% endfor %}
+            </div>
+        </section>
+
+        <section class="movie-section">
+            <h2 class="section-title">Popular on Netflix</h2>
+            <div class="scroll-row">
+                {% for media in sections.netflix %}
+                    {% include "movies/partials/card.html" %}
+                {% endfor %}
+            </div>
+        </section>
+
+    </main>
+
+    <aside class="sidebar-ranked-panel">
+        <div class="sidebar-header">
+            <h2 class="sidebar-title"><span class="icon">🔥</span> Most Interested</h2>
+            <select class="time-filter-dropdown">
+                <option>This Week</option>
+                <option>This Month</option>
+            </select>
+        </div>
+
+        <div class="ranked-list">
+            <div class="ranked-card">
+                <div class="rank-number">1</div>
+                <div class="ranked-thumb">
+                    <img src="https://image.tmdb.org/t/p/w92/xBT0oNq6rsTFv4SxG5uGRIEOrq6.jpg" alt="Thumb">
+                </div>
+                <div class="ranked-details">
+                    <h3>Disclosure Day</h3>
+                    <p class="release-status">12 Jun, 2026 • In Theatre</p>
+                    <p class="interest-metric"><span class="icon-fire">🔥</span> 2.8K Interested</p>
+                </div>
+            </div>
+
+            <div class="ranked-card">
+                <div class="rank-number">2</div>
+                <div class="ranked-thumb">
+                    <img src="https://image.tmdb.org/t/p/w92/zm0KAbOjlt9eR5y7vDiL2dEOwMl.jpg" alt="Thumb">
+                </div>
+                <div class="ranked-details">
+                    <h3>Backrooms</h3>
+                    <p class="release-status">12 Jun, 2026 • In Theatre</p>
+                    <p class="interest-metric"><span class="icon-fire">🔥</span> 2.6K Interested</p>
+                </div>
+            </div>
+        </div>
+    </aside>
+
 </div>
 {% endblock %}

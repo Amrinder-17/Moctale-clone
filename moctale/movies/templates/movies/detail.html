@@ -1,0 +1,46 @@
+V{% extends "layout.html" %}
+
+{% block content %}
+<div class="back-nav">
+    <a href="{% url 'dashboard' %}">← Back to Dashboard</a>
+</div>
+
+<div class="detail-container">
+    {% if media.backdrop_path %}
+        <div class="backdrop-banner" style="background-image: linear-gradient(to bottom, rgba(11, 12, 16, 0.3), #0b0c10), url('https://image.tmdb.org/t/p/original{{ media.backdrop_path }}');"></div>
+    {% endif %}
+
+    <div class="detail-content">
+        <div class="detail-poster">
+            {% if media.poster_path %}
+                <img src="https://image.tmdb.org/t/p/w500{{ media.poster_path }}" alt="Poster">
+            {% endif %}
+        </div>
+
+        <div class="detail-text">
+            <h1>{% if media.title %}{{ media.title }}{% else %}{{ media.name }}{% endif %}</h1>
+            
+            {% if media.tagline %}
+                <p class="tagline"><em>"{{ media.tagline }}"</em></p>
+            {% endif %}
+
+            <div class="meta-badges">
+                <span class="badge rating">⭐ {{ media.vote_average|stringformat:".1f" }}</span>
+                
+                {% if media.runtime %}
+                    <span class="badge">{{ media.runtime }} mins</span>
+                {% elif media.number_of_seasons %}
+                    <span class="badge">{{ media.number_of_seasons }} Season{% if media.number_of_seasons > 1 %}s{% endif %}</span>
+                {% endif %}
+
+                <span class="badge">
+                    {% if media.release_date %}{{ media.release_date }}{% else %}{{ media.first_air_date }}{% endif %}
+                </span>
+            </div>
+
+            <h3>Overview</h3>
+            <p class="overview-paragraph">{{ media.overview }}</p>
+        </div>
+    </div>
+</div>
+{% endblock %}

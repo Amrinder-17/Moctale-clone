@@ -1,17 +1,10 @@
 /* Custom Dark Blue Theme overrides */
 [data-bs-theme="dark"] {
-    /* Main body background (Deep Midnight Blue) */
-    --bs-body-bg: #000000 !important; 
-    --bs-body-bg-rgb: 11, 19, 43 !important;
 
     /* Text colors (Crisp ice-blue) */
     --bs-body-color: #c9d0db !important;
     --bs-body-color-rgb: 226, 232, 240 !important;
 
-    /* Surface containers (Cards, Navbars, Modals) */
-    --bs-surface-color: #000000e5;
-    --bs-tertiary-bg: #000000 !important;
-    --bs-secondary-bg: #000000 !important;
 
     /* Borders and Links */
     --bs-border-color: #283749 !important;
