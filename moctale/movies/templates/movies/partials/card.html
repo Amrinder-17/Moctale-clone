@@ -1,14 +1,16 @@
-<div class="poster-card">
-    {% if media.poster_path %}
-        <img src="https://image.tmdb.org/t/p/w342{{ media.poster_path }}" alt="{% if media.title %}{{ media.title }}{% else %}{{ media.name }}{% endif %}">
-    {% else %}
-        <div class="no-poster">{% if media.title %}{{ media.title }}{% else %}{{ media.name }}{% endif %}</div>
-    {% endif %}
-    
-    <div class="card-overlay">
-        <h3>{% if media.title %}{{ media.title }}{% else %}{{ media.name }}{% endif %}</h3>
-        <div class="card-meta">
-            <span>⭐ {{ media.vote_average|stringformat:".1f" }}</span>
+<a href="{% url 'media_detail' media_type=media.media_type|default:'movie' media_id=media.id %}" class="card-link">
+    <div class="poster-card">
+        {% if media.poster_path %}
+            <img src="https://image.tmdb.org/t/p/w342{{ media.poster_path }}" alt="{% if media.title %}{{ media.title }}{% else %}{{ media.name }}{% endif %}">
+        {% else %}
+            <div class="no-poster">{% if media.title %}{{ media.title }}{% else %}{{ media.name }}{% endif %}</div>
+        {% endif %}
+        
+        <div class="card-overlay">
+            <h3>{% if media.title %}{{ media.title }}{% else %}{{ media.name }}{% endif %}</h3>
+            <div class="card-meta">
+                <span>⭐ {{ media.vote_average|stringformat:".1f" }}</span>
+            </div>
         </div>
     </div>
-</div>
+</a>
