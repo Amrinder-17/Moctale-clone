@@ -20,7 +20,8 @@
 [data-bs-theme="dark"] .navbar,
 [data-bs-theme="dark"] .modal-content,
 [data-bs-theme="dark"] .list-group-item {
-    background-color: #180120 !important;
+    
+    background-color: #160211 !important;
     color: #e2e8f0 !important;
     border-color: #283c55 !important;
 }

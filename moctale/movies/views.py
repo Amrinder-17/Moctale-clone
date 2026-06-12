@@ -1,6 +1,8 @@
 import requests
 from django.shortcuts import render
 from django.conf import settings
+from django.http import JsonResponse
+
 
 def dashboard(request):
     if not request.user.is_authenticated:
@@ -103,3 +105,45 @@ def media_detail(request, media_type, media_id):
         'media_type':media_type
     }
     return render(request, 'movies/detail.html', context)
+
+def live_search_api(request):
+    """
+    Asynchronous JSON backend API endpoint. 
+    Listens to background requests without reloading the active layout page template.
+    """
+    api_key = settings.TMDB_API_KEY
+    base_url = "https://api.themoviedb.org/3"
+    
+    user_query = request.GET.get('query', '').strip()
+    processed_results = []
+
+    if user_query:
+        search_url = f"{base_url}/search/multi"
+        params = {
+            'api_key': api_key,
+            'language': 'en-US',
+            'query': user_query,
+            'page': 1,
+            'include_adult': 'false'
+        }
+        
+        try:
+            response = requests.get(search_url, params=params)
+            if response.status_code == 200:
+                raw_data = response.json().get('results', [])
+                
+                for item in raw_data:
+                    # Sanitize entries down to titles with a valid poster art background asset path
+                    if item.get('media_type') in ['movie', 'tv'] and item.get('poster_path'):
+                        processed_results.append({
+                            'id': item.get('id'),
+                            'title': item.get('title') or item.get('name'),
+                            'media_type': item.get('media_type'),
+                            'poster_path': f"https://image.tmdb.org/t/p/w342{item.get('poster_path')}",
+                            'vote_average': round(item.get('vote_average', 0), 1)
+                        })
+        except Exception as e:
+            print(f"Async Search Exception: {e}")
+
+    # Return raw decoupled database values cleanly arrayed back into the JSON engine
+    return JsonResponse({'results': processed_results})

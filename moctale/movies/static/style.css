@@ -431,3 +431,383 @@ body {
     margin: 0 auto;
   }
 }
+
+/* Each item takes exactly 1/3 of the container width minus spacing */
+.grid-menu-item {
+    width: calc(33.333% - 8px);
+    margin: 4px;
+    background: transparent;
+    transition: background 0.2s ease, transform 0.1s ease;
+}
+
+/* Subtle dark-mode hover effect */
+.grid-menu-item:hover {
+    background-color: #2b2b2b !important;
+    transform: translateY(-2px);
+}
+
+/* Fix Bootstrap overriding text colors inside dropdown-items */
+.grid-menu-item:hover span {
+    color: #fff !important;
+}
+
+/* Custom gap adjustment for wrapping rows */
+.gap-y-3 {
+    row-gap: 0.5rem !important;
+}
+/* Custom styling for list-style notification rows */
+.notification-item {
+    white-space: normal !important; /* Overrides default bootstrap item truncation */
+    transition: background-color 0.2s ease;
+}
+
+.notification-item:hover {
+    background-color: #252525 !important;
+}
+
+/* Optional: Clean scrollbar design for the notification container */
+.notification-list::-webkit-scrollbar {
+    width: 6px;
+}
+.notification-list::-webkit-scrollbar-track {
+    background: #1e1e1e;
+}
+.notification-list::-webkit-scrollbar-thumb {
+    background: #3a3a3a;
+    border-radius: 10px;
+}
+.notification-list::-webkit-scrollbar-thumb:hover {
+    background: #4f4f4f;
+}
+
+/* Custom Max Width for the search bar container */
+.m-max-600 {
+    max-width: 650px;
+    width: 100%;
+}
+
+/* Frosted glass overlay background style */
+.backdrop-blur {
+    backdrop-filter: blur(12px);
+    -webkit-backdrop-filter: blur(12px);
+}
+
+/* Custom placeholder styling inside the fullscreen overlay */
+.placeholder-muted::placeholder {
+    color: rgba(255, 255, 255, 0.35) !important;
+}
+
+/* Smooth transition for the search action icon */
+.hover-white {
+    transition: color 0.2s ease-in-out;
+}
+.hover-white:hover {
+    color: #ffffff !important;
+}
+
+/* Remove default focusing rings from input fields */
+.fullscreen-search-modal .form-control:focus {
+    background-color: transparent !important;
+    color: #fff;
+}
+
+
+
+
+
+
+
+/* ==========================================================================
+   PREMIUM GLASS-BORDER USER PROFILE BADGE
+   ========================================================================== */
+
+.nav-profile-container {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding-left: 10px; /* Slight separation gap from the magnifying search glass */
+}
+
+.profile-badge-link {
+  display: block;
+  width: 40px;                        /* Exact dimensions from the navbar layout */
+  height: 40px;
+  border-radius: 50%;
+  position: relative;
+  background-color: #1a1b20;          /* Internal backdrop backup color */
+  box-sizing: border-box;
+  
+  /* Creates the crisp outer circular ring */
+  border: 2px solid rgba(255, 255, 255, 0.25); 
+  
+  transition: border-color 0.2s ease, transform 0.2s ease;
+  overflow: hidden;
+}
+
+/* Subtle border glow change on hover */
+.profile-badge-link:hover {
+  border-color: rgba(255, 255, 255, 0.6);
+  transform: scale(1.03);
+}
+
+/* Image behavior configuration */
+.profile-badge-img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;                  /* Ensures no stretching or squishing of the face */
+  display: block;
+  border-radius: 50%;
+}
+
+/* Vector Fallback UI Styling (Matches screenshot's color profile perfectly) */
+.profile-badge-fallback {
+  width: 100%;
+  height: 100%;
+  background-color: #bcc1cd;          /* Elegant, muted light grey fill */
+  color: #555964;                     /* Darker charcoal tint for the inner human shape silhouette */
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  border-radius: 50%;
+}
+
+.profile-badge-fallback svg {
+  width: 100%;
+  height: 100%;
+  transform: scale(1.05);             /* Subtle padding tweak to align vector borders perfectly */
+  display: block;
+}
+
+
+/* ==========================================================================
+   CINEMATIC FULL-SCREEN OVERLAY LIVE SEARCH MODAL
+   ========================================================================== */
+.search-overlay-modal {
+  position: fixed;
+  inset: 0;
+  background-color: rgba(11, 12, 16, 0.98); /* Deep backdrop fill shadow layout matching mockup */
+  backdrop-filter: blur(15px);              /* Blurs background content dynamically */
+  z-index: 9999;                            /* Ensures search stays on top of everything */
+  opacity: 0;
+  pointer-events: none;
+  transition: opacity 0.3s ease;
+  padding: 40px 6%;
+  box-sizing: border-box;
+  overflow-y: auto;
+}
+
+.search-overlay-modal.active {
+  opacity: 1;
+  pointer-events: auto;
+}
+
+.search-modal-container {
+  max-width: 1200px;
+  margin: 0 auto;
+}
+
+/* Master Input Row */
+.search-modal-header {
+  border-bottom: 1px solid rgba(255, 255, 255, 0.08);
+  padding-bottom: 20px;
+  margin-bottom: 25px;
+}
+
+.modal-input-row {
+  display: flex;
+  align-items: center;
+  gap: 20px;
+  background-color: #16171f;
+  border: 1px solid rgba(255, 255, 255, 0.06);
+  border-radius: 12px;
+  padding: 14px 24px;
+}
+
+.input-search-glass {
+  width: 24px;
+  height: 24px;
+  color: #555964;
+}
+
+.modal-input-row input {
+  background: none;
+  border: none;
+  outline: none;
+  color: #ffffff;
+  font-size: 1.3rem;
+  width: 100%;
+  font-weight: 500;
+}
+
+.modal-input-row input::placeholder {
+  color: #555964;
+}
+
+.close-modal-btn {
+  background: none;
+  border: none;
+  color: #a0a5b5;
+  font-size: 2rem;
+  cursor: pointer;
+  line-height: 1;
+  transition: color 0.2s;
+}
+
+.close-modal-btn:hover {
+  color: #ff6b4a;
+}
+
+/* ==========================================================================
+   SUB-NAV INTERFACE MODAL TABS STYLE
+   ========================================================================== */
+.search-modal-tabs {
+  display: flex;
+  gap: 30px;
+  border-bottom: 1px solid rgba(255, 255, 255, 0.05);
+  padding-bottom: 12px;
+  margin-bottom: 40px;
+}
+
+.search-tab {
+  background: none;
+  border: none;
+  color: #717685;
+  font-size: 1.05rem;
+  font-weight: 600;
+  cursor: pointer;
+  padding: 0 0 8px 0;
+  position: relative;
+  transition: color 0.2s;
+}
+
+.search-tab:hover, .search-tab.active {
+  color: #ffffff;
+}
+
+.search-tab.active::after {
+  content: '';
+  position: absolute;
+  bottom: -1px;
+  left: 0;
+  right: 0;
+  height: 2px;
+  background-color: #eec32d; /* Highlight bar color under active tab */
+}
+
+/* ==========================================================================
+   RESULTS PANE AND EMPTY RECENT STATES
+   ========================================================================== */
+.empty-search-state {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  text-align: center;
+  padding-top: 10vh;
+}
+
+.empty-icon-circle {
+  width: 80px;
+  height: 80px;
+  background-color: #111217;
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  color: #383a45;
+  margin-bottom: 25px;
+}
+
+.empty-icon-circle svg {
+  width: 35px;
+  height: 35px;
+}
+
+.empty-search-state h3 {
+  font-size: 1.4rem;
+  margin: 0 0 8px 0;
+  font-weight: 700;
+}
+
+.empty-search-state p {
+  color: #555964;
+  margin: 0;
+}
+
+
+
+
+
+.navbar-search-trigger-btn {
+  background: transparent !important;
+  border: none !important;
+  cursor: pointer;
+  padding: 0 10px;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  outline: none;
+  transition: transform 0.2s ease;
+}
+
+/* Base style matching your unselected layout tabs */
+.navbar-search-trigger-btn svg {
+  width: 22px;
+  height: 22px;
+  color: #a0a5b5; 
+  transition: color 0.2s ease;
+}
+
+/* Changes to bright white and adds a premium pop when hovered */
+.navbar-search-trigger-btn:hover svg {
+  color: #ffffff;
+}
+
+.navbar-search-trigger-btn:active {
+  transform: scale(0.95);
+}
+
+/* ==========================================================================
+   FORCE OVERLAY FIX: Structural Overrides
+   ========================================================================== */
+
+.search-overlay-modal-screen {
+  /* Forces the layout to float on a separate layer independent of document height */
+  position: fixed !important;
+  top: 0 !important;
+  left: 0 !important;
+  right: 0 !important;
+  bottom: 0 !important;
+  
+  width: 100vw !important;
+  height: 100vh !important;
+  
+  /* Locks it strictly at the absolute top layer over navbar and rows */
+  z-index: 9999999 !important; 
+  
+  background-color: #0b0c10 !important; /* Moctale dark background */
+  padding: 80px 6% 40px 6% !important;
+  box-sizing: border-box !important;
+  overflow-y: auto !important;
+
+  /* Crucial: Keeps it completely invisible and intangible by default */
+  display: none !important; 
+}
+
+/* When the active class is injected, turn it on instantly as a fullscreen layer */
+.search-overlay-modal-screen.active {
+  display: flex !important;
+  flex-direction: column !important;
+  align-items: center !important;
+}
+
+/* Ensure the results row elements fit cleanly */
+.search-modal-inner-box {
+  width: 100%;
+  max-width: 1100px;
+  margin: 0 auto;
+}
+
+.hidden {
+  display: none !important;
+}

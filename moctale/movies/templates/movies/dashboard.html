@@ -1,5 +1,151 @@
 {% extends "layout.html" %}
 
+{% load static %}
+{% block navbar %}
+<nav class="navbar navbar-expand-lg bg-body-tertiary border-bottom border-body-secondary">
+  <div class="container-fluid">
+    <div class="d-flex align-items-center ms-5">
+      <img src="{% static 'images/logo.png' %}" alt="Moctale Logo" style="height: 25px; margin-right: 10px;">
+      <a class="navbar-brand mb-0 fw-bold" href="#">MOCTALE</a>
+    </div>
+    
+    <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarSupportedContent" aria-controls="navbarSupportedContent" aria-expanded="false" aria-label="Toggle navigation">
+      <span class="navbar-toggler-icon"></span>
+    </button>
+    
+    <div class="collapse navbar-collapse" id="navbarSupportedContent">
+      <div class="ms-auto d-flex align-items-center gap-2">
+        
+        <button type="button" class="btn p-2 border-0 text-white-50">
+            <i class="bi bi-compass"></i> Explore
+        </button>
+        
+        <button type="button" class="btn p-2 border-0 text-white-50">
+            <i class="bi bi-calendar"></i>
+        </button>
+        
+        <button type="button" class="btn p-2 border-0 text-white-50">
+            <i class="bi bi-bookmark"></i>
+        </button>
+        
+        <div class="dropdown">
+          <button class="btn p-2 border-0 text-white-50" type="button" id="gridDropdownMenu" data-bs-toggle="dropdown" aria-expanded="false" style="font-size: 1.5rem;">
+            <i class="bi bi-grid"></i>
+          </button>
+
+          <div class="dropdown-menu dropdown-menu-end p-3" aria-labelledby="gridDropdownMenu" style="width: 270px; min-width: 270px; background-color: #1e1e1e; border: 1px solid #2d2d2d; border-radius: 12px;">
+            <div class="d-flex flex-wrap text-center gap-y-3">
+              <a href="#" class="dropdown-item grid-menu-item d-flex flex-column align-items-center justify-content-center py-3 rounded-3 text-decoration-none">
+                <i class="bi bi-house-door mb-1" style="font-size: 1.5rem; color: #0d6efd;"></i>
+                <span class="small text-light">Home</span>
+              </a>
+              <a href="#" class="dropdown-item grid-menu-item d-flex flex-column align-items-center justify-content-center py-3 rounded-3 text-decoration-none">
+                <i class="bi bi-compass mb-1" style="font-size: 1.5rem; color: #198754;"></i>
+                <span class="small text-light">Explore</span>
+              </a>
+              <a href="#" class="dropdown-item grid-menu-item d-flex flex-column align-items-center justify-content-center py-3 rounded-3 text-decoration-none">
+                <i class="bi bi-graph-up mb-1" style="font-size: 1.5rem; color: #ffc107;"></i>
+                <span class="small text-light">Analysis</span>
+              </a>
+              <a href="#" class="dropdown-item grid-menu-item d-flex flex-column align-items-center justify-content-center py-3 rounded-3 text-decoration-none">
+                <i class="bi bi-gear mb-1" style="font-size: 1.5rem; color: #6c757d;"></i>
+                <span class="small text-light">Settings</span>
+              </a>
+              <a href="#" class="dropdown-item grid-menu-item d-flex flex-column align-items-center justify-content-center py-3 rounded-3 text-decoration-none">
+                <i class="bi bi-person mb-1" style="font-size: 1.5rem; color: #0dcaf0;"></i>
+                <span class="small text-light">Profile</span>
+              </a>
+              <a href="#" class="dropdown-item grid-menu-item d-flex flex-column align-items-center justify-content-center py-3 rounded-3 text-decoration-none">
+                <i class="bi bi-question-circle mb-1" style="font-size: 1.5rem; color: #dc3545;"></i>
+                <span class="small text-light">Help</span>
+              </a>
+            </div>
+          </div>
+        </div>
+
+        <div class="dropdown">
+          <button class="btn p-2 border-0 text-white-50 position-relative" type="button" id="notificationDropdownMenu" data-bs-toggle="dropdown" aria-expanded="false" style="font-size: 1.5rem;">
+            <i class="bi bi-bell"></i>
+            <span class="position-absolute top-2 start-50 translate-middle p-1 bg-danger border border-light rounded-circle" style="margin-left: 8px; margin-top: 2px;">
+              <span class="visually-hidden">New alerts</span>
+            </span>
+          </button>
+
+          <div class="dropdown-menu dropdown-menu-end p-0" aria-labelledby="notificationDropdownMenu" style="width: 320px; min-width: 320px; background-color: #1e1e1e; border: 1px solid #2d2d2d; border-radius: 12px; overflow: hidden;">
+            <div class="px-3 py-2.5 d-flex justify-content-between align-items-center border-bottom border-secondary border-opacity-25" style="background-color: #242424;">
+              <h6 class="mb-0 text-light fw-semibold" style="font-size: 0.95rem;">Notifications</h6>
+              <a href="#" class="text-primary text-decoration-none small" style="font-size: 0.8rem;">Mark all read</a>
+            </div>
+
+            <div class="notification-list" style="max-height: 300px; overflow-y: auto;">
+              <a href="#" class="dropdown-item notification-item d-flex align-items-start gap-3 px-3 py-2.5 text-wrap border-bottom border-secondary border-opacity-10">
+                <div class="p-2 bg-primary bg-opacity-10 text-primary rounded-circle d-flex align-items-center justify-content-center" style="width: 36px; height: 36px; flex-shrink: 0;">
+                  <i class="bi bi-graph-up-arrow" style="font-size: 1.1rem;"></i>
+                </div>
+                <div class="w-100">
+                  <p class="mb-0 text-light small fw-medium">Stock Alert: <span class="text-white">AAPL</span> crossed your target price of $180.</p>
+                  <span class="text-muted" style="font-size: 0.75rem;">3 mins ago</span>
+                </div>
+              </a>
+
+              <a href="#" class="dropdown-item notification-item d-flex align-items-start gap-3 px-3 py-2.5 text-wrap border-bottom border-secondary border-opacity-10">
+                <div class="p-2 bg-success bg-opacity-10 text-success rounded-circle d-flex align-items-center justify-content-center" style="width: 36px; height: 36px; flex-shrink: 0;">
+                  <i class="bi bi-check-circle" style="font-size: 1.1rem;"></i>
+                </div>
+                <div class="w-100">
+                  <p class="mb-0 text-light small">Your automated report has been generated successfully.</p>
+                  <span class="text-muted" style="font-size: 0.75rem;">1 hour ago</span>
+                </div>
+              </a>
+
+              <a href="#" class="dropdown-item notification-item d-flex align-items-start gap-3 px-3 py-2.5 text-wrap">
+                <div class="p-2 bg-secondary bg-opacity-25 text-light rounded-circle d-flex align-items-center justify-content-center" style="width: 36px; height: 36px; flex-shrink: 0;">
+                  <i class="bi bi-shield-exclamation" style="font-size: 1.1rem;"></i>
+                </div>
+                <div class="w-100">
+                  <p class="mb-0 text-light small">New login detected from a new IP address.</p>
+                  <span class="text-muted" style="font-size: 0.75rem;">Yesterday</span>
+                </div>
+              </a>
+            </div>
+
+            <a href="#" class="dropdown-item text-center py-2 text-primary small border-top border-secondary border-opacity-25" style="background-color: #242424; font-size: 0.85rem;">
+              View All Notifications
+            </a>
+          </div>
+        </div>
+
+        <div class="navbar-right-menu d-flex align-items-center gap-3">
+            
+            <button id="searchOpenBtn" class="navbar-search-trigger-btn btn p-0 border-0" type="button" aria-label="Open Search">
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round" style="width: 22px; height: 22px;">
+                    <circle cx="11" cy="11" r="8"></circle>
+                    <line x1="21" y1="21" x2="16.65" y2="16.65"></line>
+                </svg>
+            </button>
+
+            <div class="nav-profile-container">
+                <a href="#" class="profile-badge-link" aria-label="User Profile">
+                    {% if user.profile.image %}
+                        <img src="{{ user.profile.image.url }}" alt="Profile Avatar" class="profile-badge-img">
+                    {% else %}
+                        <div class="profile-badge-fallback">
+                            <svg viewBox="0 0 24 24" fill="currentColor">
+                                <path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm0 4c1.93 0 3.5 1.57 3.5 3.5S13.93 13 12 13s-3.5-1.57-3.5-3.5S10.07 6 12 6zm0 14c-2.03 0-4.43-.82-6.14-2.27C7.48 16.32 9.62 15 12 15s4.52 1.32 6.14 2.73C16.43 19.18 14.03 20 12 20z"/>
+                            </svg>
+                        </div>
+                    {% endif %}
+                </a>
+            </div>
+
+        </div> </div>
+    </div>
+  </div>
+</nav>
+
+<script src="{% static 'js/search.js' %}"></script>
+{% endblock %}
+
 {% block content %}
 <div class="moctale-dashboard-split">
 
@@ -70,5 +216,37 @@
         </div>
     </aside>
 
+</div>
+
+<div id="moctaleSearchModal" class="search-overlay-modal-screen">
+    <div class="search-modal-inner-box">
+        
+        <div class="search-input-bar-row">
+            <i class="bi bi-search modal-glass-icon"></i>
+            <input type="text" id="liveSearchInput" placeholder="Search for Movies, Shows, Anime, Cast & Crew or Users..." autocomplete="off">
+            <button id="searchCloseBtn" class="close-overlay-x">&times;</button>
+        </div>
+        
+        <div class="search-tabs-row">
+            <span class="tab-item active">Content</span>
+            <span class="tab-item">Collections</span>
+            <span class="tab-item">Cast & Crew</span>
+            <span class="tab-item">Users</span>
+        </div>
+
+        <div class="search-results-display-area">
+            
+            <div id="searchDefaultState" class="modal-empty-state-pane">
+                <div class="history-circle">
+                    <i class="bi bi-search"></i>
+                </div>
+                <h3>No recent searches</h3>
+                <p>Your search history will appear here</p>
+            </div>
+            
+            <div id="liveResultsGrid" class="live-results-grid hidden"></div>
+        </div>
+
+    </div>
 </div>
 {% endblock %}
