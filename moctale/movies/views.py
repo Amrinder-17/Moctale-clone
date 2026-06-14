@@ -31,11 +31,15 @@ def dashboard(request):
 
         # 2. Hand-Picked Editors' Choice 
 
+        # 2. Hand-Picked Editors' Choice 
         my_curated_ids = [157336, 27205, 19995, 603, 118340, 299534]
         for movie_id in my_curated_ids:
             detail_res = requests.get(f"{base_url}/movie/{movie_id}", params=params)
             if detail_res.status_code == 200:
-                dashboard_data['editors_choice'].append(detail_res.json())
+                movie_data = detail_res.json()
+                movie_data['media_type'] = 'movie' # Adds explicit tracking tag
+                dashboard_data['editors_choice'].append(movie_data)
+
 
         # 3. Global Streaming Services (Netflix & Prime Video Movies)
         for platform, provider_id in [('netflix', 8), ('prime_video', 119)]:
@@ -91,6 +95,8 @@ def media_detail(request, media_type, media_id):
     }
     try:
         response=requests.get(detail_url,params=params)
+        credits_res = requests.get(f"{base_url}/{media_type}/{media_id}/credits", params=params)
+        credits_data = credits_res.json()
         if response.status_code==200 :
             media_data=response.json()
         else:
@@ -99,7 +105,8 @@ def media_detail(request, media_type, media_id):
         print(f"Detail Fetch Error: {e}")
         media_data = None
     context={
-        'media':media_data,
-        'media_type':media_type
+        'movie':media_data,
+        'media_type':media_type,
+        'credits': credits_data
     }
     return render(request, 'movies/detail.html', context)

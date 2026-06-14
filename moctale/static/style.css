@@ -11,6 +11,8 @@
     --bs-link-color: #eaf2f2 !important;
 }
 
+
+
 /* Force Bootstrap components to use your dark blue surface color */
 [data-bs-theme="dark"] body {
     background-color: #000000 !important;
@@ -20,7 +22,30 @@
 [data-bs-theme="dark"] .navbar,
 [data-bs-theme="dark"] .modal-content,
 [data-bs-theme="dark"] .list-group-item {
-    background-color: #180120 !important;
+    background-color: #000000 !important;
     color: #e2e8f0 !important;
     border-color: #283c55 !important;
+}
+
+/* Combine the dark theme attribute with your custom class to beat Bootstrap specificity */
+[data-bs-theme="dark"] .navbar.navbar-translucent {
+    /* Lowered alpha to 0.15 for an even cleaner glass look over the pure black background */
+    background-color: rgba(0, 0, 0, 0.15) !important; 
+    
+    /* The core blur properties */
+    backdrop-filter: blur(20px) !important;
+    -webkit-backdrop-filter: blur(20px) !important; 
+    
+    /* A subtle bottom border so the glass has an edge */
+    border-bottom: 1px solid rgba(255, 255, 255, 0.08) !important;
+    
+    transition: background-color 0.3s ease, backdrop-filter 0.3s ease;
+    z-index: 1030 !important; 
+}
+
+/* Keeps your text crisp and legible over moving poster elements underneath */
+[data-bs-theme="dark"] .navbar.navbar-translucent .nav-link,
+[data-bs-theme="dark"] .navbar.navbar-translucent .navbar-brand {
+    text-shadow: 0 1px 4px rgba(0, 0, 0, 0.8) !important;
+    color: #ffffff !important;
 }

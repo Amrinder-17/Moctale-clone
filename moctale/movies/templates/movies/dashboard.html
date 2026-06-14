@@ -1,4 +1,10 @@
 {% extends "layout.html" %}
+{% load static %}
+
+
+{% block extra_css %}
+    <link rel="stylesheet" href="{% static 'movies/style.css' %}">
+{% endblock %}
 
 {% block content %}
 <div class="moctale-dashboard-split">
@@ -24,7 +30,7 @@
         </section>
 
         <section class="movie-section">
-            <h2 class="section-title">Popular on Netflix</h2>
+            <h2 class="section-title"><span class="icon">🎬</span> Popular on Netflix</h2>
             <div class="scroll-row">
                 {% for media in sections.netflix %}
                     {% include "movies/partials/card.html" %}
@@ -32,42 +38,85 @@
             </div>
         </section>
 
-    </main>
+        <section class="movie-section">
+            <h2 class="section-title"><span class="icon">💙</span> Popular on Prime Video</h2>
+            <div class="scroll-row">
+                {% for media in sections.prime_video %}
+                    {% include "movies/partials/card.html" %}
+                {% endfor %}
+            </div>
+        </section>
 
+        <section class="movie-section">
+            <h2 class="section-title"><span class="icon">🔥</span> Hot on Crunchyroll</h2>
+            <div class="scroll-row">
+                {% for media in sections.crunchyroll %}
+                    {% include "movies/partials/card.html" %}
+                {% endfor %}
+            </div>
+        </section>
+
+    </main>
     <aside class="sidebar-ranked-panel">
         <div class="sidebar-header">
             <h2 class="sidebar-title"><span class="icon">🔥</span> Most Interested</h2>
-            <select class="time-filter-dropdown">
-                <option>This Week</option>
-                <option>This Month</option>
-            </select>
         </div>
 
         <div class="ranked-list">
-            <div class="ranked-card">
-                <div class="rank-number">1</div>
-                <div class="ranked-thumb">
-                    <img src="https://image.tmdb.org/t/p/w92/xBT0oNq6rsTFv4SxG5uGRIEOrq6.jpg" alt="Thumb">
-                </div>
-                <div class="ranked-details">
-                    <h3>Disclosure Day</h3>
-                    <p class="release-status">12 Jun, 2026 • In Theatre</p>
-                    <p class="interest-metric"><span class="icon-fire">🔥</span> 2.8K Interested</p>
-                </div>
-            </div>
-
-            <div class="ranked-card">
-                <div class="rank-number">2</div>
-                <div class="ranked-thumb">
-                    <img src="https://image.tmdb.org/t/p/w92/zm0KAbOjlt9eR5y7vDiL2dEOwMl.jpg" alt="Thumb">
-                </div>
-                <div class="ranked-details">
-                    <h3>Backrooms</h3>
-                    <p class="release-status">12 Jun, 2026 • In Theatre</p>
-                    <p class="interest-metric"><span class="icon-fire">🔥</span> 2.6K Interested</p>
-                </div>
-            </div>
+    <div class="ranked-card">
+        <div class="rank-number">1</div>
+        <div class="ranked-thumb">
+            <img src="https://image.tmdb.org/t/p/w92/xBT0oNq6rsTFv4SxG5uGRIEOrq6.jpg" alt="Thumb">
         </div>
+        <div class="ranked-details">
+            <h3>Disclosure Day</h3>
+            <p class="release-status">12 Jun, 2026 • In Theatre</p>
+            <p class="interest-metric"><span class="icon-fire">🔥</span> 2.8K Interested</p>
+        </div>
+    </div>
+
+    <div class="ranked-card">
+        <div class="rank-number">2</div>
+        <div class="ranked-thumb">
+            <img src="https://image.tmdb.org/t/p/w92/zm0KAbOjlt9eR5y7vDiL2dEOwMl.jpg" alt="Thumb">
+        </div>
+        <div class="ranked-details">
+            <h3>Backrooms</h3>
+            <p class="release-status">12 Jun, 2026 • In Theatre</p>
+            <p class="interest-metric"><span class="icon-fire">🔥</span> 2.6K Interested</p>
+        </div>
+    </div>
+
+    <div class="ranked-card">
+        <div class="rank-number">3</div>
+        <div class="ranked-thumb"><img src="https://image.tmdb.org/t/p/w92/uS9m846mSyvRs0P6w66ZPHq368p.jpg" alt="Thumb"></div>
+        <div class="ranked-details">
+            <h3>The Silent Deep</h3>
+            <p class="release-status">18 Jun, 2026 • Upcoming</p>
+            <p class="interest-metric"><span class="icon-fire">🔥</span> 1.9K Interested</p>
+        </div>
+    </div>
+
+    <div class="ranked-card">
+        <div class="rank-number">4</div>
+        <div class="ranked-thumb"><img src="https://image.tmdb.org/t/p/w92/b33bYgBwN1C6f86U6IEv94u6Yg3.jpg" alt="Thumb"></div>
+        <div class="ranked-details">
+            <h3>Cyber Horizon</h3>
+            <p class="release-status">Streaming • Netflix</p>
+            <p class="interest-metric"><span class="icon-fire">🔥</span> 1.5K Interested</p>
+        </div>
+    </div>
+
+    <div class="ranked-card">
+        <div class="rank-number">5</div>
+        <div class="ranked-thumb"><img src="https://image.tmdb.org/t/p/w92/680w0g0G4T8C206DuxG0wM9F3Yg.jpg" alt="Thumb"></div>
+        <div class="ranked-details">
+            <h3>Echoes of Tokyo</h3>
+            <p class="release-status">05 Jun, 2026 • Digital</p>
+            <p class="interest-metric"><span class="icon-fire">🔥</span> 1.2K Interested</p>
+        </div>
+    </div>
+</div>
     </aside>
 
 </div>
