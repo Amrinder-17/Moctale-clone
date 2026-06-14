@@ -10,6 +10,7 @@
   display: grid;
   grid-template-columns: 1fr 320px;
   gap: 40px;
+  padding:20px;
   max-width: 1600px;
   margin: 0 auto;
 }
@@ -38,12 +39,12 @@
 }
 
 /* Section header with icon */
-/* .section-header {
+.section-header {
   display: flex;
   align-items: center;
   gap: 12px;
   margin-bottom: 16px;
-} */
+}
 
 .section-icon {
   font-size: 1.6rem;
@@ -61,12 +62,13 @@
 
 /* Horizontal scrolling track container */
 .scroll-row {
-  display: flex;
+  display: grid;
   gap: 18px;
   overflow-x: auto;
   overflow-y: hidden;
   padding-bottom: 15px;
   scroll-behavior: smooth;
+  grid-template-columns: repeat(4, 1fr);
 }
 
 /* Customizing the track scrollbar */
