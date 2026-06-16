@@ -977,3 +977,183 @@ body {
     color: #00d2ff !important; /* Ice Blue for Writers */
     font-weight: 600;
 }
+
+
+
+
+/* ==========================================================================
+   INFINITE SCROLL TIMELINE SCHEDULE SYSTEM STYLES
+   ========================================================================== */
+
+.schedule-page-container {
+  max-width: 1200px;
+  margin: 0 auto;
+  padding: 40px 20px;
+}
+
+.schedule-header h1 {
+  letter-spacing: -0.5px;
+}
+
+/* Platform Filter Row Segment Layout Buttons Styling */
+.source-filter-row {
+  display: flex;
+  gap: 12px;
+  border-bottom: 1px solid rgba(255, 255, 255, 0.05);
+  padding-bottom: 16px;
+  overflow-x: auto;
+}
+
+.source-tab-btn {
+  background: #16171b !important;
+  border: 1px solid rgba(255, 255, 255, 0.06) !important;
+  color: #a0a5b5 !important;
+  padding: 10px 20px;
+  border-radius: 30px;
+  font-weight: 500;
+  cursor: pointer;
+  white-space: nowrap;
+  transition: all 0.2s ease;
+}
+
+.source-tab-btn:hover {
+  color: #ffffff !important;
+  border-color: rgba(255, 255, 255, 0.2) !important;
+}
+
+.source-tab-btn.active {
+  background: #ffffff !important;
+  color: #0b0c10 !important;
+  border-color: #ffffff !important;
+  font-weight: 600;
+}
+
+/* ==========================================================================
+   THE DATE SEPARATOR TRACK SPLITS
+   ========================================================================== */
+
+.timeline-date-block {
+  margin-bottom: 45px;
+}
+
+.timeline-date-header-separator {
+  display: flex;
+  align-items: center;
+  gap: 20px;
+  margin-bottom: 24px;
+}
+
+.date-text-badge {
+  background-color: #1a1b21;
+  color: #ffffff;
+  padding: 6px 16px;
+  border-radius: 6px;
+  font-size: 0.9rem;
+  font-weight: 600;
+  border: 1px solid rgba(255, 255, 255, 0.05);
+  letter-spacing: 0.3px;
+  white-space: nowrap;
+}
+
+.separator-axis-line {
+  height: 1px;
+  background: linear-gradient(90deg, rgba(255, 255, 255, 0.08) 0%, rgba(255, 255, 255, 0) 100%);
+  width: 100%;
+}
+
+/* Responsive Grid Rows holding content item posters */
+.timeline-cards-grid-row {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(180px, 1fr));
+  gap: 24px;
+}
+
+/* Media Card Presentation Boxes layouts adjustments */
+.schedule-media-card {
+  display: flex;
+  flex-direction: column;
+}
+
+.schedule-poster-box {
+  position: relative;
+  border-radius: 10px;
+  overflow: hidden;
+  aspect-ratio: 2 / 3;
+  border: 1px solid rgba(255, 255, 255, 0.03);
+  background-color: #16171b;
+}
+
+.schedule-poster-box img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  transition: transform 0.3s ease;
+}
+
+.schedule-media-card:hover .schedule-poster-box img {
+  transform: scale(1.04);
+}
+
+.schedule-card-score {
+  position: absolute;
+  top: 8px;
+  right: 8px;
+  background-color: rgba(11, 12, 16, 0.85);
+  backdrop-filter: blur(4px);
+  padding: 3px 8px;
+  border-radius: 4px;
+  font-size: 0.75rem;
+  font-weight: 700;
+  color: #ffc107;
+}
+.schedule-card-title {
+  color: #e1e3e6;
+  font-size: 0.9rem;
+  font-weight: 500;
+  margin: 8px 0 0 0;
+  line-height: 1.3;
+  
+  /* 💡 THE FIX: Force display overrides to box context models */
+  display: -webkit-box !important;
+  display: -moz-box !important; /* Added for legacy Firefox support templates */
+  display: box !important;
+  
+  /* Establish multi-line truncation axis alignment tracking rules */
+  -webkit-box-orient: vertical !important;
+  -moz-box-orient: vertical !important;
+  box-orient: vertical !important;
+  
+  /* Clamp character rows to exactly two lines */
+  -webkit-line-clamp: 2 !important;
+  line-clamp: 2 !important; 
+  
+  /* Hide text that extends beyond the second line */
+  overflow: hidden !important;
+  text-overflow: ellipsis !important; 
+}
+
+.timeline-scroll-loader {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+
+/* Ensure the link container doesn't force native blue/purple hyperlink styling */
+.schedule-media-card-link {
+  display: block;
+  color: inherit !important;
+  text-decoration: none !important;
+  outline: none !important;
+}
+
+/* Elevate the poster container card cleanly when a user hovers over the hyperlink area */
+.schedule-media-card-link:hover .schedule-poster-box img {
+  transform: scale(1.05) !important;
+  filter: brightness(1.1);
+}
+
+.schedule-media-card-link:hover .schedule-card-title {
+  color: #ffffff !important; /* Highlights title text to pure white on card hover */
+  transition: color 0.2s ease;
+}
