@@ -10,8 +10,6 @@ document.addEventListener('DOMContentLoaded', () => {
     // ==========================================================================
     // MODAL AUTOMATIC INJECTION BACKUP
     // ==========================================================================
-    // If you forgot to include the modal HTML template in this page, 
-    // this block dynamically builds and injects it right into the body root!
     if (!searchModal) {
         searchModal = document.createElement('div');
         searchModal.id = 'moctaleSearchModal';
@@ -67,19 +65,15 @@ document.addEventListener('DOMContentLoaded', () => {
         e.preventDefault();
         e.stopPropagation();
 
-        // Check if modal is currently open or closed
         const isCurrentlyActive = openBtn.classList.contains('search-active');
 
         if (isCurrentlyActive) {
             closeModal();
         } else {
-            // Morph icon to Cross via layout transition rules
             openBtn.classList.add('search-active'); 
-            
-            // Pop open overlay container panel
             searchModal.style.setProperty('display', 'flex', 'important');
             searchModal.classList.add('active');
-            document.body.style.overflow = 'hidden'; // Freeze main layout scroll tracking
+            document.body.style.overflow = 'hidden'; // Freeze main layout scroll
             
             setTimeout(() => {
                 if (searchInput) searchInput.focus();
@@ -121,7 +115,8 @@ document.addEventListener('DOMContentLoaded', () => {
             }
 
             debounceTimer = setTimeout(() => {
-                fetch(`/movies/api/search/?query=${encodeURIComponent(query)}`)
+                // 💡 THE FIX: Prepend the required '/media/' root prefix to fix your 404 errors
+                fetch(`/media/movies/api/search/?query=${encodeURIComponent(query)}`)
                     .then(res => res.json())
                     .then(data => renderLiveResults(data.results))
                     .catch(err => console.error("Search Fetch Exception Routing Trace:", err));
@@ -140,21 +135,37 @@ document.addEventListener('DOMContentLoaded', () => {
             return;
         }
 
-        results.forEach(item => {
-            const cardLink = document.createElement('a');
-            cardLink.href = `/movies/${item.media_type}/${item.id}/`;
-            cardLink.className = 'card-link';
-            cardLink.innerHTML = `
-                <div class="poster-card">
-                    <img src="${item.poster_path}" alt="${item.title}" loading="lazy">
-                    <div class="card-overlay">
-                        <h3>${item.title}</h3>
-                        <div class="card-meta"><span>⭐ ${item.vote_average}</span></div>
-                    </div>
+        // Inside static/js/search.js -> renderLiveResults function loop block:
+    results.forEach(item => {
+        const cardLink = document.createElement('a');
+        cardLink.href = `/media/${item.media_type}/${item.id}/`;
+        cardLink.className = 'search-result-card-item text-decoration-none';
+
+        const displayTitle = item.title || item.name || 'Untitled Production';
+        
+        // Extract release year seamlessly from YYYY-MM-DD formats strings
+        let releaseYear = 'N/A';
+        const rawDate = item.release_date || item.first_air_date;
+        if (rawDate && rawDate !== 'Undated') {
+            releaseYear = rawDate.split('-')[0];
+        }
+
+        // Format and clean media label display strings variants
+        const mediaLabel = item.media_type === 'movie' ? 'Movie' : 'TV Show';
+
+        cardLink.innerHTML = `
+            <div class="search-horizontal-card">
+                <div class="search-horizontal-poster">
+                    <img src="${item.poster_path}" alt="${displayTitle}" loading="lazy">
                 </div>
-            `;
-            resultsGrid.appendChild(cardLink);
-        });
+                <div class="search-horizontal-details">
+                    <h3 class="search-item-title">${displayTitle}</h3>
+                    <p class="search-item-meta">${releaseYear} • ${mediaLabel}</p>
+                </div>
+            </div>
+        `;
+        resultsGrid.appendChild(cardLink);
+    });
 
         defaultState.style.setProperty('display', 'none', 'important');
         resultsGrid.classList.remove('hidden');

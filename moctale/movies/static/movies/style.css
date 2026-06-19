@@ -347,6 +347,88 @@ body {
 }
 
 /* ==========================================================================
+   MOCTALE PREMIUM HORIZONTAL OVERLAY SEARCH RESULTS LIST STYLES
+   ========================================================================== */
+
+/* Configure your results view grid wrapper track container columns */
+.live-results-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(320px, 1fr));
+  gap: 16px;
+  padding: 24px 0;
+  width: 100%;
+}
+
+/* Main card outer anchor container styling */
+.search-result-card-item {
+  color: inherit !important;
+  text-decoration: none !important;
+  display: block;
+}
+
+/* The Horizontal Card Row Capsule layout box */
+.search-horizontal-card {
+  display: flex;
+  align-items: center;
+  background-color: #16171b; /* Soft dark slate background box matching image */
+  border-radius: 12px;
+  padding: 12px;
+  gap: 16px;
+  border: 1px solid rgba(255, 255, 255, 0.02);
+  transition: all 0.2s ease-in-out;
+  cursor: pointer;
+  height: 110px; /* Constrains card row vertical block height tracks */
+}
+
+/* Elevate background highlights gently when hovering over an item */
+.search-result-card-item:hover .search-horizontal-card {
+  background-color: #1f2026;
+  border-color: rgba(255, 255, 255, 0.06);
+}
+
+/* Image framing box boundaries adjustments constraints */
+.search-horizontal-poster {
+  width: 64px;
+  height: 86px;
+  border-radius: 6px;
+  overflow: hidden;
+  flex-shrink: 0;
+  background-color: #0b0c10;
+}
+
+.search-horizontal-poster img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+}
+
+/* Meta Labels Text Alignments Columns */
+.search-horizontal-details {
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  overflow: hidden;
+}
+
+.search-item-title {
+  color: #ffffff;
+  font-size: 1rem;
+  font-weight: 600;
+  margin: 0 0 4px 0;
+  line-height: 1.3;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis; /* Ensures extreme text lengths drop into standard dots loops */
+}
+
+.search-item-meta {
+  color: #717685; /* Muted slate grey text tone label styles */
+  font-size: 0.85rem;
+  font-weight: 400;
+  margin: 0;
+}
+
+/* ==========================================================================
    CENTERED ILLUSTRATIVE EMPTY RECENT HISTORY VIEW PANES
    ========================================================================== */
 .modal-empty-state-pane {

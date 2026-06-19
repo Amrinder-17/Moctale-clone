@@ -218,3 +218,67 @@ def schedule_feed(request):
         
     except Exception as e:
         return JsonResponse({'error': str(e)}, status=500)
+    
+
+def live_search_api(request):
+    """
+    Handles real-time search queries by contacting TMDB's multi-search endpoint.
+    """
+    api_key = settings.TMDB_API_KEY
+    base_url = "https://api.themoviedb.org/3"
+    
+    # Extract the user's typed string from the GET parameters
+    query = request.GET.get('query', '').strip()
+    
+    # Quietly return an empty list if there's no text to parse
+    if not query:
+        return JsonResponse({'results': []}, status=200)
+        
+    search_url = f"{base_url}/search/multi"
+    params = {
+        'api_key': api_key,
+        'query': query,
+        'language': 'en-IN', # Localized preferences matching India
+        'include_adult': 'false',
+        'page': 1
+    }
+    
+    try:
+        response = requests.get(search_url, params=params)
+        
+        if response.status_code == 200:
+            raw_results = response.json().get('results', [])
+            processed_results = []
+            
+                        # Inside movies/views.py -> live_search_api function loop:
+
+            for item in raw_results:
+                media_type = item.get('media_type')
+                
+                if media_type in ['movie', 'tv']:
+                    title = item.get('title') or item.get('name') or 'Untitled'
+                    poster = item.get('poster_path')
+                    
+                    if poster:
+                        # 💡 THE FIX: Extract raw date keys so JavaScript can read them
+                        release_date = item.get('release_date') or 'Undated'
+                        first_air_date = item.get('first_air_date') or 'Undated'
+
+                        processed_results.append({
+                            'id': item.get('id'),
+                            'title': title,
+                            'media_type': media_type,
+                            'poster_path': f"https://image.tmdb.org/t/p/w342{poster}",
+                            'vote_average': round(item.get('vote_average', 0), 1),
+                            
+                            # 💡 Pass them down into the JSON payload object
+                            'release_date': release_date,
+                            'first_air_date': first_air_date,
+                        })
+            return JsonResponse({'results': processed_results}, status=200)
+            
+        else:
+            return JsonResponse({'results': []}, status=response.status_code)
+            
+    except Exception as e:
+        return JsonResponse({'error': str(e)}, status=500)
