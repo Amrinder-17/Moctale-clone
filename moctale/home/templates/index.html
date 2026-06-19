@@ -5,6 +5,26 @@
     <link rel="stylesheet" href="{% static 'home/style.css' %}">
 {% endblock %}
 
+  {% block navbar %}
+    <nav class="navbar navbar-expand-lg navbar-dark navbar-translucent sticky-top bg-body-tertiary border-bottom border-body-secondary">
+      <div class="container-fluid">
+        <div class="d-flex align-items-center ms-5">
+          <img src="{% static 'images/logo.png' %}" alt="Moctale Logo" style="height: 25px; margin-right: 10px;">
+          <a class="navbar-brand mb-0 fw-bold" href="#">MOCTALE</a>
+        </div>
+        <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarSupportedContent" aria-controls="navbarSupportedContent" aria-expanded="false" aria-label="Toggle navigation">
+          <span class="navbar-toggler-icon"></span>
+        </button>
+        <div class="collapse navbar-collapse" id="navbarSupportedContent">
+          <div class="ms-auto d-flex gap-2">
+            <a href="{% url 'register' %}" class="btn btn-dark btn btn-primary text-center fw-semibold" style="background-color: #000000; margin-right: 5px; width:85.5px;height:37px; font-size:15px;">Sign Up</a>
+            <a href="{% url 'login' %}" class="btn btn btn-primary text-center fw-semibold" style="background-color: #4f15e1; color: white;  margin-right:60px; width: 69px; height:36px; font-size:17px; ">Login</a>
+          </div>
+        </div>
+      </div>
+    </nav>
+    {% endblock  %}
+
 
 {% block content %}
 <div class="home-page">

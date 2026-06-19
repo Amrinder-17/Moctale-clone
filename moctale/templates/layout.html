@@ -12,25 +12,125 @@
     {% block extra_css %}{% endblock %}
 </head>
 <body >
+
   {% block navbar %}
-    <nav class="navbar navbar-expand-lg navbar-dark navbar-translucent sticky-top bg-body-tertiary border-bottom border-body-secondary">
-      <div class="container-fluid">
-        <div class="d-flex align-items-center ms-5">
-          <img src="{% static 'images/logo.png' %}" alt="Moctale Logo" style="height: 25px; margin-right: 10px;">
-          <a class="navbar-brand mb-0 fw-bold" href="#">MOCTALE</a>
-        </div>
-        <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarSupportedContent" aria-controls="navbarSupportedContent" aria-expanded="false" aria-label="Toggle navigation">
-          <span class="navbar-toggler-icon"></span>
-        </button>
-        <div class="collapse navbar-collapse" id="navbarSupportedContent">
-          <div class="ms-auto d-flex gap-2">
-            <a href="{% url 'register' %}" class="btn btn-dark btn btn-primary text-center fw-semibold" style="background-color: #000000; margin-right: 5px; width:85.5px;height:37px; font-size:15px;">Sign Up</a>
-            <a href="{% url 'login' %}" class="btn btn btn-primary text-center fw-semibold" style="background-color: #4f15e1; color: white;  margin-right:60px; width: 69px; height:36px; font-size:17px; ">Login</a>
+<nav class="navbar navbar-expand-lg navbar-dark navbar-translucent sticky-top bg-body-tertiary border-bottom border-body-secondary">
+  <div class="container-fluid px-4">
+    
+    <!-- Left Side: Branding/Logo -->
+    <div class="d-flex align-items-center logo-group">
+      <img src="{% static 'images/logo.png' %}" alt="Moctale Logo" style="height: 25px; margin-right: 10px;">
+      <a class="navbar-brand mb-0 fw-bold text-white tracking-wider" href="#">MOCTALE</a>
+    </div>
+    
+    <!-- Mobile Breakpoint Collapse Trigger -->
+    <button class="navbar-toggler border-0 text-white-50" type="button" data-bs-toggle="collapse" data-bs-target="#navbarSupportedContent" aria-controls="navbarSupportedContent" aria-expanded="false" aria-label="Toggle navigation">
+      <span class="navbar-toggler-icon"></span>
+    </button>
+    
+    <!-- Right Side Elements -->
+    <div class="collapse navbar-collapse" id="navbarSupportedContent">
+      <div class="ms-auto d-flex align-items-center main-nav-tray">
+        
+        <!-- Icon Link Group Tray -->
+        <div class="d-flex align-items-center nav-icon-links-container me-3">
+          
+          <!-- Tab 1: Explore (Active by Default) -->
+          <button type="button" class="nav-tray-btn active">
+            <i class="bi bi-compass"></i>
+            <span class="label-text">Explore</span>
+          </button>
+          
+          <!-- Tab 2: Calendar -->
+           <a href={% url "Schedule" %}>
+          <button type="button" class="nav-tray-btn">
+            <i  class="bi bi-calendar"></i>
+            <span class="label-text">Schedule</span>
+          </button>
+          </a>
+          
+        
+          
+          <!-- Tab 4: Bookmark -->
+          <button type="button" class="nav-tray-btn">
+            <i class="bi bi-bookmark"></i>
+            <span class="label-text">Bookmarks</span>
+          </button>
+          
+          <!-- Tab 5: Grid Menu (Static Icon Only) -->
+          <div class="dropdown d-inline-block">
+            <button type="button" class="nav-static-icon-btn" id="gridDropdownMenu" data-bs-toggle="dropdown" aria-expanded="false" aria-label="Menu">
+              <i class="bi bi-grid"></i>
+            </button>
+            {# {% include "movies/partials/mega_dropdown.html" ignore missing %} #}
           </div>
+          
+          <!-- Tab 6: Notifications Dropdown (Static Icon Only) -->
+          <div class="dropdown d-inline-block">
+            <button type="button" class="nav-static-icon-btn position-relative" id="notificationDropdownMenu" data-bs-toggle="dropdown" aria-expanded="false" aria-label="Alerts">
+              <i class="bi bi-bell"></i>
+              <span class="position-absolute p-1 bg-danger border border-light rounded-circle notification-dot"></span>
+            </button>
+            <!-- (Your notifications dropdown panel body goes here) -->
+          </div>
+          
+          <!-- Tab 7: Fullscreen Search Trigger (Swaps Icon to Cross) -->
+          <button id="searchOpenBtn" class="nav-static-icon-btn search-toggle-btn" type="button" aria-label="Toggle Search">
+            <span class="search-icon-wrapper">
+              <i class="bi bi-search search-lens"></i>
+              <span class="search-cross">&times;</span>
+            </span>
+          </button>
+
+        </div> <!-- End Icon Group -->
+
+        <!-- Profile Section -->
+        <div class="nav-profile-section border-start ps-3 border-secondary border-opacity-25">
+          <a href="#" class="profile-badge-link" aria-label="User Profile">
+            {% if user.profile.image %}
+              <img src="{{ user.profile.image.url }}" alt="Profile Avatar" class="profile-badge-img">
+            {% else %}
+              <div class="profile-badge-fallback">
+                <svg viewBox="0 0 24 24" fill="currentColor">
+                  <path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm0 4c1.93 0 3.5 1.57 3.5 3.5S13.93 13 12 13s-3.5-1.57-3.5-3.5S10.07 6 12 6zm0 14c-2.03 0-4.43-.82-6.14-2.27C7.48 16.32 9.62 15 12 15s4.52 1.32 6.14 2.73C16.43 19.18 14.03 20 12 20z"/>
+                </svg>
+              </div>
+            {% endif %}
+          </a>
         </div>
+
       </div>
-    </nav>
-    {% endblock  %}
+    </div>
+    
+  </div>
+</nav>
+
+
+
+
+
+
+
+
+<!-- Clean Driver Script Logic -->
+<script>
+  document.addEventListener('DOMContentLoaded', () => {
+      const expansionButtons = document.querySelectorAll('.nav-tray-btn');
+      
+      // Handle the text expansion slider behavior for content buttons only
+      expansionButtons.forEach(btn => {
+          btn.addEventListener('click', () => {
+              expansionButtons.forEach(b => b.classList.remove('active'));
+              btn.classList.add('active');
+          });
+      });
+  });
+
+  
+</script>
+<script src="{% static 'js/search.js' %}"></script>
+{% endblock %}
+
     <div class='container '>
         {% block content %}{% endblock  %}
     </div>
