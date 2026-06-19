@@ -1,10 +1,13 @@
 {% extends "layout.html" %}
 {% load static %}
 
-
 {% block extra_css %}
     <link rel="stylesheet" href="{% static 'movies/style.css' %}">
 {% endblock %}
+
+{% block nav_active_explore %}{% endblock %}
+{% block nav_active_schedule %}active{% endblock %}
+
 
 {% block content %}
 <div class="schedule-page-container">
@@ -32,10 +35,10 @@
 </div>
 
 <script>
-        window.MoctaleConfig = {
-            scheduleFeedUrl: "{% url 'schedule_feed_api' %}"
-        };
-    </script>
+    window.MoctaleConfig = {
+        scheduleFeedUrl: "{% url 'schedule_feed_api' %}" 
+    };
+</script>
 
     <script src="{% static 'js/schedule.js' %}"></script>
 {% endblock %}

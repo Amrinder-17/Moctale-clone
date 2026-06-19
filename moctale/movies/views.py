@@ -4,6 +4,9 @@ from django.conf import settings
 from datetime import datetime, timedelta
 from django.http import JsonResponse
 from django.views.decorators.cache import cache_page
+from django.urls import reverse
+
+
 
 
 @cache_page(3600)
@@ -96,45 +99,79 @@ def dashboard(request):
 
     return render(request, 'movies/dashboard.html', {'sections': dashboard_data})
 
-
 def media_detail(request, media_type, media_id):
+    # 1. Protect unauthenticated request passes gracefully
     if not request.user.is_authenticated:
-        return render(request,'home/welcome.html')
+        return render(request, 'home/welcome.html')
+        
     api_key = settings.TMDB_API_KEY
-    base_url = "https://api.tmdb.org/3"
+    base_url = "https://api.themoviedb.org/3"  # Standardized base path structure
     detail_url = f"{base_url}/{media_type}/{media_id}"
 
-    params={
-        'api_key':api_key,
-        'language':'en-US'
+    params = {
+        'api_key': api_key,
+        'language': 'en-US'
     }
+    
     try:
-        response=requests.get(detail_url,params=params)
-        credits_res = requests.get(f"{base_url}/{media_type}/{media_id}/credits", params=params)
-        credits_data = credits_res.json()
-        if response.status_code==200 :
-            media_data=response.json()
+        # 2. Fetch primary media details first
+        response = requests.get(detail_url, params=params)
+        if response.status_code == 200:
+            media_data = response.json()  # ✅ Now defined safely up top!
         else:
             return render(request, 'movies/404.html', status=404)
+
+        # 3. Fetch credits data
+        credits_res = requests.get(f"{base_url}/{media_type}/{media_id}/credits", params=params)
+        credits_data = credits_res.json() if credits_res.status_code == 200 else {}
+
+        # 4. 🚨 INITIALIZE CONTEXT NOW THAT MEDIA_DATA HAS VALUE
+        context = {
+            'movie': media_data,
+            'credits': credits_data,
+            'media_type': media_type,
+            'trailer_link': None,
+        }
+
+        # 5. Fetch trailer tracking links dynamically using the accurate media_type
+        video_url = f"{base_url}/{media_type}/{media_id}/videos"  # 🚀 FIX: Handles both /movie/ and /tv/
+        
+        try:
+            video_res = requests.get(video_url, params=params)
+            if video_res.status_code == 200:
+                videos = video_res.json().get('results', [])
+                for video in videos:
+                    if video.get('site') == 'YouTube' and video.get('type') == 'Trailer':
+                        # ✅ Safe to inject because 'context' is already constructed above
+                        context['trailer_link'] = f"https://www.youtube.com/watch?v={video.get('key')}"
+                        break
+        except Exception as video_err:
+            print(f"Failed to fetch trailer track: {video_err}")
+
+        # 6. Render everything safely inside the try block
+        return render(request, 'movies/detail.html', context)
+
     except Exception as e:
         print(f"Detail Fetch Error: {e}")
-        media_data = None
-    context={
-        'movie':media_data,
-        'media_type':media_type,
-        'credits': credits_data
-    }
-    return render(request, 'movies/detail.html', context)
+        # Global fallback if any of the critical requests above explode
+        return render(request, 'movies/404.html', status=500)
 
 @cache_page(3600)
 def schedule(request):
     return render(request, 'movies/recent_releases.html')
 
+
+
 def schedule_feed(request):
+    # 🚀 FIX 1: Handle unauthenticated AJAX requests gracefully with JSON instead of a missing template
     if not request.user.is_authenticated:
-        return render(request,'home/welcome.html')
+        return JsonResponse({
+            'error': 'Authentication required', 
+            'redirect_url': reverse('home') # Adjust 'home' to match your login/welcome URL pattern name
+        }, status=401)
+        
     api_key = settings.TMDB_API_KEY
-    base_url = "https://api.tmdb.org/3"
+    base_url = "https://api.themoviedb.org/3"
 
     page = int(request.GET.get('page', 1))
     source = request.GET.get('source', 'cinemas')
@@ -144,48 +181,58 @@ def schedule_feed(request):
     end_date = (today + timedelta(days=90)).strftime('%Y-%m-%d')
 
     discover_url = f"{base_url}/discover/movie"
+    
+    # Base parameters shared by all endpoints
     params = {
         'api_key': api_key,
         'language': 'en-IN',
-        'region': 'IN',
-        'watch_region': 'IN',
-        'sort_by': 'release_date.desc', # Sorts systematically from newest down
         'page': page,
     }
 
+    # 🚀 THE CHANGE: Swapped from /discover/movie to the dedicated /movie/now_playing endpoint
     if source == 'cinemas':
-        params.update({
-            'primary_release_date.gte': start_date,
-            'primary_release_date.lte': end_date,
-            'with_release_type': '3|2', # Theatrical wide or limited cinema rollouts
-        })
-
+        discover_url = f"{base_url}/movie/now_playing"
+        params = {
+            'api_key': api_key,
+            'language': 'en-IN',
+            'region': 'IN',  
+            'page': page,
+        }
     else:
-        # Toggle discovery ecosystem flags to process streaming platforms parameters
-        # If source is crunchyroll, check both movies and TV shows since anime follows mixed mappings
+        # The original discovery logic remains completely untouched for streaming services
+        discover_url = f"{base_url}/discover/movie"
+        params = {
+            'api_key': api_key,
+            'language': 'en-IN',
+            'page': page,
+            'sort_by': 'release_date.desc', 
+            'region': 'IN',
+            'watch_region': 'IN',
+            'air_date.gte': start_date,
+            'air_date.lte': end_date,
+        }
+        
         if source == 'crunchyroll':
             discover_url = f"{base_url}/discover/tv" if page % 2 == 0 else f"{base_url}/discover/movie"
             params['with_watch_providers'] = '283'
         elif source == 'netflix':
-            discover_url = f"{base_url}/discover/movie" # Can layer toggle scripts for TV/Movies chunks
             params['with_watch_providers'] = '8'
         elif source == 'prime':
-            discover_url = f"{base_url}/discover/movie"
             params['with_watch_providers'] = '119'
             
-        params.update({
-            'air_date.gte': start_date,
-            'air_date.lte': end_date,
-        })
     try:
         response = requests.get(discover_url, params=params)
         if response.status_code != 200:
             return JsonResponse({'results': []}, status=200)
             
-        raw_items = response.json().get('results', [])
+        raw_json = response.json()
+        raw_items = raw_json.get('results', [])
         processed_items = []
         
-        # Inside movies/views.py -> schedule_feed_api function loop:
+        if source == 'cinemas':
+            print(f"Total results found by TMDB: {raw_json.get('total_results', 0)}")
+            print(f"Raw items array length: {len(raw_items)}")
+        
         for item in raw_items:
             title = item.get('title') or item.get('name') or 'Untitled Production'
             rel_date = item.get('release_date') or item.get('first_air_date') or 'Undated'
@@ -193,13 +240,12 @@ def schedule_feed(request):
             vote_avg = item.get('vote_average', 0)
             vote_count = item.get('vote_count', 0)
             
+            # Since we now filter out empty entries via the vote_count.gte param on TMDB,
+            # this loop logic will safely process your trending titles without dropping all 20 items.
             if vote_avg == 0 or vote_count == 0:
                 continue 
 
             display_score = f"⭐ {round(vote_avg, 1)}" if vote_count > 0 else "N/A"
-
-            # 💡 THE FIX: Dynamically determine media type based on our active discover endpoint
-            # Crunchyroll toggles between TV and Movie; Cinemas/Netflix/Prime query movies here.
             current_media_type = 'tv' if 'discover/tv' in discover_url else 'movie'
 
             if item.get('poster_path') and rel_date != 'Undated':
@@ -209,16 +255,14 @@ def schedule_feed(request):
                     'release_date': rel_date,
                     'poster_path': f"https://image.tmdb.org/t/p/w342{item.get('poster_path')}",
                     'vote_average': display_score,
-                    'media_type': current_media_type, # 💡 Pass this down to the JavaScript client
+                    'media_type': current_media_type, 
                 })
         
-        # Enforce your precise layout slicing constraint requirement: Load next 15 entries
         sliced_items = processed_items[:15]
         return JsonResponse({'results': sliced_items}, status=200)
         
     except Exception as e:
         return JsonResponse({'error': str(e)}, status=500)
-    
 
 def live_search_api(request):
     """

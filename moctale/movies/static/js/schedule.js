@@ -30,9 +30,19 @@ document.addEventListener('DOMContentLoaded', () => {
             return; // Exit out cleanly, no server network request needed!
         }
 
-        const baseFeedUrl = window.MoctaleConfig ? window.MoctaleConfig.scheduleFeedUrl : '/media/movies/api/schedule-feed/';
-        
-        fetch(`${baseFeedUrl}?source=${activeSource}&page=${currentPage}`)
+        let baseFeedUrl = window.MoctaleConfig ? window.MoctaleConfig.scheduleFeedUrl : '/media/movies/api/schedule-feed/';
+
+        baseFeedUrl = baseFeedUrl.replace(/(\?|\/|%3F)+$/, '');
+
+        if (!baseFeedUrl.startsWith('/')) {
+            baseFeedUrl = '/' + baseFeedUrl;
+        }
+
+        const targetUrl = `${baseFeedUrl}/?source=${activeSource}&page=${currentPage}`;
+
+        console.log("Requesting clean target mapping link:", targetUrl);
+
+        fetch(targetUrl)
             .then(res => {
                 if (!res.ok) throw new Error(`Server answered with an invalid HTTP response code: ${res.status}`);
                 return res.json();
@@ -44,17 +54,15 @@ document.addEventListener('DOMContentLoaded', () => {
                     return;
                 }
 
-                // 💡 WRITE TO BROWSER CACHE FOR NEXT TIME
                 sessionStorage.setItem(cacheKey, JSON.stringify(data.results));
-
                 renderScheduleChunk(data.results);
                 currentPage++; 
             })
-            .catch(err => console.error("Schedule Stream pipeline breakdown failure:", err))
-            .finally(() => {
-                isFetching = false;
-                if (scrollLoader) scrollLoader.classList.add('hidden');
-            });
+    .catch(err => console.error("Schedule Stream pipeline breakdown failure:", err))
+    .finally(() => {
+        isFetching = false;
+        if (scrollLoader) scrollLoader.classList.add('hidden');
+    });
     }
 
     // ==========================================================================

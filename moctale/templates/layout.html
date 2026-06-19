@@ -36,23 +36,24 @@
         <div class="d-flex align-items-center nav-icon-links-container me-3">
           
           <!-- Tab 1: Explore (Active by Default) -->
-          <button type="button" class="nav-tray-btn active">
-            <i class="bi bi-compass"></i>
-            <span class="label-text">Explore</span>
-          </button>
-          
-          <!-- Tab 2: Calendar -->
-           <a href={% url "Schedule" %}>
-          <button type="button" class="nav-tray-btn">
-            <i  class="bi bi-calendar"></i>
-            <span class="label-text">Schedule</span>
-          </button>
+           <a href="{% url 'dashboard' %}">
+            <button type="button" class="nav-tray-btn {% block nav_active_explore %}active{% endblock %}">
+              <i class="bi bi-compass"></i>
+              <span class="label-text">Explore</span>
+            </button>
+          </a>
+
+          <a href="{% url 'Schedule' %}">
+            <button type="button" class="nav-tray-btn {% block nav_active_schedule %}{% endblock %}">
+              <i class="bi bi-calendar"></i>
+              <span class="label-text">Schedule</span>
+            </button>
           </a>
           
         
           
           <!-- Tab 4: Bookmark -->
-          <button type="button" class="nav-tray-btn">
+          <button type="button" class="nav-tray-btn {% block bookmark %}{% endblock  %}">
             <i class="bi bi-bookmark"></i>
             <span class="label-text">Bookmarks</span>
           </button>
@@ -104,13 +105,6 @@
     
   </div>
 </nav>
-
-
-
-
-
-
-
 
 <!-- Clean Driver Script Logic -->
 <script>

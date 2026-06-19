@@ -1239,3 +1239,50 @@ body {
   color: #ffffff !important; /* Highlights title text to pure white on card hover */
   transition: color 0.2s ease;
 }
+
+/* The link wrapper around the container */
+.movie-detail-trailer-wrapper {
+    display: block;
+    text-decoration: none;
+    color: inherit;
+    width: 100%;
+}
+
+/* Update your existing container styling to include a pseudo-element for the backdrop */
+.movie-detail-container {
+    position: relative;
+    width: 100%;
+    /* Ensure your background-image is applied via a pseudo-element so we can change its opacity/brightness alone */
+}
+
+.movie-detail-container::before {
+    content: '';
+    position: absolute;
+    inset: 0;
+    background-image: var(--backdrop-url);
+    background-size: cover;
+    background-position: center;
+    opacity: 0.3; /* Your default background dim opacity */
+    transition: opacity 0.3s ease, filter 0.3s ease;
+    z-index: 1;
+}
+
+/* 🚀 THE HOVER EFFECT: Brighten the backdrop image (or darken it, depending on your vibe) */
+.movie-detail-trailer-wrapper:hover .movie-detail-container::before {
+    opacity: 0.6; /* Increases backdrop visibility on hover */
+    filter: brightness(1.2); /* Makes the image pop out more */
+}
+
+/* Make sure all content inside sits comfortably above the changing background */
+.movie-detail-container > * {
+    position: relative;
+    z-index: 2;
+}
+
+/* 🚨 CRITICAL LAYOUT PROTECTION: Stops the trailer link from hijacking your buttons and tabs */
+.action-buttons-panel,
+.tabs-control-wrapper,
+.poster-column {
+    position: relative;
+    z-index: 10;
+}

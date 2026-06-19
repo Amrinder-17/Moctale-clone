@@ -10,7 +10,18 @@
 
 
 {% block content %}
+{% if trailer_link %}
+    <!-- 🚀 Wrap the container in the trailer link -->
+    <a href="{{ trailer_link }}" target="_blank" rel="noopener noreferrer" class="movie-detail-trailer-wrapper">
+{% endif %}
+
 <div class="movie-detail-container" style="--backdrop-url: url('https://image.tmdb.org/t/p/original{{ movie.backdrop_path }}');">
+    <!-- Your existing inner code (poster-column, info-column, action buttons, tabs) stays exactly here -->
+</div>
+
+{% if trailer_link %}
+    </a>
+{% endif %}
     
     <div class="detail-hero-section">
         <div class="poster-column">
