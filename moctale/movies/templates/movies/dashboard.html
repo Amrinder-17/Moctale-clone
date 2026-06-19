@@ -1,5 +1,7 @@
 {% extends "layout.html" %}
+{% load static %}
 
+<<<<<<< HEAD
 {% load static %}
 {% block navbar %}
 <nav class="navbar navbar-expand-lg bg-body-tertiary border-bottom border-body-secondary">
@@ -146,6 +148,133 @@
 <script src="{% static 'js/search.js' %}"></script>
 {% endblock %}
 
+=======
+
+{% block extra_css %}
+    <link rel="stylesheet" href="{% static 'movies/style.css' %}">
+{% endblock %}
+
+{% block navbar %}
+<nav class="navbar navbar-expand-lg navbar-dark navbar-translucent sticky-top bg-body-tertiary border-bottom border-body-secondary">
+  <div class="container-fluid px-4">
+    
+    <!-- Left Side: Branding/Logo -->
+    <div class="d-flex align-items-center logo-group">
+      <img src="{% static 'images/logo.png' %}" alt="Moctale Logo" style="height: 25px; margin-right: 10px;">
+      <a class="navbar-brand mb-0 fw-bold text-white tracking-wider" href="#">MOCTALE</a>
+    </div>
+    
+    <!-- Mobile Breakpoint Collapse Trigger -->
+    <button class="navbar-toggler border-0 text-white-50" type="button" data-bs-toggle="collapse" data-bs-target="#navbarSupportedContent" aria-controls="navbarSupportedContent" aria-expanded="false" aria-label="Toggle navigation">
+      <span class="navbar-toggler-icon"></span>
+    </button>
+    
+    <!-- Right Side Elements -->
+    <div class="collapse navbar-collapse" id="navbarSupportedContent">
+      <div class="ms-auto d-flex align-items-center main-nav-tray">
+        
+        <!-- Icon Link Group Tray -->
+        <div class="d-flex align-items-center nav-icon-links-container me-3">
+          
+          <!-- Tab 1: Explore (Active by Default) -->
+          <button type="button" class="nav-tray-btn active">
+            <i class="bi bi-compass"></i>
+            <span class="label-text">Explore</span>
+          </button>
+          
+          <!-- Tab 2: Calendar -->
+           <a href={% url "Schedule" %}>
+          <button type="button" class="nav-tray-btn">
+            <i  class="bi bi-calendar"></i>
+            <span class="label-text">Schedule</span>
+          </button>
+          </a>
+          
+        
+          
+          <!-- Tab 4: Bookmark -->
+          <button type="button" class="nav-tray-btn">
+            <i class="bi bi-bookmark"></i>
+            <span class="label-text">Bookmarks</span>
+          </button>
+          
+          <!-- Tab 5: Grid Menu (Static Icon Only) -->
+          <div class="dropdown d-inline-block">
+            <button type="button" class="nav-static-icon-btn" id="gridDropdownMenu" data-bs-toggle="dropdown" aria-expanded="false" aria-label="Menu">
+              <i class="bi bi-grid"></i>
+            </button>
+            {# {% include "movies/partials/mega_dropdown.html" ignore missing %} #}
+          </div>
+          
+          <!-- Tab 6: Notifications Dropdown (Static Icon Only) -->
+          <div class="dropdown d-inline-block">
+            <button type="button" class="nav-static-icon-btn position-relative" id="notificationDropdownMenu" data-bs-toggle="dropdown" aria-expanded="false" aria-label="Alerts">
+              <i class="bi bi-bell"></i>
+              <span class="position-absolute p-1 bg-danger border border-light rounded-circle notification-dot"></span>
+            </button>
+            <!-- (Your notifications dropdown panel body goes here) -->
+          </div>
+          
+          <!-- Tab 7: Fullscreen Search Trigger (Swaps Icon to Cross) -->
+          <button id="searchOpenBtn" class="nav-static-icon-btn search-toggle-btn" type="button" aria-label="Toggle Search">
+            <span class="search-icon-wrapper">
+              <i class="bi bi-search search-lens"></i>
+              <span class="search-cross">&times;</span>
+            </span>
+          </button>
+
+        </div> <!-- End Icon Group -->
+
+        <!-- Profile Section -->
+        <div class="nav-profile-section border-start ps-3 border-secondary border-opacity-25">
+          <a href="#" class="profile-badge-link" aria-label="User Profile">
+            {% if user.profile.image %}
+              <img src="{{ user.profile.image.url }}" alt="Profile Avatar" class="profile-badge-img">
+            {% else %}
+              <div class="profile-badge-fallback">
+                <svg viewBox="0 0 24 24" fill="currentColor">
+                  <path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm0 4c1.93 0 3.5 1.57 3.5 3.5S13.93 13 12 13s-3.5-1.57-3.5-3.5S10.07 6 12 6zm0 14c-2.03 0-4.43-.82-6.14-2.27C7.48 16.32 9.62 15 12 15s4.52 1.32 6.14 2.73C16.43 19.18 14.03 20 12 20z"/>
+                </svg>
+              </div>
+            {% endif %}
+          </a>
+        </div>
+
+      </div>
+    </div>
+    
+  </div>
+</nav>
+
+
+
+
+
+
+
+
+<!-- Clean Driver Script Logic -->
+<script>
+  document.addEventListener('DOMContentLoaded', () => {
+      const expansionButtons = document.querySelectorAll('.nav-tray-btn');
+      
+      // Handle the text expansion slider behavior for content buttons only
+      expansionButtons.forEach(btn => {
+          btn.addEventListener('click', () => {
+              expansionButtons.forEach(b => b.classList.remove('active'));
+              btn.classList.add('active');
+          });
+      });
+  });
+
+  
+</script>
+<script src="{% static 'js/search.js' %}"></script>
+{% endblock %}
+
+
+
+>>>>>>> fixing_layout
 {% block content %}
 <div class="moctale-dashboard-split">
 
@@ -170,7 +299,11 @@
         </section>
 
         <section class="movie-section">
+<<<<<<< HEAD
             <h2 class="section-title">Popular on Netflix</h2>
+=======
+            <h2 class="section-title"><span class="icon">🎬</span> Popular on Netflix</h2>
+>>>>>>> fixing_layout
             <div class="scroll-row">
                 {% for media in sections.netflix %}
                     {% include "movies/partials/card.html" %}
@@ -178,6 +311,7 @@
             </div>
         </section>
 
+<<<<<<< HEAD
     </main>
 
     <aside class="sidebar-ranked-panel">
@@ -232,6 +366,102 @@
             <span class="tab-item">Collections</span>
             <span class="tab-item">Cast & Crew</span>
             <span class="tab-item">Users</span>
+=======
+        <section class="movie-section">
+            <h2 class="section-title"><span class="icon">💙</span> Popular on Prime Video</h2>
+            <div class="scroll-row">
+                {% for media in sections.prime_video %}
+                    {% include "movies/partials/card.html" %}
+                {% endfor %}
+            </div>
+        </section>
+
+        <section class="movie-section">
+            <h2 class="section-title"><span class="icon">🔥</span> Hot on Crunchyroll</h2>
+            <div class="scroll-row">
+                {% for media in sections.crunchyroll %}
+                    {% include "movies/partials/card.html" %}
+                {% endfor %}
+            </div>
+        </section>
+
+    </main>
+    <aside class="sidebar-ranked-panel">
+        <div class="sidebar-header">
+            <h2 class="sidebar-title"><span class="icon">🔥</span> Most Interested</h2>
+        </div>
+
+        <div class="ranked-list">
+    <div class="ranked-card">
+        <div class="rank-number">1</div>
+        <div class="ranked-thumb">
+            <img src="https://image.tmdb.org/t/p/w92/xBT0oNq6rsTFv4SxG5uGRIEOrq6.jpg" alt="Thumb">
+        </div>
+        <div class="ranked-details">
+            <h3>Disclosure Day</h3>
+            <p class="release-status">12 Jun, 2026 • In Theatre</p>
+            <p class="interest-metric"><span class="icon-fire">🔥</span> 2.8K Interested</p>
+        </div>
+    </div>
+
+    <div class="ranked-card">
+        <div class="rank-number">2</div>
+        <div class="ranked-thumb">
+            <img src="https://image.tmdb.org/t/p/w92/zm0KAbOjlt9eR5y7vDiL2dEOwMl.jpg" alt="Thumb">
+        </div>
+        <div class="ranked-details">
+            <h3>Backrooms</h3>
+            <p class="release-status">12 Jun, 2026 • In Theatre</p>
+            <p class="interest-metric"><span class="icon-fire">🔥</span> 2.6K Interested</p>
+        </div>
+    </div>
+
+    <div class="ranked-card">
+        <div class="rank-number">3</div>
+        <div class="ranked-thumb"><img src="https://image.tmdb.org/t/p/w92/uS9m846mSyvRs0P6w66ZPHq368p.jpg" alt="Thumb"></div>
+        <div class="ranked-details">
+            <h3>The Silent Deep</h3>
+            <p class="release-status">18 Jun, 2026 • Upcoming</p>
+            <p class="interest-metric"><span class="icon-fire">🔥</span> 1.9K Interested</p>
+        </div>
+    </div>
+
+    <div class="ranked-card">
+        <div class="rank-number">4</div>
+        <div class="ranked-thumb"><img src="https://image.tmdb.org/t/p/w92/b33bYgBwN1C6f86U6IEv94u6Yg3.jpg" alt="Thumb"></div>
+        <div class="ranked-details">
+            <h3>Cyber Horizon</h3>
+            <p class="release-status">Streaming • Netflix</p>
+            <p class="interest-metric"><span class="icon-fire">🔥</span> 1.5K Interested</p>
+        </div>
+    </div>
+
+    <div class="ranked-card">
+        <div class="rank-number">5</div>
+        <div class="ranked-thumb"><img src="https://image.tmdb.org/t/p/w92/680w0g0G4T8C206DuxG0wM9F3Yg.jpg" alt="Thumb"></div>
+        <div class="ranked-details">
+            <h3>Echoes of Tokyo</h3>
+            <p class="release-status">05 Jun, 2026 • Digital</p>
+            <p class="interest-metric"><span class="icon-fire">🔥</span> 1.2K Interested</p>
+        </div>
+    </div>
+</div>
+    </aside>
+
+    <div id="moctaleSearchModal" class="search-overlay-modal-screen">
+    <div class="search-modal-inner-box">
+        
+        <div class="search-input-field-wrapper">
+            <i class="bi bi-search glass-tint"></i>
+            <input type="text" id="liveSearchInput" placeholder="Search for Movies, Shows, Anime, Cast & Crew or Users..." autocomplete="off">
+        </div>
+        
+        <div class="search-tabs-row">
+            <span class="tab-item active" data-tab="content">Content</span>
+            <span class="tab-item" data-tab="collections">Collections</span>
+            <span class="tab-item" data-tab="cast">Cast & Crew</span>
+            <span class="tab-item" data-tab="users">Users</span>
+>>>>>>> fixing_layout
         </div>
 
         <div class="search-results-display-area">
@@ -248,5 +478,6 @@
         </div>
 
     </div>
+</div>
 </div>
 {% endblock %}
