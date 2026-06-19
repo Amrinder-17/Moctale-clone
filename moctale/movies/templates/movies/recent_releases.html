@@ -1,10 +1,10 @@
 {% extends "layout.html" %}
 {% load static %}
 
+
 {% block extra_css %}
     <link rel="stylesheet" href="{% static 'movies/style.css' %}">
 {% endblock %}
-
 {% block navbar %}
 <nav class="navbar navbar-expand-lg navbar-dark navbar-translucent sticky-top bg-body-tertiary border-bottom border-body-secondary">
   <div class="container-fluid px-4">
@@ -28,19 +28,18 @@
         <div class="d-flex align-items-center nav-icon-links-container me-3">
           
           <!-- Tab 1: Explore (Active by Default) -->
-           <a href={% url "dashboard" %}>
-          <button type="button" class="nav-tray-btn ">
-            <i class="bi bi-compass"></i>
-            <span class="label-text">Explore</span>
-          </button>
+          <a href="{% url 'dashboard' %}" class="text-decoration-none">
+            <button type="button" class="nav-tray-btn">
+              <i class="bi bi-compass"></i>
+              <span class="label-text">Explore</span>
+            </button>
           </a>
           
-          <!-- Tab 2: Calendar -->
-           <a href={% url "Schedule" %}>
-          <button type="button" class="nav-tray-btn active">
-            <i  class="bi bi-calendar"></i>
-            <span class="label-text">Schedule</span>
-          </button>
+          <a href="{% url 'Schedule' %}" class="text-decoration-none">
+            <button type="button" class="nav-tray-btn active">
+              <i class="bi bi-calendar"></i>
+              <span class="label-text">Schedule</span>
+            </button>
           </a>
           
         

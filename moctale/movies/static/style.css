@@ -515,6 +515,52 @@ body {
 
 
 
+/* Container row holding the lens icon, the text input, and the close button */
+.search-input-bar-row {
+  display: flex;
+  align-items: center;
+  background: #1c1d22; /* Matches the input card depth */
+  border: 1px solid rgba(255, 255, 255, 0.1);
+  border-radius: 10px;
+  padding: 8px 16px;
+  gap: 12px;
+  width: 100%;
+  max-width: 650px; /* Keeps the search bar elegantly sized */
+  margin: 0 auto 24px auto;
+}
+
+/* The actual text input field inside the row capsule */
+.search-input-field {
+  background: transparent !important;
+  border: none !important;
+  color: #ffffff !important;
+  font-size: 1.1rem;
+  width: 100%;
+  outline: none !important;
+  box-shadow: none !important;
+}
+
+/* Glass icon color adjustment */
+.modal-glass-icon {
+  color: #717685;
+  font-size: 1.2rem;
+}
+
+/* The Close 'X' Button styling clean up */
+.close-overlay-x {
+  background: transparent;
+  border: none;
+  color: #717685;
+  font-size: 1.5rem;
+  cursor: pointer;
+  line-height: 1;
+  transition: color 0.2s ease;
+}
+
+.close-overlay-x:hover {
+  color: #ffffff;
+}
+
 
 
 /* ==========================================================================

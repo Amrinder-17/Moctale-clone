@@ -10,35 +10,54 @@ document.addEventListener('DOMContentLoaded', () => {
     // ==========================================================================
     // MODAL AUTOMATIC INJECTION BACKUP
     // ==========================================================================
+    // Inside static/js/search.js -> Replace the modal injection block with this:
     if (!searchModal) {
         searchModal = document.createElement('div');
         searchModal.id = 'moctaleSearchModal';
-        searchModal.className = 'search-overlay-modal-screen';
+        
+        // 💡 FORCE UNIFORM MODAL OVERLAY STYLING
+        searchModal.style.cssText = `
+            position: fixed !important;
+            top: 0 !important;
+            left: 0 !important;
+            width: 100vw !important;
+            height: 100vh !important;
+            background-color: rgba(11, 12, 16, 0.98) !important; /* Deep dark slate transparency */
+            z-index: 99999 !important; /* Ensures it sits above all components */
+            display: none;
+            justify-content: center !important;
+            padding-top: 5vh !important;
+            backdrop-filter: blur(8px) !important;
+        `;
+
         searchModal.innerHTML = `
-            <div class="search-modal-inner-box">
-                <div class="search-input-bar-row">
-                    <i class="bi bi-search modal-glass-icon"></i>
-                    <input type="text" id="liveSearchInput" placeholder="Search for Movies, Shows, Anime, Cast & Crew or Users..." autocomplete="off">
-                    <button id="searchCloseBtn" class="close-overlay-x">&times;</button>
+            <div class="search-modal-inner-box" style="width: 100% !important; max-width: 800px !important; padding: 0 20px !important; box-sizing: border-box !important;">
+                
+                <div class="search-input-bar-row" style="display: flex !important; align-items: center !important; background: #16171b !important; border: 1px solid rgba(255,255,255,0.08) !important; border-radius: 12px !important; padding: 12px 20px !important; gap: 14px !important; width: 100% !important; box-shadow: 0 8px 32px rgba(0,0,0,0.5) !important;">
+                    <i class="bi bi-search modal-glass-icon" style="color: #717685 !important; font-size: 1.3rem !important;"></i>
+                    <input type="text" id="liveSearchInput" class="search-input-field" placeholder="Search for Movies, Shows, Anime..." autocomplete="off" style="background: transparent !important; border: none !important; color: #ffffff !important; font-size: 1.15rem !important; width: 100% !important; outline: none !important; box-shadow: none !important; padding: 0 !important;">
+                    <button id="searchCloseBtn" class="close-overlay-x" style="background: transparent !important; border: none !important; color: #717685 !important; font-size: 1.8rem !important; cursor: pointer !important; line-height: 1 !important; padding: 0 !important; transition: color 0.2s;">&times;</button>
                 </div>
-                <div class="search-tabs-row">
-                    <span class="tab-item active">Content</span>
-                    <span class="tab-item">Collections</span>
-                    <span class="tab-item">Cast & Crew</span>
-                    <span class="tab-item">Users</span>
+                
+                <div class="search-tabs-row" style="display: flex !important; gap: 24px !important; margin: 24px 0 12px 4px !important; border-bottom: 1px solid rgba(255,255,255,0.08) !important; padding-bottom: 12px !important; font-size: 0.95rem !important; color: #717685 !important;">
+                    <span class="tab-item active" style="color: #ffffff !important; font-weight: 600 !important; border-bottom: 2px solid #ffffff !important; padding-bottom: 10px !important; cursor: pointer !important;">Content</span>
+                    <span class="tab-item" style="cursor: pointer !important;">Collections</span>
+                    <span class="tab-item" style="cursor: pointer !important;">Cast & Crew</span>
+                    <span class="tab-item" style="cursor: pointer !important;">Users</span>
                 </div>
-                <div class="search-results-display-area">
-                    <div id="searchDefaultState" class="modal-empty-state-pane">
-                        <div class="history-circle"><i class="bi bi-search"></i></div>
-                        <h3>No recent searches</h3>
-                        <p>Your search history will appear here</p>
+                
+                <div class="search-results-display-area" style="max-height: 70vh !important; overflow-y: auto !important; padding-right: 4px !important;">
+                    <div id="searchDefaultState" class="modal-empty-state-pane" style="text-align: center !important; color: #717685 !important; padding-top: 80px !important;">
+                        <div class="history-circle" style="font-size: 2rem !important; margin-bottom: 12px !important;"><i class="bi bi-search"></i></div>
+                        <h3 style="color: #ffffff !important; font-size: 1.3rem !important; margin-bottom: 6px !important;">No recent searches</h3>
+                        <p style="margin: 0 !important; font-size: 0.9rem !important;">Your search history will appear here</p>
                     </div>
                     <div id="liveResultsGrid" class="live-results-grid hidden"></div>
                 </div>
             </div>
         `;
         document.body.appendChild(searchModal);
-    }
+    }  
 
     // Re-bind internal overlay DOM targets
     const closeBtn = document.getElementById('searchCloseBtn');
