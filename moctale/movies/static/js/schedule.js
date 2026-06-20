@@ -16,35 +16,37 @@ document.addEventListener('DOMContentLoaded', () => {
         isFetching = true;
         if (scrollLoader) scrollLoader.classList.remove('hidden');
 
-        // 💡 Create a unique storage key combining the platform type and active page index
+        // 🚀 ROUTING SWITCH: If source is 'upcoming', set the backend flag to true
+        const isUpcomingMode = (activeSource === 'upcoming');
+        
         const cacheKey = `schedule_${activeSource}_page_${currentPage}`;
         const cachedData = sessionStorage.getItem(cacheKey);
 
-        // 🛠️ CHECK BROWSER STORAGE FIRST
+        // Check cache storage
         if (cachedData) {
             const data = JSON.parse(cachedData);
             renderScheduleChunk(data);
             currentPage++;
             isFetching = false;
             if (scrollLoader) scrollLoader.classList.add('hidden');
-            return; // Exit out cleanly, no server network request needed!
+            return;
         }
 
         let baseFeedUrl = window.MoctaleConfig ? window.MoctaleConfig.scheduleFeedUrl : '/media/movies/api/schedule-feed/';
-
         baseFeedUrl = baseFeedUrl.replace(/(\?|\/|%3F)+$/, '');
 
         if (!baseFeedUrl.startsWith('/')) {
             baseFeedUrl = '/' + baseFeedUrl;
         }
 
-        const targetUrl = `${baseFeedUrl}/?source=${activeSource}&page=${currentPage}`;
+        // Appends the conditional upcoming query string seamlessly
+        const targetUrl = `${baseFeedUrl}/?source=${activeSource}&page=${currentPage}&upcoming=${isUpcomingMode}`;
 
         console.log("Requesting clean target mapping link:", targetUrl);
 
         fetch(targetUrl)
             .then(res => {
-                if (!res.ok) throw new Error(`Server answered with an invalid HTTP response code: ${res.status}`);
+                if (!res.ok) throw new Error(`Server answered with invalid status: ${res.status}`);
                 return res.json();
             })
             .then(data => {
@@ -58,16 +60,13 @@ document.addEventListener('DOMContentLoaded', () => {
                 renderScheduleChunk(data.results);
                 currentPage++; 
             })
-    .catch(err => console.error("Schedule Stream pipeline breakdown failure:", err))
-    .finally(() => {
-        isFetching = false;
-        if (scrollLoader) scrollLoader.classList.add('hidden');
-    });
+            .catch(err => console.error("Schedule Stream pipeline failure:", err))
+            .finally(() => {
+                isFetching = false;
+                if (scrollLoader) scrollLoader.classList.add('hidden');
+            });
     }
 
-    // ==========================================================================
-    // DOM ELEMENT GROUPING RENDER ENGINE
-    // ==========================================================================
     function renderScheduleChunk(items) {
         items.forEach(item => {
             const dateObj = new Date(item.release_date);
@@ -92,8 +91,6 @@ document.addEventListener('DOMContentLoaded', () => {
             }
 
             const gridRow = dateSection.querySelector('.timeline-cards-grid-row');
-            
-            // Avoid appending duplicate items if the DOM grid elements already contain them
             if (gridRow.querySelector(`[data-item-id="${item.id}"]`)) return;
 
             const cardLink = document.createElement('a');
@@ -118,7 +115,7 @@ document.addEventListener('DOMContentLoaded', () => {
         streamContainer.innerHTML = `
             <div class="text-center py-5 text-muted">
                 <i class="bi bi-calendar-x d-block mb-3" style="font-size: 2.5rem;"></i>
-                <p>No confirmed schedule releases cataloged under this segment layout window targets.</p>
+                <p>No confirmed schedule releases found for this view.</p>
             </div>`;
     }
 
@@ -143,6 +140,5 @@ document.addEventListener('DOMContentLoaded', () => {
         });
     });
 
-    // Run baseline execution
     fetchScheduleChunk();
 });

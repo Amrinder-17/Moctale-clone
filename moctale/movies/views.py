@@ -163,11 +163,10 @@ def schedule(request):
 
 
 def schedule_feed(request):
-    # 🚀 FIX 1: Handle unauthenticated AJAX requests gracefully with JSON instead of a missing template
     if not request.user.is_authenticated:
         return JsonResponse({
             'error': 'Authentication required', 
-            'redirect_url': reverse('home') # Adjust 'home' to match your login/welcome URL pattern name
+            'redirect_url': reverse('home') 
         }, status=401)
         
     api_key = settings.TMDB_API_KEY
@@ -175,50 +174,92 @@ def schedule_feed(request):
 
     page = int(request.GET.get('page', 1))
     source = request.GET.get('source', 'cinemas')
+    is_upcoming = request.GET.get('upcoming', 'false').lower() == 'true' or source == 'upcoming'
 
     today = datetime.today()
     start_date = (today - timedelta(days=30)).strftime('%Y-%m-%d')
     end_date = (today + timedelta(days=90)).strftime('%Y-%m-%d')
 
-    discover_url = f"{base_url}/discover/movie"
-    
-    # Base parameters shared by all endpoints
+    # 1. Setup base initialization params map
     params = {
         'api_key': api_key,
         'language': 'en-IN',
         'page': page,
     }
 
-    # 🚀 THE CHANGE: Swapped from /discover/movie to the dedicated /movie/now_playing endpoint
     if source == 'cinemas':
         discover_url = f"{base_url}/movie/now_playing"
-        params = {
-            'api_key': api_key,
-            'language': 'en-IN',
-            'region': 'IN',  
-            'page': page,
-        }
+        params['region'] = 'IN'
     else:
-        # The original discovery logic remains completely untouched for streaming services
         discover_url = f"{base_url}/discover/movie"
-        params = {
-            'api_key': api_key,
-            'language': 'en-IN',
-            'page': page,
-            'sort_by': 'release_date.desc', 
-            'region': 'IN',
-            'watch_region': 'IN',
-            'air_date.gte': start_date,
-            'air_date.lte': end_date,
-        }
+        params['region'] = 'IN'
+        params['watch_region'] = 'IN'
         
+        # Establish default timeline fallback windows
+        if page % 2 == 0:
+            discover_url = f"{base_url}/discover/tv"
+            params['sort_by'] = 'first_air_date.desc'
+            params['air_date.gte'] = start_date
+            params['air_date.lte'] = end_date
+        else:
+            discover_url = f"{base_url}/discover/movie"
+            params['sort_by'] = 'release_date.desc'
+            params['release_date.gte'] = start_date
+            params['release_date.lte'] = end_date
+
+        # 2. Overrides Engine Filters Group
         if source == 'crunchyroll':
-            discover_url = f"{base_url}/discover/tv" if page % 2 == 0 else f"{base_url}/discover/movie"
             params['with_watch_providers'] = '283'
+            params['with_genres'] = '16'              
+            params['with_original_language'] = 'ja'   
+            params['watch_region'] = 'US'             
+            
+            params.pop('region', None)
+            params.pop('air_date.gte', None)
+            params.pop('air_date.lte', None)
+            params.pop('release_date.gte', None)
+            params.pop('release_date.lte', None)
+            
+            discover_url = f"{base_url}/discover/tv"
+            
+            if is_upcoming:
+                params['sort_by'] = 'first_air_date.asc'     
+                params['first_air_date.gte'] = end_date      
+            else:
+                if page == 1:
+                    params['first_air_date.gte'] = start_date
+                    params['first_air_date.lte'] = end_date
+                else:
+                    params['first_air_date.lte'] = end_date
+
         elif source == 'netflix':
             params['with_watch_providers'] = '8'
         elif source == 'prime':
             params['with_watch_providers'] = '119'
+            
+
+        if source == 'upcoming' or is_upcoming:
+            params.pop('air_date.gte', None)
+            params.pop('air_date.lte', None)
+            params.pop('release_date.gte', None)
+            params.pop('release_date.lte', None)
+            
+            # 1. 🇮🇳 Force target search specifically to the Indian localized market
+            params['region'] = 'IN'
+            params['watch_region'] = 'IN'
+            
+            # 2. 🧹 NOISE CLEANUP GATE: Excludes random placeholder additions
+            # Forcing a popularity threshold keeps only anticipated titles
+            params['popularity.gte'] = 1.5
+            
+            if page % 2 == 0:
+                discover_url = f"{base_url}/discover/tv"
+                params['sort_by'] = 'first_air_date.asc'   
+                params['first_air_date.gte'] = end_date    
+            else:
+                discover_url = f"{base_url}/discover/movie"
+                params['sort_by'] = 'primary_release_date.asc'
+                params['primary_release_date.gte'] = end_date
             
     try:
         response = requests.get(discover_url, params=params)
@@ -228,24 +269,23 @@ def schedule_feed(request):
         raw_json = response.json()
         raw_items = raw_json.get('results', [])
         processed_items = []
-        
-        if source == 'cinemas':
-            print(f"Total results found by TMDB: {raw_json.get('total_results', 0)}")
-            print(f"Raw items array length: {len(raw_items)}")
-        
+
         for item in raw_items:
             title = item.get('title') or item.get('name') or 'Untitled Production'
             rel_date = item.get('release_date') or item.get('first_air_date') or 'Undated'
+            overview = item.get('overview', '')
             
             vote_avg = item.get('vote_average', 0)
             vote_count = item.get('vote_count', 0)
             
-            # Since we now filter out empty entries via the vote_count.gte param on TMDB,
-            # this loop logic will safely process your trending titles without dropping all 20 items.
-            if vote_avg == 0 or vote_count == 0:
+            # 🚀 UPDATED LOOP SAFEGUARD:
+            # Let BOTH crunchyroll and global upcoming queries bypass the 0-vote block
+            if source not in ['crunchyroll', 'upcoming'] and not is_upcoming and (vote_avg == 0 or vote_count == 0):
                 continue 
+            elif source == 'crunchyroll' and not overview:
+                continue
 
-            display_score = f"⭐ {round(vote_avg, 1)}" if vote_count > 0 else "N/A"
+            display_score = f"⭐ {round(vote_avg, 1)}" if vote_count > 0 else "⏰ Coming"
             current_media_type = 'tv' if 'discover/tv' in discover_url else 'movie'
 
             if item.get('poster_path') and rel_date != 'Undated':

@@ -1286,3 +1286,37 @@ body {
     position: relative;
     z-index: 10;
 }
+
+/* ==========================================================================
+   ⏳ TIME VECTOR NAV OVERRIDE SWITCHES
+   ========================================================================== */
+.time-filter-row {
+    display: flex;
+    gap: 0.5rem;
+    background: rgba(255, 255, 255, 0.05);
+    padding: 4px;
+    border-radius: 8px;
+    border: 1px solid rgba(255, 255, 255, 0.1);
+}
+
+.time-tab-btn {
+    background: transparent;
+    border: none;
+    color: #a0a0a0;
+    padding: 0.5rem 1.2rem;
+    font-size: 0.9rem;
+    font-weight: 600;
+    border-radius: 6px;
+    transition: all 0.2s ease-in-out;
+}
+
+.time-tab-btn:hover {
+    color: #ffffff;
+    background: rgba(255, 255, 255, 0.03);
+}
+
+.time-tab-btn.active {
+    color: #ffffff;
+    background: rgba(255, 255, 255, 0.15);
+    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.2);
+}
