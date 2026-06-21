@@ -1,152 +1,208 @@
 {% extends "layout.html" %}
 {% load static %}
 
-
 {% block extra_css %}
     <link rel="stylesheet" href="{% static 'movies/style.css' %}">
 {% endblock %}
 
-
-
-
 {% block content %}
-{% if trailer_link %}
-    <!-- 🚀 Wrap the container in the trailer link -->
-    <a href="{{ trailer_link }}" target="_blank" rel="noopener noreferrer" class="movie-detail-trailer-wrapper">
-{% endif %}
+<div class="movie-detail-hero-banner" style="--backdrop-url: url('https://image.tmdb.org/t/p/original{{ movie.backdrop_path }}');">
+    {% if trailer_link %}
+        <a href="{{ trailer_link }}" target="_blank" rel="noopener noreferrer" class="stretched-trailer-link text-decoration-none"></a>
+    {% endif %}
 
-<div class="movie-detail-container" style="--backdrop-url: url('https://image.tmdb.org/t/p/original{{ movie.backdrop_path }}');">
-    <!-- Your existing inner code (poster-column, info-column, action buttons, tabs) stays exactly here -->
-</div>
+    <div class="banner-play-icon-wrapper">
+        <i class="bi bi-play-circle-fill"></i>
+    </div>
 
-{% if trailer_link %}
-    </a>
-{% endif %}
-    
-    <div class="detail-hero-section">
-        <div class="poster-column">
-            {% if movie.poster_path %}
-                <img src="https://image.tmdb.org/t/p/w500{{ movie.poster_path }}" alt="{{ movie.title }}" class="detail-poster">
-            {% else %}
-                <div class="detail-no-poster">{{ movie.title }}</div>
-            {% endif %}
-        </div>
-
-        <div class="info-column">
-            <p class="media-tagline">{{ movie.media_type|upper }} • {{ movie.release_date|slice:":4" }} • {{ movie.runtime }}m</p>
-            <h1 class="movie-main-title">{% if movie.title %}{{ movie.title }}{% else %}{{ movie.name }}{% endif %}</h1>
+    <!-- 🚀 BOTTOM ALIGNMENT MATRIX: Container forces content to align perfectly onto the floor fold -->
+    <div class="container-xl position-relative header-content-layer h-100 d-flex align-items-end">
+        <div class="detail-hero-section d-flex align-items-end gap-4 w-100 pb-3">
             
-            <div class="metadata-grid">
-                <div class="meta-item">
-                    <span class="meta-label">Directed By</span>
-                    <span class="meta-value">
-                        {% for crew in credits.crew %}
-                            {% if crew.job == "Director" %}{{ crew.name }}{% if not forloop.last %}, {% endif %}{% endif %}
-                        {% empty %}
-                            Unknown
-                        {% endfor %}
-                    </span>
-                </div>
-                <div class="meta-item">
-                    <span class="meta-label">Country</span>
-                    <span class="meta-value">
-                        {% for country in movie.production_countries %}
-                            {{ country.iso_3166_1 }}{% if not forloop.last %}, {% endif %}
-                        {% empty %}
-                            USA
-                        {% endfor %}
-                    </span>
-                </div>
-                <div class="meta-item">
-                    <span class="meta-label">Language</span>
-                    <span class="meta-value">{{ movie.spoken_languages.0.english_name|default:"English" }}</span>
-                </div>
-                <div class="meta-item">
-                    <span class="meta-label">Age Rating</span>
-                    <span class="meta-value">{% if movie.adult %}18+{% else %}13+{% endif %}</span>
-                </div>
-            </div>
-        </div>
-    </div>
-
-    <div class="action-buttons-panel">
-        <button class="btn-action btn-watched">
-            <span class="icon">👁️</span> Mark as Watched
-        </button>
-        <button class="btn-action btn-collection">
-            <span class="icon">🔖</span> Add to Collection
-        </button>
-    </div>
-
-    <div class="tabs-control-wrapper">
-        <div class="tabs-nav-bar">
-            <button class="tab-trigger active" onclick="switchTab(event, 'tab-overview')">Overview</button>
-            <button class="tab-trigger" onclick="switchTab(event, 'tab-genres')">Genres</button>
-            <button class="tab-trigger" onclick="switchTab(event, 'tab-cast')">Cast</button>
-            <button class="tab-trigger" onclick="switchTab(event, 'tab-crew')">Crew</button>
-        </div>
-
-        <div class="tabs-content-body">
-            <div id="tab-overview" class="tab-pane-panel active">
-                <p class="overview-text">{{ movie.overview|default:"No description overview is currently available for this title." }}</p>
+            <!-- Left: Rescaled Smaller Cinematic Poster Portrait sitting flush at the bottom -->
+            <div class="poster-column">
+                {% if movie.poster_path %}
+                    <img src="https://image.tmdb.org/t/p/w500{{ movie.poster_path }}" alt="{{ movie.title }}" class="detail-poster">
+                {% else %}
+                    <div class="detail-no-poster">{{ movie.title }}</div>
+                {% endif %}
             </div>
 
-            <div id="tab-genres" class="tab-pane-panel">
-                <div class="genres-badge-cloud">
-                    {% for genre in movie.genres %}
-                        <span class="genre-badge">{{ genre.name }}</span>
-                    {% empty %}
-                        <span class="genre-badge">General Media</span>
-                    {% endfor %}
-                </div>
-            </div>
-
-            <div id="tab-cast" class="tab-pane-panel">
-                <div class="credits-list-grid">
-                    {% for actor in credits.cast|slice:":12" %}
-                        <div class="credit-member-card">
-                            <span class="member-real-name">{{ actor.name }}</span>
-                            <span class="member-role-title">as {{ actor.character }}</span>
+            <!-- Right: Dynamic Media Tagline, Title, Horizontal Metadata Strip & Bottom Right Buttons -->
+            <div class="info-column flex-grow-1 d-flex flex-column justify-content-end">
+                <p class="media-tagline mb-1 text-white-50 small fw-semibold">
+                    {% if movie.media_type == 'tv' and movie.original_language == 'ja' %}
+                        ANIME SHOW
+                    {% elif movie.media_type == 'movie' and movie.original_language == 'ja' %}
+                        ANIME MOVIE
+                    {% elif movie.media_type == 'tv' %}
+                        TV SHOW
+                    {% else %}
+                        MOVIE
+                    {% endif %}
+                    • {{ movie.release_date|slice:":4" }} • {{ movie.runtime }}m
+                </p>
+                <h1 class="movie-main-title fw-bold text-white mb-4">{% if movie.title %}{{ movie.title }}{% else %}{{ movie.name }}{% endif %}</h1>
+                
+                <div class="d-flex flex-wrap justify-content-between align-items-end gap-4">
+                    
+                    <!-- 🚀 HORIZONTAL METADATA STRIP: Matches layout from image_19983b.jpg exactly -->
+                    <div class="metadata-horizontal-strip d-flex gap-5">
+                        <div class="meta-strip-item">
+                            <span class="meta-label d-block text-white-50 extra-small mb-1">Directed By</span>
+                            <span class="meta-value text-white fw-bold small">
+                                {% for crew in credits.crew %}
+                                    {% if crew.job == "Director" %}{{ crew.name }}{% if not forloop.last %}, {% endif %}{% endif %}
+                                {% empty %}
+                                    Unknown
+                                {% endfor %}
+                            </span>
                         </div>
-                    {% empty %}
-                        <p>No cast listings verified.</p>
-                    {% endfor %}
+                        <div class="meta-strip-item">
+                            <span class="meta-label d-block text-white-50 extra-small mb-1">Country</span>
+                            <span class="meta-value text-white fw-bold small">
+                                {% for country in movie.production_countries %}
+                                    {{ country.iso_3166_1 }}{% if not forloop.last %}, {% endif %}
+                                {% empty %}
+                                    USA
+                                {% endfor %}
+                            </span>
+                        </div>
+                        <div class="meta-strip-item">
+                            <span class="meta-label d-block text-white-50 extra-small mb-1">Language</span>
+                            <span class="meta-value text-white fw-bold small">{{ movie.spoken_languages.0.english_name|default:"English" }}</span>
+                        </div>
+                        <div class="meta-strip-item">
+                            <span class="meta-label d-block text-white-50 extra-small mb-1">Age Rating</span>
+                            <span class="meta-value text-white fw-bold small">{% if movie.adult %}18+{% else %}13+{% endif %}</span>
+                        </div>
+                    </div>
+
+                    <!-- Vertical Stack Action Panel on the Bottom Right Margin -->
+                    <div class="action-buttons-vertical d-flex flex-column gap-2 mb-1">
+                        <button class="btn-action btn-watched w-100">
+                            <span class="icon me-1">👁️</span> Mark as Watched
+                        </button>
+                        <button class="btn-action btn-collection w-100">
+                            <span class="icon me-1">🔖</span> Add to Collection
+                        </button>
+                    </div>
                 </div>
             </div>
 
-            <div id="tab-crew" class="tab-pane-panel">
-    <div class="credits-list-grid">
-        {% for member in credits.crew %}
-            {% if member.job == "Director" or member.job == "Producer" or member.job == "Writer" or member.job == "Screenplay" %}
-                <div class="credit-member-card">
-                    <span class="member-real-name">{{ member.name }}</span>
-                    <span class="member-role-title crew-highlight-{{ member.job|lower }}">
-                        {{ member.job }}
-                    </span>
-                </div>
-            {% endif %}
-        {% empty %}
-            <p>No production crew listings verified.</p>
-        {% endfor %}
-    </div>
-</div>
         </div>
     </div>
 </div>
 
-<script>
-function switchTab(event, tabId) {
-    // Hide all panels
-    const panels = document.querySelectorAll('.tab-pane-panel');
-    panels.forEach(panel => panel.classList.remove('active'));
+<!-- 👥 SECTION 2: Standard Center-Aligned Content Layout Grid (Overview, Cast, Sidebar) -->
+<div class="container-xl detail-body-content-wrapper py-4">
+    <div class="row detail-body-layout">
+        
+        <!-- Left Column: Media Information Tracks -->
+        <div class="col-lg-8 content-primary-column">
+            
+            <!-- 📄 Description & Overview Text Layer -->
+            <div class="overview-section mb-4">
+                <h2 class="text-white fw-bold mb-3">Overview</h2>
+                <p class="overview-text lead text-white-50">{{ movie.overview|default:"No description overview is currently available for this title." }}</p>
+            </div>
 
-    // Remove active style from all navigation buttons
-    const triggers = document.querySelectorAll('.tab-trigger');
-    triggers.forEach(trigger => trigger.classList.remove('active'));
+            <!-- 🏷️ Dark-Mode Genre Buttons Cloud -->
+            <div class="genres-badge-cloud mb-5">
+                {% for genre in movie.genres %}
+                    <a href="#" class="genre-btn-dark">{{ genre.name }}</a>
+                {% empty %}
+                    <span class="genre-btn-dark">General Media</span>
+                {% endfor %}
+            </div>
 
-    // Reveal target panel and activate clicked tab button
-    document.getElementById(tabId).classList.add('active');
-    event.currentTarget.classList.add('active');
-}
-</script>
+            <!-- 🎭 Cast Section (Circular Avatars - Locked to Top 5 Billing Positions) -->
+            <div class="cast-section mb-5">
+                <h3 class="section-title-clean mb-4 text-white">Main Cast</h3>
+                <div class="avatar-five-column-grid">
+                    {% for actor in credits.cast %}
+                        {% if actor.order < 5 %}
+                            <div class="profile-avatar-card text-center">
+                                <div class="avatar-wrapper mb-2">
+                                    {% if actor.profile_path %}
+                                        <img src="https://image.tmdb.org/t/p/w185{{ actor.profile_path }}" alt="{{ actor.name }}" class="circular-avatar">
+                                    {% else %}
+                                        <div class="circular-avatar-placeholder"><span>{{ actor.name|slice:":1" }}</span></div>
+                                    {% endif %}
+                                </div>
+                                <span class="d-block member-real-name fw-bold small text-white">{{ actor.name }}</span>
+                                <span class="d-block member-role-title text-muted extra-small">as {{ actor.character }}</span>
+                            </div>
+                        {% endif %}
+                    {% empty %}
+                        <p class="text-muted">No cast listings verified.</p>
+                    {% endfor %}
+                </div>
+            </div>
+
+            <!-- 🎬 Production Crew Section (Circular Avatars - 5 Per Row Grid) -->
+            <div class="crew-section mb-5">
+                <h3 class="section-title-clean mb-4 text-white">Production Crew</h3>
+                <div class="avatar-five-column-grid">
+                    {% for member in credits.crew %}
+                        {% if member.job == "Director" or member.job == "Producer" or member.job == "Writer" or member.job == "Screenplay" %}
+                            <div class="profile-avatar-card text-center">
+                                <div class="avatar-wrapper mb-2">
+                                    {% if member.profile_path %}
+                                        <img src="https://image.tmdb.org/t/p/w185{{ member.profile_path }}" alt="{{ member.name }}" class="circular-avatar">
+                                    {% else %}
+                                        <div class="circular-avatar-placeholder"><span>{{ member.name|slice:":1" }}</span></div>
+                                    {% endif %}
+                                </div>
+                                <span class="d-block member-real-name fw-bold small text-white">{{ member.name }}</span>
+                                <span class="d-block member-role-title text-accent extra-small">{{ member.job }}</span>
+                            </div>
+                        {% endif %}
+                    {% empty %}
+                        <p class="text-muted">No production crew listings verified.</p>
+                    {% endfor %}
+                </div>
+            </div>
+
+        </div>
+
+        <!-- Right Column: Local Availability Sidebar Widget Group -->
+        <div class="col-lg-4 content-sidebar-column">
+            <div class="watch-availability-sidebar watch-matching-theme-bg p-4 rounded-3 border-0">
+                <h4 class="sidebar-widget-title mb-3 text-white fw-bold"><i class="bi bi-geo-alt me-2 text-danger"></i>Where to Watch</h4>
+                
+                {% if watch_providers.flatrate or watch_providers.buy or watch_providers.rent %}
+                    <div class="providers-list-stack d-flex flex-column gap-3">
+                        {% if watch_providers.flatrate %}
+                            <div class="provider-type-group">
+                                <span class="extra-small text-white-50 d-block mb-2 text-uppercase tracking-wider">Stream</span>
+                                <div class="d-flex flex-wrap gap-2">
+                                    {% for provider in watch_providers.flatrate %}
+                                        <img src="https://image.tmdb.org/t/p/original{{ provider.logo_path }}" alt="{{ provider.provider_name }}" class="provider-mini-logo" title="{{ provider.provider_name }}">
+                                    {% endfor %}
+                                </div>
+                            </div>
+                        {% endif %}
+                        
+                        {% if watch_providers.buy %}
+                            <div class="provider-type-group">
+                                <span class="extra-small text-white-50 d-block mb-2 text-uppercase tracking-wider">Buy / Purchase</span>
+                                <div class="d-flex flex-wrap gap-2">
+                                    {% for provider in watch_providers.buy %}
+                                        <img src="https://image.tmdb.org/t/p/original{{ provider.logo_path }}" alt="{{ provider.provider_name }}" class="provider-mini-logo" title="{{ provider.provider_name }}">
+                                    {% endfor %}
+                                </div>
+                            </div>
+                        {% endif %}
+                    </div>
+                {% else %}
+                    <div class="text-white-50 py-2 small">
+                        <i class="bi bi-exclamation-circle me-1"></i> No local streaming channels or retail release dates logged for your immediate region layout.
+                    </div>
+                {% endif %}
+            </div>
+        </div>
+
+    </div>
+</div>
 {% endblock %}

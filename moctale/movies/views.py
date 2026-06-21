@@ -8,7 +8,6 @@ from django.urls import reverse
 
 
 
-
 @cache_page(3600)
 def dashboard(request):
     if not request.user.is_authenticated:
