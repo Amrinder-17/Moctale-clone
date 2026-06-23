@@ -8,38 +8,69 @@
 {% block nav_active_explore %}{% endblock %}
 {% block nav_active_schedule %}active{% endblock %}
 
-
 {% block content %}
-<div class="schedule-page-container">
-    
-    <div class="schedule-header">
-        <h1 class="fw-bold text-white mb-2">Release Schedule</h1>
-        <p class="text-muted">Track  premieres and upcoming streaming network drops curated inside your territory.</p>
+<div class="schedule-page-shell">
+    <div class="schedule-page-layout">
+
+        <!-- Left sidebar: platform / release source filters -->
+        <aside class="schedule-sidebar d-none d-md-block">
+            <nav class="schedule-source-nav">
+                <button type="button" class="schedule-source-btn active" data-source="cinemas">
+                    <i class="bi bi-ticket-perforated"></i>
+                    <span>In Cinemas</span>
+                </button>
+                <button type="button" class="schedule-source-btn" data-source="netflix">
+                    <i class="bi bi-play-btn"></i>
+                    <span>Netflix</span>
+                </button>
+                <button type="button" class="schedule-source-btn" data-source="crunchyroll">
+                    <i class="bi bi-tv"></i>
+                    <span>Crunchyroll</span>
+                </button>
+                <button type="button" class="schedule-source-btn" data-source="prime">
+                    <i class="bi bi-amazon"></i>
+                    <span>Prime Video</span>
+                </button>
+                <button type="button" class="schedule-source-btn" data-source="upcoming">
+                    <i class="bi bi-calendar-event"></i>
+                    <span>Upcoming</span>
+                </button>
+            </nav>
+        </aside>
+
+        <!-- Main content -->
+        <main class="schedule-main">
+
+            <!-- Mobile source tabs -->
+            <div class="schedule-mobile-sources d-md-none">
+                <button type="button" class="schedule-source-btn active" data-source="cinemas">In Cinemas</button>
+                <button type="button" class="schedule-source-btn" data-source="netflix">Netflix</button>
+                <button type="button" class="schedule-source-btn" data-source="crunchyroll">Crunchyroll</button>
+                <button type="button" class="schedule-source-btn" data-source="prime">Prime Video</button>
+                <button type="button" class="schedule-source-btn" data-source="upcoming">Upcoming</button>
+            </div>
+
+            <!-- Media type filter pills -->
+            <div class="schedule-media-filter">
+                <button type="button" class="media-filter-btn active" data-media="all">All</button>
+                <button type="button" class="media-filter-btn" data-media="movie">Movies</button>
+                <button type="button" class="media-filter-btn" data-media="tv">Shows</button>
+            </div>
+
+            <div id="scheduleTimelineStream" class="schedule-timeline-stream"></div>
+
+            <div id="timelineScrollLoader" class="timeline-scroll-loader d-none">
+                <div class="spinner-border text-light spinner-border-sm" role="status"></div>
+                <span class="text-muted ms-2 small">Loading more releases...</span>
+            </div>
+        </main>
     </div>
-
-    <div class="source-filter-row mb-5">
-        <button class="source-tab-btn active" data-source="cinemas"><i class="bi bi-ticket-perforated me-2"></i>In Cinemas</button>
-        <button class="source-tab-btn" data-source="netflix"><i class="bi bi-play-circle me-2"></i>Netflix</button>
-        <button class="source-tab-btn" data-source="crunchyroll"><i class="bi bi-lightning-charge me-2"></i>Crunchyroll</button>
-        <button class="source-tab-btn" data-source="prime"><i class="bi bi-amazon me-2"></i>Prime Video</button>
-        <button class="source-tab-btn" data-source="upcoming"><i class="bi bi-clock-history me-2"></i>Upcoming</button>
-    </div>
-
-    <div id="scheduleTimelineStream" class="schedule-timeline-stream">
-        </div>
-
-    <div id="timelineScrollLoader" class="timeline-scroll-loader text-center py-4 hidden">
-        <div class="spinner-border text-light spinner-border-sm" role="status"></div>
-        <span class="text-muted ms-2 small">Slicing next schedule rows...</span>
-    </div>
-
 </div>
 
 <script>
     window.MoctaleConfig = {
-        scheduleFeedUrl: "{% url 'schedule_feed_api' %}" 
+        scheduleFeedUrl: "{% url 'schedule_feed_api' %}"
     };
 </script>
-
 <script src="{% static 'js/schedule.js' %}"></script>
 {% endblock %}

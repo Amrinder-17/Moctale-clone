@@ -98,6 +98,35 @@ def dashboard(request):
 
     return render(request, 'movies/dashboard.html', {'sections': dashboard_data})
 
+def _video_watch_url(video):
+    site = video.get('site')
+    key = video.get('key')
+    if not key:
+        return None
+    if site == 'YouTube':
+        return f"https://www.youtube.com/watch?v={key}"
+    if site == 'Vimeo':
+        return f"https://vimeo.com/{key}"
+    return None
+
+
+def _pick_trailer_link(videos):
+    playable = [video for video in videos if _video_watch_url(video)]
+    if not playable:
+        return None
+
+    priority_types = ('Trailer', 'Teaser', 'Clip', 'Featurette')
+    for video_type in priority_types:
+        for video in playable:
+            if video.get('type') == video_type and video.get('official'):
+                return _video_watch_url(video)
+        for video in playable:
+            if video.get('type') == video_type:
+                return _video_watch_url(video)
+
+    return _video_watch_url(playable[0])
+
+
 def media_detail(request, media_type, media_id):
     # 1. Protect unauthenticated request passes gracefully
     if not request.user.is_authenticated:
@@ -109,43 +138,40 @@ def media_detail(request, media_type, media_id):
 
     params = {
         'api_key': api_key,
-        'language': 'en-US'
+        'language': 'en-US',
+        'append_to_response': 'videos',
     }
     
     try:
         # 2. Fetch primary media details first
         response = requests.get(detail_url, params=params)
         if response.status_code == 200:
-            media_data = response.json()  # ✅ Now defined safely up top!
+            media_data = response.json()
+            media_data['media_type'] = media_type
         else:
             return render(request, 'movies/404.html', status=404)
 
         # 3. Fetch credits data
-        credits_res = requests.get(f"{base_url}/{media_type}/{media_id}/credits", params=params)
+        credits_res = requests.get(f"{base_url}/{media_type}/{media_id}/credits", params={'api_key': api_key, 'language': 'en-US'})
         credits_data = credits_res.json() if credits_res.status_code == 200 else {}
 
-        # 4. 🚨 INITIALIZE CONTEXT NOW THAT MEDIA_DATA HAS VALUE
+        trailer_link = _pick_trailer_link(media_data.get('videos', {}).get('results', []))
+        video_url = f"{base_url}/{media_type}/{media_id}/videos"
+
+        if not trailer_link:
+            try:
+                video_res = requests.get(video_url, params={'api_key': api_key})
+                if video_res.status_code == 200:
+                    trailer_link = _pick_trailer_link(video_res.json().get('results', []))
+            except Exception as video_err:
+                print(f"Failed to fetch trailer track: {video_err}")
+
         context = {
             'movie': media_data,
             'credits': credits_data,
             'media_type': media_type,
-            'trailer_link': None,
+            'trailer_link': trailer_link,
         }
-
-        # 5. Fetch trailer tracking links dynamically using the accurate media_type
-        video_url = f"{base_url}/{media_type}/{media_id}/videos"  # 🚀 FIX: Handles both /movie/ and /tv/
-        
-        try:
-            video_res = requests.get(video_url, params=params)
-            if video_res.status_code == 200:
-                videos = video_res.json().get('results', [])
-                for video in videos:
-                    if video.get('site') == 'YouTube' and video.get('type') == 'Trailer':
-                        # ✅ Safe to inject because 'context' is already constructed above
-                        context['trailer_link'] = f"https://www.youtube.com/watch?v={video.get('key')}"
-                        break
-        except Exception as video_err:
-            print(f"Failed to fetch trailer track: {video_err}")
 
         # 6. Render everything safely inside the try block
         return render(request, 'movies/detail.html', context)
@@ -155,10 +181,21 @@ def media_detail(request, media_type, media_id):
         # Global fallback if any of the critical requests above explode
         return render(request, 'movies/404.html', status=500)
 
-@cache_page(3600)
+# @cache_page(3600)
 def schedule(request):
     return render(request, 'movies/recent_releases.html')
 
+
+
+def _schedule_release_label(source, media_type, rel_date):
+    year = rel_date[:4] if rel_date and rel_date != 'Undated' else 'TBA'
+    if source == 'cinemas':
+        return f"In Theatre • {year}"
+    if source == 'upcoming':
+        prefix = 'New Season' if media_type == 'tv' else 'Upcoming'
+        return f"{prefix} • {year}"
+    prefix = 'New Season' if media_type == 'tv' else 'OTT Release'
+    return f"{prefix} • {year}"
 
 
 def schedule_feed(request):
@@ -173,6 +210,7 @@ def schedule_feed(request):
 
     page = int(request.GET.get('page', 1))
     source = request.GET.get('source', 'cinemas')
+    media_filter = request.GET.get('media', 'all')
     is_upcoming = request.GET.get('upcoming', 'false').lower() == 'true' or source == 'upcoming'
 
     today = datetime.today()
@@ -195,16 +233,21 @@ def schedule_feed(request):
         params['watch_region'] = 'IN'
         
         # Establish default timeline fallback windows
-        if page % 2 == 0:
+        use_tv = media_filter == 'tv' or (media_filter == 'all' and page % 2 == 0)
+        if use_tv:
             discover_url = f"{base_url}/discover/tv"
             params['sort_by'] = 'first_air_date.desc'
             params['air_date.gte'] = start_date
             params['air_date.lte'] = end_date
+            params.pop('release_date.gte', None)
+            params.pop('release_date.lte', None)
         else:
             discover_url = f"{base_url}/discover/movie"
             params['sort_by'] = 'release_date.desc'
             params['release_date.gte'] = start_date
             params['release_date.lte'] = end_date
+            params.pop('air_date.gte', None)
+            params.pop('air_date.lte', None)
 
         # 2. Overrides Engine Filters Group
         if source == 'crunchyroll':
@@ -251,10 +294,11 @@ def schedule_feed(request):
             # Forcing a popularity threshold keeps only anticipated titles
             params['popularity.gte'] = 1.5
             
-            if page % 2 == 0:
+            use_tv = media_filter == 'tv' or (media_filter == 'all' and page % 2 == 0)
+            if use_tv:
                 discover_url = f"{base_url}/discover/tv"
-                params['sort_by'] = 'first_air_date.asc'   
-                params['first_air_date.gte'] = end_date    
+                params['sort_by'] = 'first_air_date.asc'
+                params['first_air_date.gte'] = end_date
             else:
                 discover_url = f"{base_url}/discover/movie"
                 params['sort_by'] = 'primary_release_date.asc'
@@ -284,8 +328,9 @@ def schedule_feed(request):
             elif source == 'crunchyroll' and not overview:
                 continue
 
-            display_score = f"⭐ {round(vote_avg, 1)}" if vote_count > 0 else "⏰ Coming"
             current_media_type = 'tv' if 'discover/tv' in discover_url else 'movie'
+            if media_filter in ('movie', 'tv') and current_media_type != media_filter:
+                continue
 
             if item.get('poster_path') and rel_date != 'Undated':
                 processed_items.append({
@@ -293,8 +338,8 @@ def schedule_feed(request):
                     'title': title,
                     'release_date': rel_date,
                     'poster_path': f"https://image.tmdb.org/t/p/w342{item.get('poster_path')}",
-                    'vote_average': display_score,
-                    'media_type': current_media_type, 
+                    'release_label': _schedule_release_label(source, current_media_type, rel_date),
+                    'media_type': current_media_type,
                 })
         
         sliced_items = processed_items[:15]

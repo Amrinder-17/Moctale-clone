@@ -528,7 +528,6 @@
 }
 
 @media (max-width: 1200px) {
-  /* Drops layout down to 3 cards per row on smaller desktop/laptop screens */
   .scroll-row {
     grid-template-columns: repeat(3, 1fr);
   }
@@ -937,11 +936,6 @@
     overflow: hidden;
 }
 
-/* Trailer click target is the hero banner itself (see detail.js) */
-.movie-detail-hero-banner.has-trailer {
-    cursor: pointer;
-}
-
 /* Center Play Button Icon */
 .banner-play-icon-wrapper {
     position: absolute;
@@ -950,36 +944,30 @@
     transform: translate(-50%, -50%);
     font-size: 3.5rem;
     color: rgba(255, 255, 255, 0.7);
-    z-index: 6;
-    line-height: 1;
-    text-decoration: none;
+    z-index: 3;
+    pointer-events: none;
     transition: all 0.2s ease-in-out;
 }
 
-.banner-play-icon-wrapper:hover,
-.movie-detail-hero-banner.has-trailer:hover .banner-play-icon-wrapper {
+.movie-detail-hero-banner:hover .banner-play-icon-wrapper {
     color: #ffffff;
     transform: translate(-50%, -50%) scale(1.08);
 }
 
+/* Trailer tracking hotspot link blanket */
+.stretched-trailer-link::after {
+    position: absolute;
+    top: 0;
+    right: 0;
+    bottom: 0;
+    left: 0;
+    z-index: 2;
+    content: "";
+    cursor: pointer;
+}
+
 /* Base content alignment floor alignment */
-.header-content-layer {
-    z-index: 5;
-    pointer-events: none;
-}
-
-.header-content-layer * {
-    pointer-events: none;
-}
-
-.poster-column,
-.info-column,
-.action-buttons-vertical,
-.action-buttons-vertical button,
-.genre-btn-dark {
-    pointer-events: auto;
-}
-
+.header-content-layer { z-index: 5; }
 .detail-hero-section {
     position: relative;
     z-index: 10;
@@ -1088,268 +1076,40 @@
 .extra-small { font-size: 0.72rem; }
 
 /* ==========================================================================
-   Schedule page — sidebar, filters, timeline grid
+   🎯 GRID INTERFACE & STICKY TIMELINE (image_272837.jpg)
    ========================================================================== */
 
-.schedule-page-shell {
-    background: #0b0b0b;
-    min-height: 100vh;
-    color: #fff;
-}
-
-.schedule-page-layout {
-    display: flex;
-    min-height: calc(100vh - 56px);
-}
-
-.schedule-sidebar {
-    width: 260px;
-    flex-shrink: 0;
-    padding: 1.5rem 1rem;
-    background: #090909;
-    border-right: 1px solid rgba(255, 255, 255, 0.04);
-}
-
-.schedule-source-nav {
-    display: flex;
-    flex-direction: column;
-    gap: 0.35rem;
-}
-
-.schedule-source-btn {
-    display: flex;
-    align-items: center;
-    gap: 0.85rem;
-    width: 100%;
-    padding: 0.85rem 1rem;
-    border: none;
-    border-radius: 12px;
-    background: transparent;
-    color: rgba(255, 255, 255, 0.55);
-    font-size: 0.95rem;
-    font-weight: 600;
-    text-align: left;
-    cursor: pointer;
-    transition: background 0.2s ease, color 0.2s ease;
-    white-space: nowrap;
-}
-
-.schedule-source-btn i {
-    font-size: 1.15rem;
-    flex-shrink: 0;
-}
-
-.schedule-source-btn:hover {
-    color: rgba(255, 255, 255, 0.85);
-    background: rgba(255, 255, 255, 0.04);
-}
-
-.schedule-source-btn.active {
-    background: rgba(255, 255, 255, 0.08);
-    color: #fff;
-}
-
-.schedule-main {
-    flex: 1;
-    min-width: 0;
-    padding: 1.5rem 1.75rem 3rem;
-}
-
-.schedule-mobile-sources {
-    display: flex;
-    gap: 0.5rem;
-    overflow-x: auto;
-    padding-bottom: 1rem;
-    margin-bottom: 0.5rem;
-    scrollbar-width: none;
-}
-
-.schedule-mobile-sources::-webkit-scrollbar {
-    display: none;
-}
-
-.schedule-mobile-sources .schedule-source-btn {
-    width: auto;
-    flex-shrink: 0;
-    padding: 0.55rem 1rem;
-    font-size: 0.85rem;
-}
-
-.schedule-media-filter {
-    display: flex;
-    gap: 0.65rem;
-    margin-bottom: 2rem;
-}
-
-.media-filter-btn {
-    padding: 0.45rem 1.25rem;
-    border: none;
-    border-radius: 999px;
-    background: rgba(255, 255, 255, 0.08);
-    color: rgba(255, 255, 255, 0.75);
-    font-size: 0.9rem;
-    font-weight: 600;
-    cursor: pointer;
-    transition: background 0.2s ease, color 0.2s ease;
-}
-
-.media-filter-btn:hover {
-    color: #fff;
-    background: rgba(255, 255, 255, 0.12);
-}
-
-.media-filter-btn.active {
-    background: #fff;
-    color: #0b0b0b;
-}
-
-.schedule-timeline-stream {
-    display: flex;
-    flex-direction: column;
-    gap: 2.5rem;
-}
-
-.timeline-date-block {
-    width: 100%;
-}
-
-.timeline-date-row {
-    display: flex;
-    align-items: flex-start;
-    gap: 1.25rem;
-}
-
+/* Date Stamp Component Optimization */
 .calendar-date-badge {
     position: sticky;
-    top: 80px;
-    flex-shrink: 0;
-    width: 52px;
-    padding: 0.65rem 0.4rem;
-    border-radius: 10px;
-    background: #000;
-    border: 1px solid rgba(255, 255, 255, 0.08);
-    display: flex;
-    flex-direction: column;
-    align-items: center;
-    line-height: 1.1;
-    letter-spacing: 0.04em;
+    top: 24px; /* Sticks elegantly if users scroll down long row blocks */
+    letter-spacing: 0.02em;
 }
 
-.calendar-date-badge .date-weekday,
-.calendar-date-badge .date-month {
-    font-size: 0.62rem;
-    font-weight: 700;
-    color: rgba(255, 255, 255, 0.65);
-}
-
-.calendar-date-badge .date-day {
-    font-size: 1.35rem;
-    font-weight: 700;
-    color: #fff;
-    margin: 0.15rem 0;
-}
-
-.timeline-cards-grid-row {
-    flex: 1;
-    display: grid;
-    grid-template-columns: repeat(5, minmax(0, 1fr));
-    gap: 1.25rem 1rem;
-    min-width: 0;
-}
-
-.movie-schedule-card-link {
-    display: block;
-    color: inherit;
-}
-
+/* Base Card Interaction Elements */
 .movie-schedule-card .poster-display-wrapper {
     aspect-ratio: 2 / 3;
-    border-radius: 12px;
-    overflow: hidden;
-    background: #121213;
-    transition: transform 0.2s ease;
+    background-color: #121213;
+    transition: transform 0.2s cubic-bezier(0.25, 0.46, 0.45, 0.94);
 }
 
+/* Subtle standard hover scale like the native dashboard interface */
 .movie-schedule-card:hover .poster-display-wrapper {
     transform: scale(1.02);
 }
 
 .card-poster-img {
-    width: 100%;
     height: 100%;
+    width: 100%;
     object-fit: cover;
-    display: block;
 }
 
-.card-meta-details {
-    padding-top: 0.65rem;
-}
-
+/* Metadata text treatments underneath the poster layouts */
 .card-meta-details h2 {
-    margin: 0;
-    font-size: 0.92rem;
-    font-weight: 600;
-    color: #fff;
-    line-height: 1.35;
-    display: -webkit-box;
-    -webkit-line-clamp: 2;
-    -webkit-box-orient: vertical;
-    overflow: hidden;
+    color: #ffffff !important;
+    letter-spacing: -0.005em;
 }
 
 .card-meta-details p {
-    margin: 0.25rem 0 0;
-    font-size: 0.78rem;
-    color: #88888d;
-}
-
-.timeline-scroll-loader {
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    padding: 1.5rem 0;
-}
-
-.schedule-empty-state {
-    text-align: center;
-    padding: 4rem 1rem;
-    color: rgba(255, 255, 255, 0.45);
-}
-
-.schedule-empty-state i {
-    display: block;
-    font-size: 2.5rem;
-    margin-bottom: 1rem;
-}
-
-@media (max-width: 1200px) {
-    .timeline-cards-grid-row {
-        grid-template-columns: repeat(4, minmax(0, 1fr));
-    }
-}
-
-@media (max-width: 992px) {
-    .timeline-cards-grid-row {
-        grid-template-columns: repeat(3, minmax(0, 1fr));
-    }
-}
-
-@media (max-width: 768px) {
-    .schedule-main {
-        padding: 1rem 1rem 2.5rem;
-    }
-
-    .timeline-date-row {
-        gap: 0.75rem;
-    }
-
-    .calendar-date-badge {
-        width: 44px;
-        top: 72px;
-    }
-
-    .timeline-cards-grid-row {
-        grid-template-columns: repeat(2, minmax(0, 1fr));
-        gap: 1rem 0.75rem;
-    }
+    color: #88888d !important; /* Low contrast muted gray string text label properties */
 }
