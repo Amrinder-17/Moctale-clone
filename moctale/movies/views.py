@@ -181,7 +181,7 @@ def media_detail(request, media_type, media_id):
         # Global fallback if any of the critical requests above explode
         return render(request, 'movies/404.html', status=500)
 
-# @cache_page(3600)
+@cache_page(3600)
 def schedule(request):
     return render(request, 'movies/recent_releases.html')
 
@@ -348,65 +348,71 @@ def schedule_feed(request):
     except Exception as e:
         return JsonResponse({'error': str(e)}, status=500)
 
+import requests
+from django.http import JsonResponse
+from django.conf import settings
+
 def live_search_api(request):
-    """
-    Handles real-time search queries by contacting TMDB's multi-search endpoint.
-    """
     api_key = settings.TMDB_API_KEY
     base_url = "https://api.themoviedb.org/3"
     
-    # Extract the user's typed string from the GET parameters
     query = request.GET.get('query', '').strip()
-    
-    # Quietly return an empty list if there's no text to parse
     if not query:
         return JsonResponse({'results': []}, status=200)
         
-    search_url = f"{base_url}/search/multi"
+    search_type = request.GET.get('type', 'content')
+    
+    if search_type == 'person':
+        search_url = f"{base_url}/search/person"
+    elif search_type == 'collections':
+        search_url = f"{base_url}/search/collection"
+    else: 
+        search_url = f"{base_url}/search/multi"
+
     params = {
         'api_key': api_key,
         'query': query,
-        'language': 'en-IN', # Localized preferences matching India
+        'language': 'en-IN', 
         'include_adult': 'false',
         'page': 1
     }
     
     try:
         response = requests.get(search_url, params=params)
-        
         if response.status_code == 200:
             raw_results = response.json().get('results', [])
             processed_results = []
             
-                        # Inside movies/views.py -> live_search_api function loop:
-
             for item in raw_results:
-                media_type = item.get('media_type')
-                
-                if media_type in ['movie', 'tv']:
-                    title = item.get('title') or item.get('name') or 'Untitled'
-                    poster = item.get('poster_path')
+                # --- CAST & CREW ---
+                if search_type == 'person':
+                    profile = item.get('profile_path')
+                    processed_results.append({
+                        'id': item.get('id'),
+                        'name': item.get('name') or 'Unknown Person',
+                        'known_for_department': item.get('known_for_department') or 'Cast/Crew',
+                        'profile_path': f"https://image.tmdb.org/t/p/w185{profile}" if profile else None
+                    })
                     
-                    if poster:
-                        # 💡 THE FIX: Extract raw date keys so JavaScript can read them
-                        release_date = item.get('release_date') or 'Undated'
-                        first_air_date = item.get('first_air_date') or 'Undated'
-
+                # --- MOVIES & TV SHOWS ---
+                else:
+                    media_type = item.get('media_type') or 'movie'
+                    
+                    # Ensure both 'movie' and 'tv' are processed
+                    if media_type in ['movie', 'tv']:
+                        title = item.get('title') or item.get('name') or 'Untitled Production'
+                        poster = item.get('poster_path')
+                        
                         processed_results.append({
                             'id': item.get('id'),
                             'title': title,
                             'media_type': media_type,
-                            'poster_path': f"https://image.tmdb.org/t/p/w342{poster}",
+                            'poster_path': f"https://image.tmdb.org/t/p/w342{poster}" if poster else None,
                             'vote_average': round(item.get('vote_average', 0), 1),
-                            
-                            # 💡 Pass them down into the JSON payload object
-                            'release_date': release_date,
-                            'first_air_date': first_air_date,
+                            'release_date': item.get('release_date') or item.get('first_air_date') or 'Undated',
                         })
+                            
             return JsonResponse({'results': processed_results}, status=200)
-            
-        else:
-            return JsonResponse({'results': []}, status=response.status_code)
-            
+        return JsonResponse({'results': []}, status=response.status_code)
     except Exception as e:
         return JsonResponse({'error': str(e)}, status=500)

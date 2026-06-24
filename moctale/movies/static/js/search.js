@@ -1,16 +1,11 @@
 document.addEventListener('DOMContentLoaded', () => {
     const openBtn = document.getElementById('searchOpenBtn');
     
-    // SAFETY CHECK: Quit silently if the navbar button isn't rendered on this layout view
     if (!openBtn) return;
 
     // Grab modal nodes if they exist natively in the template markup
     let searchModal = document.getElementById('moctaleSearchModal');
 
-    // ==========================================================================
-    // MODAL AUTOMATIC INJECTION BACKUP
-    // ==========================================================================
-    // Inside static/js/search.js -> Replace the modal injection block with this:
     if (!searchModal) {
         searchModal = document.createElement('div');
         searchModal.id = 'moctaleSearchModal';
@@ -40,10 +35,9 @@ document.addEventListener('DOMContentLoaded', () => {
                 </div>
                 
                 <div class="search-tabs-row" style="display: flex !important; gap: 24px !important; margin: 24px 0 12px 4px !important; border-bottom: 1px solid rgba(255,255,255,0.08) !important; padding-bottom: 12px !important; font-size: 0.95rem !important; color: #717685 !important;">
-                    <span class="tab-item active" style="color: #ffffff !important; font-weight: 600 !important; border-bottom: 2px solid #ffffff !important; padding-bottom: 10px !important; cursor: pointer !important;">Content</span>
-                    <span class="tab-item" style="cursor: pointer !important;">Collections</span>
-                    <span class="tab-item" style="cursor: pointer !important;">Cast & Crew</span>
-                    <span class="tab-item" style="cursor: pointer !important;">Users</span>
+                    <span class="tab-item active" data-type="content" style="color: #ffffff !important; font-weight: 600 !important; border-bottom: 2px solid #ffffff !important; padding-bottom: 10px !important; cursor: pointer !important;">Content</span>
+                    <span class="tab-item" data-type="collections" style="cursor: pointer !important; padding-bottom: 10px !important;">Collections</span>
+                    <span class="tab-item" data-type="person" style="cursor: pointer !important; padding-bottom: 10px !important;">Cast & Crew</span>
                 </div>
                 
                 <div class="search-results-display-area" style="max-height: 70vh !important; overflow-y: auto !important; padding-right: 4px !important;">
@@ -59,15 +53,26 @@ document.addEventListener('DOMContentLoaded', () => {
         document.body.appendChild(searchModal);
     }  
 
-    // Re-bind internal overlay DOM targets
-    const closeBtn = document.getElementById('searchCloseBtn');
     const searchInput = document.getElementById('liveSearchInput');
     const defaultState = document.getElementById('searchDefaultState');
     const resultsGrid = document.getElementById('liveResultsGrid');
+    const closeBtn = document.getElementById('searchCloseBtn'); // Added this declaration to fix potential error
+    const tabItems = searchModal.querySelectorAll('.tab-item');
 
-    // ==========================================================================
-    // EVENT ACTIONS CORE
-    // ==========================================================================
+    let currentSearchType ; 
+    let debounceTimer;
+
+    // Helper to completely clear input and results
+    const clearSearchUI = () => {
+        if (resultsGrid) {
+            resultsGrid.classList.add('hidden');
+            resultsGrid.style.setProperty('display', 'none', 'important');
+        }
+        if (defaultState) {
+            // Bring back the empty state cleanly ONLY when input is empty
+            defaultState.style.setProperty('display', 'block', 'important');
+        }
+    };
     
     const closeModal = () => {
         openBtn.classList.remove('search-active'); 
@@ -75,8 +80,7 @@ document.addEventListener('DOMContentLoaded', () => {
         searchModal.classList.remove('active');
         document.body.style.overflow = 'auto';
         if (searchInput) searchInput.value = '';
-        if (resultsGrid) resultsGrid.classList.add('hidden');
-        if (defaultState) defaultState.style.setProperty('display', 'block', 'important');
+        clearSearchUI();
     };
 
     // Open Trigger
@@ -118,75 +122,170 @@ document.addEventListener('DOMContentLoaded', () => {
         }
     });
 
-    // ==========================================================================
-    // BACKEND LIVE STREAM API PIPELINE
-    // ==========================================================================
-    let debounceTimer;
+    const tabsRow = searchModal.querySelector('.search-tabs-row');
+    
+    // --- TAB  TOGGLE CONTROLLER ---
+    // --- TAB TOGGLE CONTROLLER ---
+    if (tabsRow) {
+        tabsRow.addEventListener('click', (e) => {
+            const clickedTab = e.target.closest('.tab-item');
+            if (!clickedTab) return;
+
+            // 1. Clear visual active states across all sibling tabs
+            tabsRow.querySelectorAll('.tab-item').forEach(t => {
+                t.classList.remove('active');
+                t.style.cssText = 'cursor: pointer !important; padding-bottom: 10px !important;';
+            });
+
+            // 2. Assign active state styling on the selected node
+            clickedTab.classList.add('active');
+            clickedTab.style.cssText = 'color: #ffffff !important; font-weight: 600 !important; solid #ffffff !important; padding-bottom: 10px !important; cursor: pointer !important;';
+
+            // 3. Read 'data-tab' tracking value
+            const rawTabValue = clickedTab.getAttribute('data-tab') || 'content';
+            
+            // Translate tab keys to map cleanly with your view definitions
+            if (rawTabValue === 'cast') {
+                currentSearchType = 'person';
+            } else {
+                currentSearchType = rawTabValue;
+            }
+            
+            if (searchInput) {
+                // 💡 4. THE CRITICAL FIX: Clear the textbox and clear out old results
+                searchInput.value = ''; 
+                clearSearchUI(); 
+
+                // 5. Update text placeholder values smoothly based on the active tab
+                if (currentSearchType === 'person') {
+                    searchInput.placeholder = "Search for Actors, Directors, Writers...";
+                } else if (currentSearchType === 'collections') {
+                    searchInput.placeholder = "Search for Collections...";
+                } else if (currentSearchType === 'users') {
+                    searchInput.placeholder = "Search for Users...";
+                } else {
+                    searchInput.placeholder = "Search for Movies, Shows, Anime...";
+                }
+
+                // 💡 6. THE REFOCUS FIX: Automatically force the cursor back into the input field
+                // Wrapping in a tiny timeout ensures the browser completes the style painting before focusing
+                setTimeout(() => {
+                    searchInput.focus();
+                }, 10);
+            }
+        });
+    }
+
+    // --- BACKEND LIVE STREAM API PIPELINE ---
     if (searchInput) {
         searchInput.addEventListener('input', (e) => {
             clearTimeout(debounceTimer);
             const query = e.target.value.trim();
 
             if (query.length === 0) {
-                if (resultsGrid) resultsGrid.classList.add('hidden');
-                if (defaultState) defaultState.style.setProperty('display', 'block', 'important');
+                clearSearchUI();
                 return;
             }
 
             debounceTimer = setTimeout(() => {
-                // 💡 THE FIX: Prepend the required '/media/' root prefix to fix your 404 errors
-                fetch(`/media/movies/api/search/?query=${encodeURIComponent(query)}`)
+                // 💡 NOTICE: No 'let' or 'const' before currentSearchType here!
+                // This forces JavaScript to look up and read the actual active tab state.
+                console.log("Dispatching fetch pipeline with type state:", currentSearchType); 
+
+                fetch(`/media/movies/api/search/?query=${encodeURIComponent(query)}&type=${currentSearchType}`)
                     .then(res => res.json())
-                    .then(data => renderLiveResults(data.results))
+                    .then(data => renderLiveResults(data.results, currentSearchType))
                     .catch(err => console.error("Search Fetch Exception Routing Trace:", err));
             }, 300);
         });
     }
 
-    function renderLiveResults(results) {
+    function renderLiveResults(results, type) {
         if (!resultsGrid || !defaultState) return;
         resultsGrid.innerHTML = '';
         
         if (!results || results.length === 0) {
-            resultsGrid.innerHTML = `<div style="color: #717685; text-align: center; width: 100%; padding-top: 40px; font-size: 1.1rem;">No titles match your search criteria.</div>`;
+            resultsGrid.innerHTML = `<div style="color: #717685; text-align: center; width: 100%; padding-top: 40px; font-size: 1.1rem;">No results match your search criteria.</div>`;
             resultsGrid.classList.remove('hidden');
             defaultState.style.setProperty('display', 'none', 'important');
             return;
         }
 
-        // Inside static/js/search.js -> renderLiveResults function loop block:
-    results.forEach(item => {
-        const cardLink = document.createElement('a');
-        cardLink.href = `/media/${item.media_type}/${item.id}/`;
-        cardLink.className = 'search-result-card-item text-decoration-none';
-
-        const displayTitle = item.title || item.name || 'Untitled Production';
-        
-        // Extract release year seamlessly from YYYY-MM-DD formats strings
-        let releaseYear = 'N/A';
-        const rawDate = item.release_date || item.first_air_date;
-        if (rawDate && rawDate !== 'Undated') {
-            releaseYear = rawDate.split('-')[0];
-        }
-
-        // Format and clean media label display strings variants
-        const mediaLabel = item.media_type === 'movie' ? 'Movie' : 'TV Show';
-
-        cardLink.innerHTML = `
-            <div class="search-horizontal-card">
-                <div class="search-horizontal-poster">
-                    <img src="${item.poster_path}" alt="${displayTitle}" loading="lazy">
-                </div>
-                <div class="search-horizontal-details">
-                    <h3 class="search-item-title">${displayTitle}</h3>
-                    <p class="search-item-meta">${releaseYear} • ${mediaLabel}</p>
-                </div>
-            </div>
+        // 💡 Ensure the master grid element expands nicely to handle layouts
+        resultsGrid.style.cssText = `
+            display: grid !important;
+            grid-template-columns: repeat(auto-fill, minmax(280px, 1fr)) !important;
+            gap: 16px !important;
+            padding-top: 16px !important;
+            box-sizing: border-box !important;
         `;
-        resultsGrid.appendChild(cardLink);
-    });
 
-        defaultState.style.setProperty('display', 'none', 'important');
-        resultsGrid.classList.remove('hidden');
+        results.forEach(item => {
+            const cardLink = document.createElement('a');
+            cardLink.className = 'search-result-card-item text-decoration-none';
+            cardLink.style.cssText = "text-decoration: none !important; display: block;";
+
+            if (type === 'person') {
+                // --- 👤 CAST & CREW LAYOUT (CIRCULAR VERTICAL CARD) ---
+                cardLink.href = `/media/person/${item.id}/`;
+                const displayName = item.name || 'Unknown Individual';
+                const departmentLabel = item.known_for_department || 'Cast/Crew';
+                const profileImg = item.profile_path ? item.profile_path : 'https://placehold.co/300x450/16171b/717685?text=No+Image';
+
+                cardLink.innerHTML = `
+                    <div class="search-person-card" style="background-color: #1e2026 !important; border-radius: 12px !important; padding: 16px !important; display: flex !important; flex-direction: column !important; align-items: center !important; text-align: center !important; gap: 12px !important; box-sizing: border-box !important; height: 100% !important;">
+                        <div class="search-person-avatar-wrapper" style="width: 100px !important; height: 100px !important; border-radius: 50% !important; overflow: hidden !important; display: flex !important; justify-content: center !important; align-items: center !important; background-color: #16171b !important;">
+                            <img src="${profileImg}" alt="${displayName}" loading="lazy" style="width: 100% !important; height: 100% !important; object-fit: cover !important; display: block !important;">
+                        </div>
+                        <div class="search-person-details" style="width: 100% !important;">
+                            <h3 class="search-item-title" style="color: #ffffff !important; font-size: 1.05rem !important; font-weight: 600 !important; margin: 0 0 4px 0 !important; white-space: nowrap !important; overflow: hidden !important; text-overflow: ellipsis !important;">${displayName}</h3>
+                            <p class="search-item-meta" style="color: #717685 !important; font-size: 0.85rem !important; margin: 0 !important;">${departmentLabel}</p>
+                        </div>
+                    </div>
+                `;
+            } else {
+                // --- 🎬 MOVIES & TV SHOWS LAYOUT (HORIZONTAL POSTER CARD) ---
+                cardLink.href = `/media/${item.media_type || 'movie'}/${item.id}/`;
+                const displayTitle = item.title || item.name || 'Untitled Production';
+                
+                let releaseYear = 'N/A';
+                const rawDate = item.release_date || item.first_air_date;
+                if (rawDate && rawDate !== 'Undated') {
+                    releaseYear = rawDate.split('-')[0];
+                }
+
+                const mediaLabel = item.media_type === 'movie' ? 'Movie' : 'TV Show';
+                const posterImg = item.poster_path ? item.poster_path : 'https://placehold.co/300x450/16171b/717685?text=No+Poster';
+
+                cardLink.innerHTML = `
+                    <div class="search-movie-horizontal-card" style="background-color: #1e2026 !important; border-radius: 12px !important; padding: 12px !important; display: flex !important; align-items: center !important; gap: 16px !important; box-sizing: border-box !important; height: 100% !important;">
+                        <div class="search-horizontal-poster" style="width: 65px !important; min-width: 65px !important; height: 95px !important; border-radius: 6px !important; overflow: hidden !important; background-color: #16171b !important;">
+                            <img src="${posterImg}" alt="${displayTitle}" loading="lazy" style="width: 100% !important; height: 100% !important; object-fit: cover !important; display: block !important;">
+                        </div>
+                        <div class="search-horizontal-details" style="flex: 1 !important; min-width: 0 !important;">
+                            <h3 class="search-item-title" style="color: #ffffff !important; font-size: 1.1rem !important; font-weight: 600 !important; margin: 0 0 4px 0 !important; display: -webkit-box !important; -webkit-line-clamp: 2 !important; -webkit-box-orient: vertical !important; overflow: hidden !important; text-overflow: ellipsis !important; line-height: 1.3 !important;">${displayTitle}</h3>
+                            <p class="search-item-meta" style="color: #717685 !important; font-size: 0.9rem !important; margin: 0 !important;">${releaseYear} • ${mediaLabel}</p>
+                        </div>
+                    </div>
+                `;
+            }
+            resultsGrid.appendChild(cardLink);
+        });
+
+        if (results.length > 0) {
+            // 1. Force hide the default state pane completely using standard CSS visibility properties
+            defaultState.style.display = 'none';
+            defaultState.style.setProperty('display', 'none', 'important');
+            
+            // 2. Uncover and reveal your cards grid layout cleanly
+            resultsGrid.classList.remove('hidden');
+            resultsGrid.style.display = 'grid';
+            resultsGrid.style.setProperty('display', 'grid', 'important');
+        } else {
+            // If results array is empty, run your clean empty fallback state layout instead
+            resultsGrid.innerHTML = `<div style="color: #717685; text-align: center; width: 100%; padding-top: 40px; font-size: 1.1rem;">No results match your search criteria.</div>`;
+            resultsGrid.classList.remove('hidden');
+            defaultState.style.setProperty('display', 'none', 'important');
+        }
     }
 });
