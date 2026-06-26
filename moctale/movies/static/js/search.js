@@ -167,8 +167,6 @@ document.addEventListener('DOMContentLoaded', () => {
                     searchInput.placeholder = "Search for Movies, Shows, Anime...";
                 }
 
-                // 💡 6. THE REFOCUS FIX: Automatically force the cursor back into the input field
-                // Wrapping in a tiny timeout ensures the browser completes the style painting before focusing
                 setTimeout(() => {
                     searchInput.focus();
                 }, 10);

@@ -165,12 +165,20 @@ def media_detail(request, media_type, media_id):
                     trailer_link = _pick_trailer_link(video_res.json().get('results', []))
             except Exception as video_err:
                 print(f"Failed to fetch trailer track: {video_err}")
-
+        # 💡 Use this syntax when your import is: from datetime import datetime
+        today_string = datetime.now().date().isoformat()
+        if media_type == 'tv':
+            release_date = media_data.get('first_air_date') or 'Undated'
+        else:
+            release_date = media_data.get('release_date') or 'Undated'
+            media_data['release_date'] = release_date
+        
         context = {
             'movie': media_data,
             'credits': credits_data,
             'media_type': media_type,
             'trailer_link': trailer_link,
+            'today': today_string,
         }
 
         # 6. Render everything safely inside the try block
@@ -281,18 +289,17 @@ def schedule_feed(request):
             
 
         if source == 'upcoming' or is_upcoming:
+            params['with_original_language'] = 'hi|ta|te|ml|kn|bn|en'
             params.pop('air_date.gte', None)
             params.pop('air_date.lte', None)
             params.pop('release_date.gte', None)
             params.pop('release_date.lte', None)
+            params['popularity.gte'] = 5.0
             
             # 1. 🇮🇳 Force target search specifically to the Indian localized market
             params['region'] = 'IN'
             params['watch_region'] = 'IN'
             
-            # 2. 🧹 NOISE CLEANUP GATE: Excludes random placeholder additions
-            # Forcing a popularity threshold keeps only anticipated titles
-            params['popularity.gte'] = 1.5
             
             use_tv = media_filter == 'tv' or (media_filter == 'all' and page % 2 == 0)
             if use_tv:
@@ -347,10 +354,6 @@ def schedule_feed(request):
         
     except Exception as e:
         return JsonResponse({'error': str(e)}, status=500)
-
-import requests
-from django.http import JsonResponse
-from django.conf import settings
 
 def live_search_api(request):
     api_key = settings.TMDB_API_KEY
