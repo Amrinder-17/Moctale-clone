@@ -5,7 +5,6 @@
 {% block extra_css %}
     <link rel="stylesheet" href="{% static 'movies/style.css' %}">
 {% endblock %}
-
 {% block content %}
 <div class="moctale-dashboard-split">
 
@@ -120,34 +119,34 @@
     </aside>
 
     <div id="moctaleSearchModal" class="search-overlay-modal-screen">
-    <div class="search-modal-inner-box">
+        <div class="search-modal-inner-box">
         
-        <div class="search-input-field-wrapper">
-            <i class="bi bi-search glass-tint"></i>
-            <input type="text" id="liveSearchInput" placeholder="Search for Movies, Shows, Anime, Cast & Crew or Users..." autocomplete="off">
-        </div>
-        
-        <div class="search-tabs-row">
-            <span class="tab-item active" data-tab="content">Content</span>
-            <span class="tab-item" data-tab="collections">Collections</span>
-            <span class="tab-item" data-tab="cast">Cast & Crew</span>
-            <span class="tab-item" data-tab="users">Users</span>
-        </div>
-
-        <div class="search-results-display-area">
-            
-            <div id="searchDefaultState" class="modal-empty-state-pane">
-                <div class="history-circle">
-                    <i class="bi bi-search"></i>
-                </div>
-                <h3>No recent searches</h3>
-                <p>Your search history will appear here</p>
+            <div class="search-input-field-wrapper">
+                <i class="bi bi-search glass-tint"></i>
+                <input type="text" id="liveSearchInput" placeholder="Search for Movies, Shows, Anime, Cast & Crew or Users..." autocomplete="off">
             </div>
             
-            <div id="liveResultsGrid" class="live-results-grid hidden"></div>
-        </div>
+            <div class="search-tabs-row">
+                <span class="tab-item active" data-tab="content">Content</span>
+                <span class="tab-item" data-tab="collections">Collections</span>
+                <span class="tab-item" data-tab="cast">Cast & Crew</span>
+                <span class="tab-item" data-tab="users">Users</span>
+            </div>
 
+            <div class="search-results-display-area">
+                
+                <div id="searchDefaultState" class="modal-empty-state-pane">
+                    <div class="history-circle">
+                        <i class="bi bi-search"></i>
+                    </div>
+                    <h3>No recent searches</h3>
+                    <p>Your search history will appear here</p>
+                </div>
+                
+                <div id="liveResultsGrid" class="live-results-grid hidden"></div>
+            </div>
+
+        </div>
     </div>
-</div>
 </div>
 {% endblock %}
