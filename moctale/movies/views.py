@@ -4,11 +4,14 @@ from django.conf import settings
 from datetime import datetime, timedelta
 from django.http import JsonResponse
 from django.views.decorators.cache import cache_page
+from django.contrib.auth.decorators import login_required
 from django.urls import reverse
-
+from django.views.decorators.http import require_POST
+from .models import UserMovieActivity
 
 
 @cache_page(3600)
+@login_required
 def dashboard(request):
     if not request.user.is_authenticated:
         return render(request, 'home/welcome.html')
@@ -126,11 +129,13 @@ def _pick_trailer_link(videos):
 
     return _video_watch_url(playable[0])
 
-
+@login_required
 def media_detail(request, media_type, media_id):
     # 1. Protect unauthenticated request passes gracefully
     if not request.user.is_authenticated:
         return render(request, 'home/welcome.html')
+    
+    
         
     api_key = settings.TMDB_API_KEY
     base_url = "https://api.themoviedb.org/3"  # Standardized base path structure
@@ -141,6 +146,9 @@ def media_detail(request, media_type, media_id):
         'language': 'en-US',
         'append_to_response': 'videos',
     }
+    activity = None
+    if request.user.is_authenticated:
+        activity = UserMovieActivity.objects.filter(user=request.user, movie_id=media_id).first()
     
     try:
         # 2. Fetch primary media details first
@@ -179,6 +187,7 @@ def media_detail(request, media_type, media_id):
             'media_type': media_type,
             'trailer_link': trailer_link,
             'today': today_string,
+            'activity': activity,
         }
 
         # 6. Render everything safely inside the try block
@@ -190,6 +199,7 @@ def media_detail(request, media_type, media_id):
         return render(request, 'movies/404.html', status=500)
 
 @cache_page(3600)
+@login_required
 def schedule(request):
     return render(request, 'movies/recent_releases.html')
 
@@ -205,7 +215,7 @@ def _schedule_release_label(source, media_type, rel_date):
     prefix = 'New Season' if media_type == 'tv' else 'OTT Release'
     return f"{prefix} • {year}"
 
-
+@login_required
 def schedule_feed(request):
     if not request.user.is_authenticated:
         return JsonResponse({
@@ -355,6 +365,7 @@ def schedule_feed(request):
     except Exception as e:
         return JsonResponse({'error': str(e)}, status=500)
 
+@login_required
 def live_search_api(request):
     api_key = settings.TMDB_API_KEY
     base_url = "https://api.themoviedb.org/3"
@@ -419,3 +430,45 @@ def live_search_api(request):
         return JsonResponse({'results': []}, status=response.status_code)
     except Exception as e:
         return JsonResponse({'error': str(e)}, status=500)
+    
+@login_required
+@require_POST
+def toggle_movie_action(request):
+    movie_id=request.POST.get('movie_id')
+    movie_title=request.POST.get('movie_title', 'Unknown_Title')
+    action=request.POST.get('action')
+
+    if not movie_id or action not in ['watched', 'interested', 'collection']:
+        return JsonResponse({'success': False, 'error': 'Invalid parameters.'}, status=400)
+    
+    activity,created= UserMovieActivity.objects.get_or_create(
+        user=request.user,
+        movie_id=movie_id,
+        defaults={'movie_title': movie_title}
+    )
+
+    if action=='watched':
+        activity.is_watched= not activity.is_watched
+        is_active= activity.is_watched
+
+        if activity.is_watched:
+            activity.is_interested=False
+    
+    elif action=='interested':
+        activity.is_interested=not activity.is_interested
+        is_active = activity.is_interested
+
+        if activity.is_interested:
+            activity.is_watched=False
+
+    elif action == 'collection':
+        activity.in_collection= not activity.in_collection
+        is_active=activity.in_collection
+
+    activity.save()
+
+    return JsonResponse({
+        'success': True,
+        'action': action,
+        'is_active': is_active
+    })

@@ -78,19 +78,24 @@
                     </div>
 
                     <!-- Vertical Stack Action Panel on the Bottom Right Margin -->
-                    <div class="action-buttons-vertical d-flex flex-column gap-2 mb-1">
-                        
+                    <div class="action-buttons-vertical d-flex flex-column gap-2 mb-1 movie-action-panel"
+                        data-movie-id="{{ movie.id }}" 
+                        data-title="{% if movie.title %}{{ movie.title }}{% else %}{{ movie.name }}{% endif %}">
+                        {% csrf_token %}
                         {% if movie.release_date > today %}
-                            <button class="btn-action btn-watched w-100" data-id="{{ movie.id }}" data-action="interested">
-                                <i class="bi bi-fire"></i> Mark as Interested
+                            <button class="btn-action btn-watched w-100 {% if activity.is_interested %}active{% endif %}" data-id="{{ movie.id }}" data-action="interested">
+                                <i class="bi bi-fire"></i>
+                                <span class="btn-text">{% if activity.is_interested %}Interested (Notified){% else %}Mark as Interested{% endif %}</span>
                             </button>
                         {% else %}
-                            <button class="btn-action btn-watched w-100" data-id="{{ movie.id }}" data-action="watched">
-                                <i class="bi bi-check-circle"></i> Mark as Watched
+                            <button class="btn-action btn-watched w-100 {% if activity.is_watched %}active{% endif %}" data-id="{{ movie.id }}" data-action="watched">
+                                <i class="bi bi-check-circle"></i>
+                                <span class="btn-text">{% if activity.is_watched %}Watched{% else %}Mark as Watched{% endif %}</span>
                             </button>
                         {% endif %}
-                        <button class="btn-action btn-collection w-100">
-                            <span class="icon me-1"><i class="bi bi-bookmarks"></i></span> Add to Collection
+                        <button class="btn-action btn-collection w-100 {% if activity.in_collection %}active{% endif %}" data-action="collection">
+                            <span class="icon me-1"><i class="bi bi-bookmarks"></i></span> 
+                            <span class="btn-text">{% if activity.in_collection %}In Collection{% else %}Add to Collection{% endif %}</span>
                         </button>
                     </div>
                 </div>

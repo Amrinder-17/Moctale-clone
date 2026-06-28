@@ -7,4 +7,5 @@ urlpatterns = [
     path('schedule/',views.schedule, name='Schedule'),
     path('movies/api/schedule-feed/',views.schedule_feed, name='schedule_feed_api'),
     path('movies/api/search/', views.live_search_api, name='live_search_api'),
+    path('toggle-activity/', views.toggle_movie_action, name='toggle_movie_action'),
 ]
