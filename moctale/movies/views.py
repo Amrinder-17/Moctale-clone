@@ -368,7 +368,26 @@ def schedule_feed(request):
 @login_required
 def live_search_api(request):
     api_key = settings.TMDB_API_KEY
-    base_url = "https://api.themoviedb.org/3"
+    base_url = "https://api.tmdb.org/3"
+    today = datetime.today().date()
+    thirty_days_ago = today - timedelta(days=30)
+
+    movie_url=f"{base_url}/discover/movie"
+    params={
+        'api_key':api_key,
+        'language':'en-US',
+        'primary_release_date.gte': thirty_days_ago,
+        'primary_release_date.lte': today,
+        'sort_by': 'primary_release_date.desc',
+        'region': 'IN',            
+        'watch_region': 'IN',
+    }
+
+    movie_data = requests.get(movie_url, params=params).json().get('results', [])
+    tv_url = f"{base_url}/discover/tv"
+
+    tv_data=requests.get(tv_url,params=params).json().get('results',[])
+    combined_releases = []
     
     query = request.GET.get('query', '').strip()
     if not query:
