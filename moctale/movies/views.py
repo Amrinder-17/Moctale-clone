@@ -7,7 +7,9 @@ from django.views.decorators.cache import cache_page
 from django.contrib.auth.decorators import login_required
 from django.urls import reverse
 from django.views.decorators.http import require_POST
-from .models import UserMovieActivity
+from django.shortcuts import get_object_or_404
+from .models import Collection, UserMovieActivity
+
 
 
 @cache_page(3600)
@@ -147,8 +149,16 @@ def media_detail(request, media_type, media_id):
         'append_to_response': 'videos',
     }
     activity = None
+    user_collection =[]
     if request.user.is_authenticated:
         activity = UserMovieActivity.objects.filter(user=request.user, movie_id=media_id).first()
+        user_collections = request.user.collections.all().order_by('-is_default', 'name')
+        if not request.user.collections.filter(is_default=True).exists():
+            Collection.objects.create(
+                user=request.user,
+                name=f"{request.user.username}'s Watchlist",
+                is_default=True
+            )
     
     try:
         # 2. Fetch primary media details first
@@ -186,6 +196,7 @@ def media_detail(request, media_type, media_id):
             'credits': credits_data,
             'media_type': media_type,
             'trailer_link': trailer_link,
+            'user_collections': user_collections,
             'today': today_string,
             'activity': activity,
         }
@@ -490,4 +501,61 @@ def toggle_movie_action(request):
         'success': True,
         'action': action,
         'is_active': is_active
+    })
+
+
+
+@login_required
+@require_POST
+def toggle_collection_movie(request):
+    """Adds or removes a movie from a specific collection folder."""
+    movie_id = request.POST.get('movie_id')
+    movie_title = request.POST.get('movie_title', 'Unknown Title')
+    collection_id = request.POST.get('collection_id')
+
+    collection = get_object_or_404(Collection, id=collection_id, user=request.user)
+
+    # Fetch or initialize activity bridge record
+    activity, created = UserMovieActivity.objects.get_or_create(
+        user=request.user,
+        movie_id=movie_id,
+        defaults={'movie_title': movie_title}
+    )
+
+    # Toggle the collection membership status
+    if collection in activity.collections.all():
+        activity.collections.remove(collection)
+        in_collection = False
+    else:
+        activity.collections.add(collection)
+        in_collection = True
+
+    # Determine if this movie is saved in ANY collections now (to style the main button)
+    has_any_collection = activity.collections.exists()
+
+    return JsonResponse({
+        'success': True,
+        'in_collection': in_collection,
+        'has_any_collection': has_any_collection
+    })
+
+
+@login_required
+@require_POST
+def create_custom_collection(request):
+    """Creates a brand new custom collection folder on-the-fly via AJAX."""
+    name = request.POST.get('name', '').strip()
+    
+    if not name:
+        return JsonResponse({'success': False, 'error': 'Name cannot be empty.'}, status=400)
+
+    if request.user.collections.filter(name__iexact=name).exists():
+        return JsonResponse({'success': False, 'error': 'A collection with this name already exists.'}, status=400)
+
+    collection = Collection.objects.create(user=request.user, name=name)
+
+    return JsonResponse({
+        'success': True,
+        'id': collection.id,
+        'name': collection.name
     })

@@ -10,8 +10,12 @@ document.addEventListener('DOMContentLoaded', () => {
             banner.classList.add('has-trailer');
 
             banner.addEventListener('click', (event) => {
-                // 🛑 CRITICAL SAFETY: Added '.movie-action-panel' and its children to the ignore list
-                if (event.target.closest('.poster-column, .info-column, .action-buttons-vertical, .movie-action-panel, .banner-play-icon-wrapper, button, a')) {
+                // 🛑 SAFETY SHIELD: Stop the banner from hijacking clicks if they happen inside the modal dialog layers
+                if (event.target.closest('#collectionModal, .modal-content, .modal-backdrop')) {
+                    return;
+                }
+                
+                if (event.target.closest('.poster-column, .info-column, .action-buttons-vertical, .movie-action-panel, button, a')) {
                     return;
                 }
                 window.open(trailerUrl, '_blank', 'noopener,noreferrer');
@@ -20,83 +24,159 @@ document.addEventListener('DOMContentLoaded', () => {
     }
 
     /* ==========================================================================
-       2. USER ACTIVITY BUTTON TRACKER (AJAX ENGINE)
+       2. WATCHED / INTERESTED SINGLE AJAX TRIGGERS
        ========================================================================== */
     const actionPanel = document.querySelector('.movie-action-panel');
-    if (!actionPanel) return; // Exit gracefully if interaction buttons aren't on this page
+    if (actionPanel) {
+        const movieId = actionPanel.dataset.movieId;
+        const movieTitle = actionPanel.dataset.title;
+        const csrfToken = actionPanel.querySelector('[name=csrfmiddlewaretoken]').value;
 
-    // Gather global identifiers from the wrapper data attributes
-    const movieId = actionPanel.dataset.movieId;
-    const movieTitle = actionPanel.dataset.title;
-    const csrfToken = actionPanel.querySelector('[name=csrfmiddlewaretoken]').value;
+        actionPanel.querySelectorAll('.btn-watched').forEach(button => {
+            button.addEventListener('click', async (e) => {
+                e.preventDefault();
+                e.stopPropagation(); // Stops event from bubbling to banner
+                
+                const action = button.dataset.action;
+                const formData = new FormData();
+                formData.append('movie_id', movieId);
+                formData.append('movie_title', movieTitle);
+                formData.append('action', action);
 
-    // Attach event listeners to all buttons containing the .btn-action class rules
-    actionPanel.querySelectorAll('.btn-action').forEach(button => {
-        button.addEventListener('click', async (e) => {
+                try {
+                    const response = await fetch('/media/toggle-activity/', {
+                        method: 'POST',
+                        headers: { 'X-CSRFToken': csrfToken },
+                        body: formData
+                    });
+                    const data = await response.json();
+
+                    if (data.success) {
+                        button.classList.toggle('active', data.is_active);
+                        const textNode = button.querySelector('.btn-text');
+                        if (textNode) {
+                            if (action === 'watched') {
+                                textNode.textContent = data.is_active ? 'Watched' : 'Mark as Watched';
+                            } else if (action === 'interested') {
+                                textNode.textContent = data.is_active ? 'Interested (Notified)' : 'Mark as Interested';
+                            }
+                        }
+                    }
+                } catch (err) {
+                    console.error('Error syncing baseline tracking state:', err);
+                }
+            });
+        });
+    }
+
+    /* ==========================================================================
+       3. MODAL SUB-FORM ACCORDION TOGGLE
+       ========================================================================== */
+    const btnShowCreateForm = document.getElementById('btnShowCreateForm');
+    const createCollectionForm = document.getElementById('createCollectionForm');
+
+    if (btnShowCreateForm && createCollectionForm) {
+        btnShowCreateForm.addEventListener('click', (e) => {
             e.preventDefault();
-            e.stopPropagation(); // Prevents the click from bubbling up to the banner background
-            
-            const action = button.dataset.action;
-            if (!action) return;
+            e.stopPropagation(); // Prevents parent backdrop interceptors from killing this action
+            createCollectionForm.classList.toggle('d-none');
+        });
+    }
 
-            // Build dynamic form payload
+    /* ==========================================================================
+       4. COLLECTIONS SELECTION & CREATION AJAX ENGINE
+       ========================================================================== */
+    const listContainer = document.getElementById('collectionsListContainer');
+    if (listContainer) {
+        const movieId = listContainer.dataset.movieId;
+        const mainCollectionBtn = document.querySelector('.btn-collection');
+        const mainPanel = document.querySelector('.movie-action-panel');
+        const movieTitle = mainPanel ? mainPanel.dataset.title : '';
+        const csrfToken = listContainer.querySelector('[name=csrfmiddlewaretoken]').value;
+
+        // A. Listen for Checkbox updates (Toggling movie inside folders)
+        listContainer.addEventListener('change', async (e) => {
+            if (!e.target.classList.contains('collection-checkbox')) return;
+
+            const checkbox = e.target;
+            const collectionId = checkbox.dataset.collectionId;
+
             const formData = new FormData();
             formData.append('movie_id', movieId);
             formData.append('movie_title', movieTitle);
-            formData.append('action', action);
+            formData.append('collection_id', collectionId);
 
             try {
-                const response = await fetch('/media/toggle-activity/', {
+                const response = await fetch('/media/collection/toggle-movie/', {
                     method: 'POST',
-                    headers: {
-                        'X-CSRFToken': csrfToken
-                    },
+                    headers: { 'X-CSRFToken': csrfToken },
                     body: formData
                 });
-
                 const data = await response.json();
 
                 if (data.success) {
-                    // Toggle the visual active layout highlight state
-                    button.classList.toggle('active', data.is_active);
-
-                    // Update button typography text labels seamlessly on-the-fly
-                    const textNode = button.querySelector('.btn-text');
-                    if (textNode) {
-                        if (action === 'watched') {
-                            textNode.textContent = data.is_active ? 'Watched' : 'Mark as Watched';
-                        } else if (action === 'interested') {
-                            textNode.textContent = data.is_active ? 'Interested (Notified)' : 'Mark as Interested';
-                        } else if (action === 'collection') {
-                            textNode.textContent = data.is_active ? 'In Collection' : 'Add to Collection';
+                    // Instantly sync the visual state of the external main detail button
+                    if (mainCollectionBtn) {
+                        mainCollectionBtn.classList.toggle('active', data.has_any_collection);
+                        const textSpan = mainCollectionBtn.querySelector('.btn-text');
+                        if (textSpan) {
+                            textSpan.textContent = data.has_any_collection ? 'In Collection' : 'Add to Collection';
                         }
                     }
-                    
-                    // 🔄 Mutual Exclusion State Rule Sync
-                    if (data.is_active) {
-                        if (action === 'watched') {
-                            const interestedBtn = actionPanel.querySelector('[data-action="interested"]');
-                            if (interestedBtn) {
-                                interestedBtn.classList.remove('active');
-                                const intText = interestedBtn.querySelector('.btn-text');
-                                if (intText) intText.textContent = 'Mark as Interested';
-                            }
-                        } else if (action === 'interested') {
-                            const watchedBtn = actionPanel.querySelector('[data-action="watched"]');
-                            if (watchedBtn) {
-                                watchedBtn.classList.remove('active');
-                                const watchedText = watchedBtn.querySelector('.btn-text');
-                                if (watchedText) watchedText.textContent = 'Mark as Watched';
-                            }
-                        }
-                    }
-
-                } else {
-                    console.error('Action failed:', data.error);
                 }
             } catch (err) {
-                console.error('Error connecting to view controller gateway:', err);
+                console.error('Error modifying folder collection membership:', err);
             }
         });
-    });
+
+        // B. Handle Async Creation of new folders
+        const btnSubmit = document.getElementById('btnSubmitNewCollection');
+        const inputName = document.getElementById('newCollectionName');
+
+        if (btnSubmit && inputName && createCollectionForm) {
+            btnSubmit.addEventListener('click', async (e) => {
+                e.preventDefault();
+                const nameValue = inputName.value.trim();
+                if (!nameValue) return;
+
+                const formData = new FormData();
+                formData.append('name', nameValue);
+
+                try {
+                    const response = await fetch('/media/collection/create/', {
+                        method: 'POST',
+                        headers: { 'X-CSRFToken': csrfToken },
+                        body: formData
+                    });
+                    const data = await response.json();
+
+                    if (data.success) {
+                        const itemsContainer = listContainer.querySelector('.d-flex.flex-column');
+                        
+                        // Structural markup to inject the newly generated collection row live into the list
+                        const itemHtml = `
+                            <label class="collection-item d-flex align-items-center justify-content-between p-2 rounded">
+                                <div class="d-flex align-items-center gap-3">
+                                    <input type="checkbox" class="collection-checkbox" data-collection-id="${data.id}">
+                                    <span class="collection-name text-white-50">${data.name}</span>
+                                </div>
+                                <span class="lock-icon text-muted"><i class="bi bi-unlock"></i></span>
+                            </label>
+                        `;
+                        
+                        // Clear the empty placeholder string if this is the first item added
+                        if (itemsContainer.innerHTML.includes('No collections available.')) {
+                            itemsContainer.innerHTML = '';
+                        }
+                        
+                        itemsContainer.insertAdjacentHTML('beforeend', itemHtml);
+                        inputName.value = '';
+                        createCollectionForm.classList.add('d-none');
+                    }
+                } catch (err) {
+                    console.error('Error handling creation execution engine:', err);
+                }
+            });
+        }
+    }
 });

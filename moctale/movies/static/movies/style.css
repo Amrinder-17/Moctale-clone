@@ -1373,3 +1373,75 @@
     border-color: rgba(255, 255, 255, 0.25);
     box-shadow: 0 4px 15px rgba(122, 34, 255, 0.35);
 }
+
+/* 🔽 Push the background trailer interactions behind the modal layer */
+.movie-detail-hero-banner, 
+.banner-play-icon-wrapper,
+.has-trailer {
+    z-index: 1 !important;
+}
+
+/* 🔼 Force the Bootstrap modal system to the absolute front layer */
+.modal-backdrop {
+    z-index: 2000 !important; /* Forces dark overlay forward */
+}
+
+#collectionModal {
+    z-index: 2010 !important; /* Forces modal box forward */
+}
+
+.custom-dark-modal {
+    background-color: #1a1a1a !important;
+    border: 1px solid rgba(255, 255, 255, 0.08) !important;
+    border-radius: 16px !important;
+    color: #ffffff;
+    z-index: 2020 !important;
+}
+
+/* Close round button interface styling */
+.btn-close-custom {
+    background: rgba(255, 255, 255, 0.06);
+    border: none;
+    color: #a0a5b5;
+    width: 32px;
+    height: 32px;
+    border-radius: 50%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    transition: background 0.2s ease;
+}
+.btn-close-custom:hover {
+    background: rgba(255, 255, 255, 0.15);
+    color: #fff;
+}
+
+/* Collection List Rows interaction blocks */
+.collection-item {
+    cursor: pointer;
+    transition: background 0.15s ease;
+}
+.collection-item:hover {
+    background: rgba(255, 255, 255, 0.03);
+}
+
+/* Form checkboxes matching dark schemas */
+.collection-checkbox {
+    accent-color: #7a22ff; /* Your custom premium theme signature color */
+    width: 18px;
+    height: 18px;
+}
+
+/* Create button footer alignments */
+.btn-create-collection {
+    background: transparent;
+    border: 1px dashed rgba(255, 255, 255, 0.15);
+    color: #fff;
+    text-align: left;
+    transition: all 0.2s ease;
+}
+.btn-create-collection:hover {
+    background: rgba(122, 34, 255, 0.1);
+    border-color: #7a22ff;
+}
+
