@@ -465,36 +465,44 @@ def live_search_api(request):
 @login_required
 @require_POST
 def toggle_movie_action(request):
-    movie_id=request.POST.get('movie_id')
-    movie_title=request.POST.get('movie_title', 'Unknown_Title')
-    action=request.POST.get('action')
+    if request.method == 'POST':
+        movie_id = request.POST.get('movie_id')
+    movie_id = request.POST.get('movie_id')
+    movie_title = request.POST.get('movie_title', 'Unknown_Title')
+    action = request.POST.get('action')
+    poster_path = request.POST.get('poster_path')  # 🟢 Reading incoming string parameter
 
     if not movie_id or action not in ['watched', 'interested', 'collection']:
         return JsonResponse({'success': False, 'error': 'Invalid parameters.'}, status=400)
     
-    activity,created= UserMovieActivity.objects.get_or_create(
+    activity, created = UserMovieActivity.objects.get_or_create(
         user=request.user,
         movie_id=movie_id,
-        defaults={'movie_title': movie_title}
+        # 🟢 Include poster_path in defaults for when the record is created the first time
+        defaults={'movie_title': movie_title, 'poster_path': poster_path}
     )
 
-    if action=='watched':
-        activity.is_watched= not activity.is_watched
-        is_active= activity.is_watched
+    # 🟢 If the record already existed but poster_path wasn't saved yet, catch it here
+    if not created and poster_path and not activity.poster_path:
+        activity.poster_path = poster_path
+
+    if action == 'watched':
+        activity.is_watched = not activity.is_watched
+        is_active = activity.is_watched
 
         if activity.is_watched:
-            activity.is_interested=False
+            activity.is_interested = False
     
-    elif action=='interested':
-        activity.is_interested=not activity.is_interested
+    elif action == 'interested':
+        activity.is_interested = not activity.is_interested
         is_active = activity.is_interested
 
         if activity.is_interested:
-            activity.is_watched=False
+            activity.is_watched = False
 
     elif action == 'collection':
-        activity.in_collection= not activity.in_collection
-        is_active=activity.in_collection
+        activity.in_collection = not activity.in_collection
+        is_active = activity.in_collection
 
     activity.save()
 
@@ -569,3 +577,58 @@ def bookmarks(request):
         "collections":collections
     }
     return render(request,'movies/bookmark.html',context)
+
+@login_required
+@login_required
+def watchedlist(request):
+    api_key = settings.TMDB_API_KEY
+    base_url = "https://api.themoviedb.org/3"
+
+    watched_activities = UserMovieActivity.objects.filter(
+        user=request.user,
+        is_watched=True
+    ).order_by('-updated_at')
+
+    watched_media = []
+
+    for activity in watched_activities:
+
+        media = {
+            'id': activity.movie_id,
+            'title': activity.movie_title,
+            'name': activity.movie_title,
+            'poster_path': None,
+            'vote_average': 0,
+            'media_type': 'movie',
+        }
+
+        try:
+            response = requests.get(
+                f"{base_url}/movie/{activity.movie_id}",
+                params={"api_key": api_key}
+            )
+
+            if response.status_code == 200:
+                tmdb = response.json()
+
+                media.update({
+                    'poster_path': tmdb.get('poster_path'),
+                    'vote_average': round(
+                        tmdb.get('vote_average', 0), 1
+                    )
+                })
+
+        except Exception as e:
+            print(e)
+
+        watched_media.append(media)
+
+    return render(
+        request,
+        "movies/watchedlist.html",
+        {
+            "movies": watched_media,
+            "watched_media": watched_media,
+            "watched_items": watched_activities
+        }
+    )

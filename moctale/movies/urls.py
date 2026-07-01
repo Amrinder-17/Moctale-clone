@@ -11,4 +11,5 @@ urlpatterns = [
     path('collection/toggle-movie/', views.toggle_collection_movie, name='toggle_collection_movie'),
     path('collection/create/', views.create_custom_collection, name='create_custom_collection'),
     path('bookmark/',views.bookmarks,name='bookmarks'),
+    path('watched/',views.watchedlist,name='watchedlist'),
 ]

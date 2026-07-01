@@ -1,0 +1,165 @@
+{% extends "layout.html" %}
+{% load static %}
+{% block extra_css %}
+    <link rel="stylesheet" href="{% static 'movies/style.css' %}">
+{% endblock  %}
+{% block nav_active_explore %}{% endblock %}
+{% block nav_active_bookmark %}active{% endblock %}
+
+{% block content %}
+<div class="container-xl" style="padding-top: 100px !important; min-height: 100vh;">
+    <div class="row">
+        
+        <div class="col-md-3 mb-4">
+            <aside class="bookmarks-sidebar d-none d-md-block">
+                <nav class="schedule-source-nav d-flex flex-column gap-3">
+                    <a href="{% url "bookmarks" %}">
+                    <button type="button" class="schedule-source-btn " data-source="My collections">
+                        <i class="bi bi-collection-play"></i>
+                        <span>My collections</span>
+                    </button>
+                    </a>
+                    <button type="button" class="schedule-source-btn active" data-source="Watched list">
+                        <i class="bi bi-card-checklist"></i>
+                        <span>Watched list</span>
+                    </button>
+                    
+                    <button type="button" 
+                            data-bs-toggle="modal" 
+                            data-bs-target="#createCollectionDashboardModal"
+                            class="mt-2 inline-flex w-100 items-center justify-content-center gap-2 h-10 rounded-full text-sm font-medium text-white hover:opacity-90 transition-opacity focus:outline-none" 
+                            style="background: linear-gradient(to right, #B048FF, #8F44F0); border: none; height: 40px; border-radius: 50px; display: inline-flex; align-items: center; justify-content: center;"
+                            aria-label="Add Collection">
+                        <i class="bi bi-plus-lg" style="font-size: 0.9rem; -webkit-text-stroke: 0.5px; margin-right: 4px;"></i>
+                        <span>Add Collection</span>
+                    </button>
+                </nav>
+            </aside>
+        </div>
+
+        <div class="col-md-9">
+            <div class="d-flex justify-content-between align-items-center mb-4">
+                <div>
+                    <h2 class="text-white fw-bold h4 mb-1">Watched History</h2>
+                    <p class="text-white-50 small mb-0">Titles you have checked off across Moctale.</p>
+                </div>
+                <span class="badge bg-dark border border-secondary text-white-50 px-3 py-2 rounded-pill small">
+                    {{ movies|length }} Movie{{ movies|length|pluralize }}
+                </span>
+            </div>
+
+          <div class="row row-cols-2 row-cols-sm-3 row-cols-md-4 row-cols-lg-5 g-3 style-grid-fixes">
+                {% for media in watched_media %}
+                    <div class="col movie-card-wrapper" data-movie-id="{{ media.id }}">
+                        
+                        <div class="position-relative w-100 h-100" style="z-index: 1;">
+                            
+                            {% include "movies/partials/card.html" with media=media %}
+
+                            <button type="button" 
+                                    class="btn btn-danger btn-remove-watched d-flex align-items-center justify-content-center" 
+                                    data-id="{{ media.id }}"
+                                    data-title="{{ media.title }}"
+                                    style="position: absolute; top: 8px; right: 8px; width: 28px; height: 28px; border-radius: 50%; z-index: 9999 !important; padding: 0; border: 1.5px solid #000; box-shadow: 0 4px 10px rgba(0,0,0,0.7); background-color: #dc3545;">
+                                <i class="bi bi-trash3-fill" style="font-size: 0.75rem; color: #fff;"></i>
+                            </button>
+
+                        </div>
+                        
+                    </div>
+                {% empty %}
+                    <div class="col-12 text-center py-5">
+                        <div class="text-muted mb-3"><i class="bi bi-eye-slash fs-1"></i></div>
+                        <h3 class="text-white h5">Your watched list is empty</h3>
+                    </div>
+                {% endfor %}
+            </div>
+        </div>
+
+    </div>
+</div>
+
+
+
+<div id="moctaleSearchModal" class="search-overlay-modal-screen">
+        <div class="search-modal-inner-box">
+        
+            <div class="search-input-field-wrapper">
+                <i class="bi bi-search glass-tint"></i>
+                <input type="text" id="liveSearchInput" placeholder="Search for Movies, Shows, Anime, Cast & Crew or Users..." autocomplete="off">
+            </div>
+            
+            <div class="search-tabs-row">
+                <span class="tab-item active" data-tab="content">Content</span>
+                <span class="tab-item" data-tab="collections">Collections</span>
+                <span class="tab-item" data-tab="cast">Cast & Crew</span>
+                <span class="tab-item" data-tab="users">Users</span>
+            </div>
+
+            <div class="search-results-display-area">
+                
+                <div id="searchDefaultState" class="modal-empty-state-pane">
+                    <div class="history-circle">
+                        <i class="bi bi-search"></i>
+                    </div>
+                    <h3>No recent searches</h3>
+                    <p>Your search history will appear here</p>
+                </div>
+                
+                <div id="liveResultsGrid" class="live-results-grid hidden"></div>
+            </div>
+
+        </div>
+    </div>
+    <script>
+
+    console.log("🚀 Script successfully injected into the DOM!");
+
+    document.addEventListener('DOMContentLoaded', () => {
+        const removeBtns = document.querySelectorAll('.btn-remove-watched');
+        console.log("🎯 Found remove buttons count:", removeBtns.length);
+        
+        removeBtns.forEach(btn => {
+            btn.addEventListener('click', async (e) => {
+                e.preventDefault();
+                e.stopPropagation();
+
+                const movieId = btn.getAttribute('data-id');
+                const movieTitle = btn.getAttribute('data-title') || 'Unknown Title';
+                const cardBlock = document.querySelector(`.movie-card-wrapper[data-movie-id="${movieId}"]`);
+                
+                console.log(`Sending delete request for ID: ${movieId}`);
+
+                const formData = new FormData();
+                formData.append('movie_id', movieId);
+                formData.append('movie_title', movieTitle);
+                formData.append('action', 'watched'); 
+
+                try {
+                    const response = await fetch("{% url 'toggle_movie_action' %}", {
+                        method: 'POST',
+                        headers: { 'X-CSRFToken': '{{ csrf_token }}' },
+                        body: formData
+                    });
+                    const data = await response.json();
+                    
+                    if (data.success && cardBlock) {
+                        cardBlock.style.transition = 'all 0.2s ease';
+                        cardBlock.style.opacity = '0';
+                        cardBlock.style.transform = 'scale(0.85)';
+                        setTimeout(() => {
+                            cardBlock.remove();
+                            if(document.querySelectorAll('.movie-card-wrapper').length === 0) {
+                                location.reload();
+                            }
+                        }, 200);
+                    }
+                } catch (err) {
+                    console.error('Network failure:', err);
+                }
+            });
+        });
+    });
+</script>
+{% endblock content %}
+

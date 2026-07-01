@@ -22,6 +22,7 @@ class Collection(models.Model):
 class UserMovieActivity(models.Model):
     user=models.ForeignKey(User, on_delete=models.CASCADE , related_name='movie_activities')
     movie_id=models.IntegerField()
+    poster_path = models.CharField(max_length=255, blank=True, null=True)
     
     movie_title = models.CharField(max_length=255)
     

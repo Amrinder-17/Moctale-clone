@@ -13,14 +13,17 @@
         <div class="col-md-3 mb-4">
             <aside class="bookmarks-sidebar d-none d-md-block">
                 <nav class="schedule-source-nav d-flex flex-column gap-3">
+                    
                     <button type="button" class="schedule-source-btn active" data-source="My collections">
                         <i class="bi bi-collection-play"></i>
                         <span>My collections</span>
                     </button>
+                    <a href="{% url "watchedlist" %}">
                     <button type="button" class="schedule-source-btn" data-source="Watched list">
                         <i class="bi bi-card-checklist"></i>
                         <span>Watched list</span>
                     </button>
+                    </a>
                     
                     <button type="button" 
                             data-bs-toggle="modal" 
