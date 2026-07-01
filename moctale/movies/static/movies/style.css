@@ -10,29 +10,199 @@
   box-sizing: border-box;
 }
 
+.nav-icon-links-container {
+  display: flex;
+  align-items: center;
+  gap: 8px; /* Perfectly standard spacing layout gap */
+}
+
 /* Base Nav Tray Item Button Element Style Layout */
+.nav-tray-btn {
+  background: transparent !important;
+  border: none !important;
+  padding: 8px 14px !important;
+  display: inline-flex !important;
+  align-items: center !important;
+  justify-content: center !important;
+  gap: 0px; /* Hidden text container width gap boundary */
+  color: #717685 !important; /* Neutral dark grey desaturated text color tint */
+  border-radius: 8px;
+  cursor: pointer;
+  position: relative;
+  outline: none !important;
+  
+  /* Critical: Handles smooth animation expansion interpolation */
+  transition: color 0.3s cubic-bezier(0.4, 0, 0.2, 1), 
+              background-color 0.2s ease,
+              gap 0.3s cubic-bezier(0.4, 0, 0.2, 1) !important;
+}
 
 /* Base icon sizing scales rules */
+.nav-tray-btn i {
+  font-size: 1.25rem !important;
+  display: inline-block;
+  line-height: 1;
+}
+
+.nav-static-icon-btn {
+  background: transparent !important;
+  border: none !important;
+  padding: 8px 12px !important;
+  display: inline-flex !important;
+  align-items: center !important;
+  justify-content: center !important;
+  color: #717685 !important;
+  cursor: pointer;
+  outline: none !important;
+  transition: color 0.2s ease, transform 0.1s ease;
+}
+
+.nav-static-icon-btn i {
+  font-size: 1.25rem !important;
+}
+
+.nav-static-icon-btn:hover {
+  color: #cdd1db !important;
+}
 
 /* Adjust layout alignment for notification dot marker on a static button context */
+.nav-static-icon-btn .notification-dot {
+  top: 6px !important;
+  right: 10px !important;
+}
+
+
+.search-toggle-btn .search-icon-wrapper {
+  position: relative;
+  width: 20px;
+  height: 20px;
+  display: block;
+}
 
 /* Base Lens Vector Layer Style */
+.search-toggle-btn .search-lens {
+  position: absolute;
+  inset: 0;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  transition: transform 0.25s cubic-bezier(0.4, 0, 0.2, 1), opacity 0.2s ease;
+}
 
 /* Base Hidden Cross Element Character Styling Track */
+.search-toggle-btn .search-cross {
+  position: absolute;
+  inset: 0;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 1.8rem;
+  line-height: 1;
+  color: #ffffff;
+  opacity: 0;
+  transform: rotate(-90deg) scale(0.3);
+  transition: transform 0.25s cubic-bezier(0.4, 0, 0.2, 1), opacity 0.2s ease;
+}
 
 /* Active Class states triggered dynamically via JS toggle actions */
+.search-toggle-btn.search-active {
+  color: #ffffff !important;
+}
+
+.search-toggle-btn.search-active .search-lens {
+  opacity: 0;
+  transform: rotate(90deg) scale(0.3);
+}
+
+.search-toggle-btn.search-active .search-cross {
+  opacity: 1;
+  transform: rotate(0deg) scale(1);
+}
 
 /* The Label Text box: COMPLETELY COLLAPSED BY DEFAULT */
+.nav-tray-btn .label-text {
+  max-width: 0;
+  overflow: hidden;
+  white-space: nowrap;
+  font-size: 0.95rem;
+  font-weight: 500;
+  display: inline-block;
+  opacity: 0;
+  transition: max-width 0.3s cubic-bezier(0.4, 0, 0.2, 1), 
+              opacity 0.2s cubic-bezier(0.4, 0, 0.2, 1) !important;
+}
 
 /* Red notification alert badge dot alignment adjustments */
+.nav-tray-btn .notification-dot {
+  top: 6px !important;
+  right: 14px !important;
+}
 
 /* Hover over styling profile tracks */
+.nav-tray-btn:hover {
+  color: #cdd1db !important;
+}
+
+.nav-tray-btn.active {
+  color: #ffffff !important; 
+  gap: 8px; 
+}
+
+.nav-tray-btn.active .label-text {
+  max-width: 120px; /* Expands to structural content bounding constraints limit dynamically */
+  opacity: 1;
+}
 
 /* The Neon Purple Baseline Tracking Bar Glow Overlay Accent Underneath */
+.nav-tray-btn.active::after {
+  content: '';
+  position: absolute;
+  bottom: -10px; /* Tightly drops linear accent rule track line cleanly over boundary frame split */
+  left: 12px;
+  right: 12px;
+  height: 3px;
+  background: #a855f7; /* High fidelity vivid premium synth-purple tone */
+  border-radius: 99px;
+  box-shadow: 0 0 12px rgba(168, 85, 247, 0.6); /* Adds the neon light bar bloom bleed glow */
+}
 
 /* ==========================================================================
    PROFILE BADGE CONTAINER WRAPPER RENDER CONTROLS
    ========================================================================== */
+.nav-profile-section {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.profile-badge-link {
+  display: block;
+  width: 36px;
+  height: 36px;
+  border-radius: 50%;
+  overflow: hidden;
+  border: 1.5px solid rgba(255, 255, 255, 0.15);
+  transition: border-color 0.2s ease;
+}
+
+.profile-badge-link:hover {
+  border-color: #ffffff;
+}
+
+.profile-badge-img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+}
+
+.profile-badge-fallback svg {
+  width: 100%;
+  height: 100%;
+  color: #a0a5b5;
+  background: #24252c;
+  display: block;
+}
+
 
 .search-overlay-modal-screen {
   position: fixed !important;
