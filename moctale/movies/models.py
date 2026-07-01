@@ -1,15 +1,21 @@
 from django.db import models
 from django.contrib.auth.models import User
-
+from django.conf import settings
 from django.db.models.signals import post_save
 from django.dispatch import receiver
+import os
 
+def collection_banner_path(instance, filename):
+    # Organizes uploaded banners into media/collections/user_id/filename
+    return f'collections/user_{instance.user.id}/{filename}'
 
 # Create your models here.
 
 class Collection(models.Model):
     user = models.ForeignKey(User, on_delete=models.CASCADE, related_name="collections")
     name = models.CharField(max_length=150)
+    description = models.TextField(blank=True, null=True)
+    banner = models.ImageField(upload_to=collection_banner_path, blank=True, null=True)
     is_default = models.BooleanField(default=False)  # True for the auto-generated "Username's Watchlist"
     created_at = models.DateTimeField(auto_now_add=True)
 
@@ -44,3 +50,9 @@ def create_default_watchlist(sender, instance, created, **kwargs):
             name=f"{instance.username}'s Watchlist",
             is_default=True
         )
+
+@property
+def banner_url(self):
+    if self.banner and hasattr(self.banner, 'url'):
+        return self.banner.url
+    return f"{settings.STATIC_URL}movies/images/default_collection_banner.png"

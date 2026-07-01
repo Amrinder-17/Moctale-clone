@@ -9,6 +9,7 @@ from django.urls import reverse
 from django.views.decorators.http import require_POST
 from django.shortcuts import get_object_or_404
 from .models import Collection, UserMovieActivity
+from django.db.models import Count
 
 
 
@@ -522,16 +523,15 @@ def toggle_collection_movie(request):
         defaults={'movie_title': movie_title}
     )
 
-    # Toggle the collection membership status
-    if collection in activity.collections.all():
-        activity.collections.remove(collection)
+    if collection in activity.Collections.all():
+        activity.Collections.remove(collection)
         in_collection = False
     else:
-        activity.collections.add(collection)
+        activity.Collections.add(collection)
         in_collection = True
 
     # Determine if this movie is saved in ANY collections now (to style the main button)
-    has_any_collection = activity.collections.exists()
+    has_any_collection = activity.Collections.exists()
 
     return JsonResponse({
         'success': True,
@@ -559,3 +559,13 @@ def create_custom_collection(request):
         'id': collection.id,
         'name': collection.name
     })
+
+
+@login_required
+def bookmarks(request):
+    collections= request.user.collections.all().annotate(total_movies=Count('movies')
+    ).order_by('-is_default','-created_at')
+    context={
+        "collections":collections
+    }
+    return render(request,'movies/bookmark.html',context)

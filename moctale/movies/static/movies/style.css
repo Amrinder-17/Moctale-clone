@@ -1002,7 +1002,7 @@
     box-shadow: 0 8px 24px rgba(0, 0, 0, 0.6);
 }
 
-/* Stacking vertical buttons on the lower right block */
+/* Stacking vertical buttons on the schedule-sidebar lower right block */
 .action-buttons-vertical {
     min-width: 280px;
     position: relative;
@@ -1108,6 +1108,11 @@
     padding: 1.5rem 1rem;
     background: #090909;
     border-right: 1px solid rgba(255, 255, 255, 0.04);
+}
+.bookmarks-sidebar {
+    width: 200px;
+    flex-shrink: 0;
+    padding: 1.5rem 1rem;
 }
 
 .schedule-source-nav {
@@ -1445,3 +1450,48 @@
     border-color: #7a22ff;
 }
 
+/* Collection Dynamic Display Grid Card Frame Elements */
+.collection-playlist-card {
+    background-image: var(--card-banner-url);
+    background-size: cover;
+    background-position: center;
+    height: 180px;
+    border: 1px solid rgba(255, 255, 255, 0.05);
+    transition: transform 0.25s cubic-bezier(0.4, 0, 0.2, 1), border-color 0.25s ease;
+    cursor: pointer;
+}
+
+.collection-playlist-card:hover {
+    transform: translateY(-4px);
+    border-color: rgba(122, 34, 255, 0.4); /* Theme accent highlight lines */
+}
+
+/* Matte background glass blur tracking layer */
+.card-gradient-shield {
+    background: linear-gradient(to top, rgba(0, 0, 0, 0.95) 20%, rgba(0, 0, 0, 0.4) 60%, rgba(0, 0, 0, 0.1) 100%);
+    z-index: 2;
+}
+
+.bg-blur {
+    background: rgba(255, 255, 255, 0.08) !important;
+    backdrop-filter: blur(8px);
+    border: 1px solid rgba(255, 255, 255, 0.05);
+}
+
+/* Enforce ellipsis tracking overrides on description lines */
+.truncate-description {
+    display: -webkit-box;
+    -webkit-line-clamp: 2;
+    -webkit-box-orient: vertical;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    line-height: 1.3;
+}
+
+.extra-small {
+    font-size: 0.75rem !important;
+}
+
+.container-xl.py-5 {
+    padding-top: calc(56px + 2rem) !important; /* Adjust 56px to match your exact physical navbar height */
+}
