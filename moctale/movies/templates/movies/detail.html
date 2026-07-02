@@ -73,21 +73,32 @@
 
                     <div class="action-buttons-vertical d-flex flex-column gap-2 mb-1 movie-action-panel"
                         data-movie-id="{{ movie.id }}" 
-                        data-title="{% if movie.title %}{{ movie.title }}{% else %}{{ movie.name }}{% endif %}">
+                        data-title="{% if movie.title %}{{ movie.title }}{% else %}{{ movie.name }}{% endif %}"
+                        data-media-type="{{ media_type }}">
                         
                         {% csrf_token %}
                         
-                        {% if movie.release_date > today %}
-                            <button class="btn-action btn-watched w-100 {% if activity.is_interested %}active{% endif %}" data-id="{{ movie.id }}" data-action="interested">
-                                <i class="bi bi-fire"></i>
-                                <span class="btn-text">{% if activity.is_interested %}Interested (Notified){% else %}Mark as Interested{% endif %}</span>
-                            </button>
-                        {% else %}
-                            <button class="btn-action btn-watched w-100 {% if activity.is_watched %}active{% endif %}" data-id="{{ movie.id }}" data-action="watched">
-                                <i class="bi bi-check-circle"></i>
-                                <span class="btn-text">{% if activity.is_watched %}Watched{% else %}Mark as Watched{% endif %}</span>
-                            </button>
-                        {% endif %}
+                       {% if movie.release_date > today %}
+    <button class="btn-action btn-watched w-100 {% if activity.is_interested %}active{% endif %}" 
+            data-id="{{ movie.id }}" 
+            data-title="{% if movie.title %}{{ movie.title }}{% else %}{{ movie.name }}{% endif %}"
+            data-poster-path="{{ movie.poster_path }}"
+            data-media-type="{% if movie.title %}movie{% else %}tv{% endif %}"
+            data-action="interested">
+        <i class="bi bi-fire"></i>
+        <span class="btn-text">{% if activity.is_interested %}Interested (Notified){% else %}Mark as Interested{% endif %}</span>
+    </button>
+{% else %}
+    <button class="btn-action btn-watched w-100 {% if activity.is_watched %}active{% endif %}" 
+            data-id="{{ movie.id }}" 
+            data-title="{% if movie.title %}{{ movie.title }}{% else %}{{ movie.name }}{% endif %}"
+            data-poster-path="{{ movie.poster_path }}"
+            data-media-type="{% if movie.title %}movie{% else %}tv{% endif %}"
+            data-action="watched">
+        <i class="bi bi-check-circle"></i>
+        <span class="btn-text">{% if activity.is_watched %}Watched{% else %}Mark as Watched{% endif %}</span>
+    </button>
+{% endif %}
                         
                         <button class="btn-action btn-collection w-100 {% if activity.collections.any %}active{% endif %}" 
                                 type="button"

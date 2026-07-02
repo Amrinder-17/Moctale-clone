@@ -3,6 +3,7 @@ from . import views
 
 urlpatterns = [
     path('dashboard/',views.dashboard,name='dashboard'),
+    path("collection/<int:collection_id>/",views.collection_detail,name="collection_detail",),
     path('<str:media_type>/<int:media_id>/',views.media_detail,name='media_detail'),
     path('schedule/',views.schedule, name='Schedule'),
     path('movies/api/schedule-feed/',views.schedule_feed, name='schedule_feed_api'),
@@ -12,4 +13,5 @@ urlpatterns = [
     path('collection/create/', views.create_custom_collection, name='create_custom_collection'),
     path('bookmark/',views.bookmarks,name='bookmarks'),
     path('watched/',views.watchedlist,name='watchedlist'),
+    
 ]

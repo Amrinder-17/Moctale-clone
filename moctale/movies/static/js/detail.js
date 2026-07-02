@@ -1,6 +1,6 @@
 document.addEventListener('DOMContentLoaded', () => {
     /* ==========================================================================
-       1. HERO BANNER & TRAILER MANAGER
+       1. HERO BANNER & TRAILER MANAGER activity
        ========================================================================== */
     const banner = document.querySelector('.movie-detail-hero-banner');
     if (banner) {
@@ -28,60 +28,56 @@ document.addEventListener('DOMContentLoaded', () => {
        ========================================================================== */
     const actionPanel = document.querySelector('.movie-action-panel');
     if (actionPanel) {
-        const movieId = actionPanel.dataset.movieId;
-        const movieTitle = actionPanel.dataset.title;
-        const csrfToken = actionPanel.querySelector('[name=csrfmiddlewaretoken]').value;
+    const csrfToken = actionPanel.querySelector('[name=csrfmiddlewaretoken]').value;
 
-        actionPanel.querySelectorAll('.btn-watched').forEach(button => {
-            button.addEventListener('click', async (e) => {
-                e.preventDefault();
-                e.stopPropagation(); // Stops event from bubbling to banner
-                
-                const action = button.dataset.action;
-                const formData = new FormData();
-                formData.append('movie_id', movieId);
-                formData.append('movie_title', movieTitle);
-                formData.append('action', action);
+    actionPanel.querySelectorAll('.btn-watched').forEach(button => {
+        button.addEventListener('click', async (e) => {
+            e.preventDefault();
+            e.stopPropagation();
+            
+            // 🚀 Pull metadata dynamically directly from the button element attributes
+            const movieId = button.getAttribute('data-id');
+            const movieTitle = button.getAttribute('data-title');
+            const mediaType = button.getAttribute('data-media-type'); 
+            const posterPath = button.getAttribute('data-poster-path'); 
+            const action = button.getAttribute('data-action');
 
-                try {
-                    const response = await fetch('/media/toggle-activity/', {
-                        method: 'POST',
-                        headers: { 'X-CSRFToken': csrfToken },
-                        body: formData
-                    });
-                    const data = await response.json();
+            console.log("⚡ Debug Payload Data:", { movieId, movieTitle, mediaType, posterPath, action });
 
-                    if (data.success) {
-                        button.classList.toggle('active', data.is_active);
-                        const textNode = button.querySelector('.btn-text');
-                        if (textNode) {
-                            if (action === 'watched') {
-                                textNode.textContent = data.is_active ? 'Watched' : 'Mark as Watched';
-                            } else if (action === 'interested') {
-                                textNode.textContent = data.is_active ? 'Interested (Notified)' : 'Mark as Interested';
-                            }
+            const formData = new FormData();
+            formData.append('movie_id', movieId);
+            formData.append('movie_title', movieTitle);
+            formData.append('action', action);
+            formData.append('media_type', mediaType || 'movie');
+            formData.append('poster_path', posterPath || '');
+
+            try {
+                const response = await fetch('/media/toggle-activity/', { 
+                    method: 'POST',
+                    headers: { 'X-CSRFToken': csrfToken },
+                    body: formData
+                });
+                                
+                const data = await response.json();
+                if (data.success) {
+                    button.classList.toggle('active');
+                    
+                    // Optional text toggle logic
+                    const textSpan = button.querySelector('.btn-text');
+                    if (textSpan) {
+                        if (action === 'watched') {
+                            textSpan.textContent = data.is_active ? 'Watched' : 'Mark as Watched';
+                        } else if (action === 'interested') {
+                            textSpan.textContent = data.is_active ? 'Interested (Notified)' : 'Mark as Interested';
                         }
                     }
-                } catch (err) {
-                    console.error('Error syncing baseline tracking state:', err);
                 }
-            });
+            } catch (err) {
+                console.error('AJAX Failure:', err);
+            }
         });
-    }
-
-    /* ==========================================================================
-       3. MODAL SUB-FORM ACCORDION TOGGLE
-       ========================================================================== */
-    const btnShowCreateForm = document.getElementById('btnShowCreateForm');
-    const createCollectionForm = document.getElementById('createCollectionForm');
-
-    if (btnShowCreateForm && createCollectionForm) {
-        btnShowCreateForm.addEventListener('click', (e) => {
-            e.preventDefault();
-            e.stopPropagation(); // Prevents parent backdrop interceptors from killing this action
-            createCollectionForm.classList.toggle('d-none');
-        });
-    }
+    });
+}
 
     /* ==========================================================================
        4. COLLECTIONS SELECTION & CREATION AJAX ENGINE
@@ -92,6 +88,7 @@ document.addEventListener('DOMContentLoaded', () => {
         const mainCollectionBtn = document.querySelector('.btn-collection');
         const mainPanel = document.querySelector('.movie-action-panel');
         const movieTitle = mainPanel ? mainPanel.dataset.title : '';
+        const mediaType = actionPanel.dataset.mediaType;
         const csrfToken = listContainer.querySelector('[name=csrfmiddlewaretoken]').value;
 
         // A. Listen for Checkbox updates (Toggling movie inside folders)
@@ -104,6 +101,7 @@ document.addEventListener('DOMContentLoaded', () => {
             const formData = new FormData();
             formData.append('movie_id', movieId);
             formData.append('movie_title', movieTitle);
+            formData.append('media_type', mediaType);
             formData.append('collection_id', collectionId);
 
             try {

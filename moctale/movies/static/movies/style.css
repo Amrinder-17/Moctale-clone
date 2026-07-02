@@ -1456,3 +1456,14 @@ a {
 .container-xl.py-5 {
     padding-top: calc(56px + 2rem) !important; /* Adjust 56px to match your exact physical navbar height */
 }
+
+.movie-card-wrapper .btn-remove-watched {
+    opacity: 0;
+    pointer-events: none; 
+    transition: opacity 0.2s ease-in-out; 
+}
+
+.movie-card-wrapper:hover .btn-remove-watched {
+    opacity: 1;
+    pointer-events: auto; 
+}

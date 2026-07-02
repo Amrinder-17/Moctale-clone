@@ -48,7 +48,7 @@
                 </span>
             </div>
 
-          <div class="row row-cols-2 row-cols-sm-3 row-cols-md-4 row-cols-lg-5 g-3 style-grid-fixes">
+          <div class="row hovercard row-cols-2 row-cols-sm-3 row-cols-md-4 row-cols-lg-5 g-3 style-grid-fixes">
                 {% for media in watched_media %}
                     <div class="col movie-card-wrapper" data-movie-id="{{ media.id }}">
                         
@@ -57,7 +57,8 @@
                             {% include "movies/partials/card.html" with media=media %}
 
                             <button type="button" 
-                                    class="btn btn-danger btn-remove-watched d-flex align-items-center justify-content-center" 
+                                    class="btn btn-danger btn-hover btn-remove-watched d-flex align-items-center justify-content-center" 
+                                    
                                     data-id="{{ media.id }}"
                                     data-title="{{ media.title }}"
                                     style="position: absolute; top: 8px; right: 8px; width: 28px; height: 28px; border-radius: 50%; z-index: 9999 !important; padding: 0; border: 1.5px solid #000; box-shadow: 0 4px 10px rgba(0,0,0,0.7); background-color: #dc3545;">
@@ -113,7 +114,7 @@
     </div>
     <script>
 
-    console.log("🚀 Script successfully injected into the DOM!");
+    {% comment %} console.log("🚀 Script successfully injected into the DOM!"); {% endcomment %}
 
     document.addEventListener('DOMContentLoaded', () => {
         const removeBtns = document.querySelectorAll('.btn-remove-watched');

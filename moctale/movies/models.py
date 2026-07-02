@@ -23,6 +23,11 @@ class UserMovieActivity(models.Model):
     user=models.ForeignKey(User, on_delete=models.CASCADE , related_name='movie_activities')
     movie_id=models.IntegerField()
     poster_path = models.CharField(max_length=255, blank=True, null=True)
+    media_type = models.CharField(
+        max_length=10,
+        choices=[("movie", "Movie"), ("tv", "TV Show")],
+        default="movie"
+    )
     
     movie_title = models.CharField(max_length=255)
     

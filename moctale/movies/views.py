@@ -134,6 +134,7 @@ def _pick_trailer_link(videos):
 
 @login_required
 def media_detail(request, media_type, media_id):
+    print(">>> media_detail called")
     # 1. Protect unauthenticated request passes gracefully
     if not request.user.is_authenticated:
         return render(request, 'home/welcome.html')
@@ -465,12 +466,11 @@ def live_search_api(request):
 @login_required
 @require_POST
 def toggle_movie_action(request):
-    if request.method == 'POST':
-        movie_id = request.POST.get('movie_id')
     movie_id = request.POST.get('movie_id')
     movie_title = request.POST.get('movie_title', 'Unknown_Title')
+    media_type = request.POST.get("media_type", "movie")
     action = request.POST.get('action')
-    poster_path = request.POST.get('poster_path')  # 🟢 Reading incoming string parameter
+    poster_path = request.POST.get('poster_path')
 
     if not movie_id or action not in ['watched', 'interested', 'collection']:
         return JsonResponse({'success': False, 'error': 'Invalid parameters.'}, status=400)
@@ -478,25 +478,39 @@ def toggle_movie_action(request):
     activity, created = UserMovieActivity.objects.get_or_create(
         user=request.user,
         movie_id=movie_id,
-        # 🟢 Include poster_path in defaults for when the record is created the first time
-        defaults={'movie_title': movie_title, 'poster_path': poster_path}
+        defaults={
+            "movie_title": movie_title,
+            "poster_path": poster_path,
+            "media_type": media_type,
+        }
     )
+    
+    # 🚀 1. TRACK ACCURATE DIRTY DATA STATE
+    updated = False
 
-    # 🟢 If the record already existed but poster_path wasn't saved yet, catch it here
-    if not created and poster_path and not activity.poster_path:
+    if activity.media_type != media_type:
+        activity.media_type = media_type
+        updated = True
+
+    if poster_path and activity.poster_path != poster_path:
         activity.poster_path = poster_path
+        updated = True
 
+    # 🛑 2. THE BUG FIX: If 'updated' is true, save it now so later flag operations don't lose it!
+    # Removing the redundant block below this ensures clean SQL performance.
+    if updated:
+        activity.save(update_fields=["media_type", "poster_path"])
+
+    # 🟢 Action Flag Machine Business Logic
     if action == 'watched':
         activity.is_watched = not activity.is_watched
         is_active = activity.is_watched
-
         if activity.is_watched:
             activity.is_interested = False
     
     elif action == 'interested':
         activity.is_interested = not activity.is_interested
         is_active = activity.is_interested
-
         if activity.is_interested:
             activity.is_watched = False
 
@@ -504,7 +518,17 @@ def toggle_movie_action(request):
         activity.in_collection = not activity.in_collection
         is_active = activity.in_collection
 
+    # 🚀 3. PERSIST THE FINAL LOGICAL STATE
     activity.save()
+
+    # 🧹 Garbage Collector Clean up Check
+    if (
+        not activity.is_watched
+        and not activity.is_interested
+        and not activity.in_collection # 🟢 Safe check before checking ManyToMany relationships
+        and not activity.Collections.exists()
+    ):
+        activity.delete()
 
     return JsonResponse({
         'success': True,
@@ -512,14 +536,13 @@ def toggle_movie_action(request):
         'is_active': is_active
     })
 
-
-
 @login_required
 @require_POST
 def toggle_collection_movie(request):
     """Adds or removes a movie from a specific collection folder."""
     movie_id = request.POST.get('movie_id')
     movie_title = request.POST.get('movie_title', 'Unknown Title')
+    media_type = request.POST.get("media_type", "movie")
     collection_id = request.POST.get('collection_id')
 
     collection = get_object_or_404(Collection, id=collection_id, user=request.user)
@@ -528,8 +551,14 @@ def toggle_collection_movie(request):
     activity, created = UserMovieActivity.objects.get_or_create(
         user=request.user,
         movie_id=movie_id,
-        defaults={'movie_title': movie_title}
+        defaults={
+            "movie_title": movie_title,
+            "media_type": media_type,
+        }
     )
+
+    activity.media_type = media_type
+    activity.save(update_fields=["media_type"])
 
     if collection in activity.Collections.all():
         activity.Collections.remove(collection)
@@ -540,6 +569,12 @@ def toggle_collection_movie(request):
 
     # Determine if this movie is saved in ANY collections now (to style the main button)
     has_any_collection = activity.Collections.exists()
+    if (
+        not activity.is_watched
+        and not activity.is_interested
+        and not activity.Collections.exists()
+    ):
+        activity.delete()
 
     return JsonResponse({
         'success': True,
@@ -578,7 +613,7 @@ def bookmarks(request):
     }
     return render(request,'movies/bookmark.html',context)
 
-@login_required
+
 @login_required
 def watchedlist(request):
     api_key = settings.TMDB_API_KEY
@@ -599,12 +634,12 @@ def watchedlist(request):
             'name': activity.movie_title,
             'poster_path': None,
             'vote_average': 0,
-            'media_type': 'movie',
+             "media_type": activity.media_type,
         }
 
         try:
             response = requests.get(
-                f"{base_url}/movie/{activity.movie_id}",
+                f"{base_url}/{activity.media_type}/{activity.movie_id}",
                 params={"api_key": api_key}
             )
 
@@ -632,3 +667,60 @@ def watchedlist(request):
             "watched_items": watched_activities
         }
     )
+
+def collection_detail(request, collection_id):
+    api_key = settings.TMDB_API_KEY
+    base_url = "https://api.themoviedb.org/3"
+
+    collection = get_object_or_404(
+        Collection,
+        id=collection_id,
+        user=request.user
+    )
+
+    collection_media = []
+
+    for activity in collection.movies.all():
+
+        media = {
+            "id": activity.movie_id,
+            "title": activity.movie_title,
+            "name": activity.movie_title,
+            "poster_path": activity.poster_path,  # Use stored poster first
+            "vote_average": 0,
+            "media_type": activity.media_type,
+        }
+
+        try:
+            response = requests.get(
+                f"{base_url}/{activity.media_type}/{activity.movie_id}",
+                params={"api_key": api_key}
+            )
+
+            if response.status_code == 200:
+                tmdb = response.json()
+
+                media.update({
+                    "poster_path": tmdb.get("poster_path", activity.poster_path),
+                    "vote_average": round(tmdb.get("vote_average", 0), 1),
+                    "title": tmdb.get("title") or tmdb.get("name") or activity.movie_title,
+                    "name": tmdb.get("name") or tmdb.get("title") or activity.movie_title,
+                })
+
+        except Exception as e:
+            print(e)
+
+        collection_media.append(media)
+
+    return render(
+        request,
+        "movies/collection.html",
+        {
+            "collection": collection,
+            "movies": collection_media,
+        }
+    )
+
+from django.http import JsonResponse
+from django.views.decorators.http import require_POST
+
