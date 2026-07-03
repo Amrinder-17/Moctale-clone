@@ -13,17 +13,17 @@
         <div class="col-md-3 mb-4">
             <aside class="bookmarks-sidebar d-none d-md-block">
                 <nav class="schedule-source-nav d-flex flex-column gap-3">
-                    <a href="{% url "bookmarks" %}">
-                    <button type="button" class="schedule-source-btn active" data-source="My collections">
-                        <i class="bi bi-collection-play"></i>
-                        <span>My collections</span>
-                    </button>
+                    <a href="{% url 'bookmarks' %}">
+                        <button type="button" class="schedule-source-btn active" data-source="My collections">
+                            <i class="bi bi-collection-play"></i>
+                            <span>My collections</span>
+                        </button>
                     </a>
-                    <a href="{% url "watchedlist" %}">
-                    <button type="button" class="schedule-source-btn" data-source="Watched list">
-                        <i class="bi bi-card-checklist"></i>
-                        <span>Watched list</span>
-                    </button>
+                    <a href="{% url 'watchedlist' %}">
+                        <button type="button" class="schedule-source-btn" data-source="Watched list">
+                            <i class="bi bi-card-checklist"></i>
+                            <span>Watched list</span>
+                        </button>
                     </a>
                     
                     <button type="button" 
@@ -40,68 +40,102 @@
         </div>
 
         <div class="col-md-9">
-    <div class="d-flex justify-content-between align-items-center mb-4">
-        <div>
-            <h2 class="text-white fw-bold h4 mb-1">
-                {{ collection.name }}
-            </h2>
-
-            {% if collection.description %}
-                <p class="text-white-50 small mb-0">
-                    {{ collection.description }}
-                </p>
-            {% else %}
-                <p class="text-white-50 small mb-0">
-                    {{ movies|length }} title{{ movies|length|pluralize }} in this collection.
-                </p>
-            {% endif %}
-        </div>
-
-        <span class="badge bg-dark border border-secondary text-white-50 px-3 py-2 rounded-pill small">
-            {{ movies|length }} Movie{{ movies|length|pluralize }}
-        </span>
-    </div>
-
-    <div class="row hovercard row-cols-2 row-cols-sm-3 row-cols-md-4 row-cols-lg-5 g-3 style-grid-fixes">
-        {% for media in movies %}
-           <div class="col movie-card-wrapper" data-movie-id="{{ media.id }}">
-
-                <div class="position-relative w-100 h-100" style="z-index: 1;">
-
-                    {% include "movies/partials/card.html" with media=media %}
-
+            
+            <div class="d-flex flex-column mb-4 w-100">
                 
-                    <button type="button"
-                        class="btn btn-danger btn-hover btn-remove-watched d-flex align-items-center justify-content-center"
-                        data-id="{{ media.id }}"
-                        data-title="{{ media.title }}"
-                        data-collection="{{ collection.id }}"
-                        style="position: absolute; top: 8px; right: 8px; width: 28px; height: 28px; border-radius: 50%; z-index: 9999 !important; padding: 0; border: 1.5px solid #000; box-shadow: 0 4px 10px rgba(0,0,0,0.7); background-color: #dc3545;">
-                        <i class="bi bi-trash3-fill" style="font-size: 0.75rem; color: #fff;"></i>
-                    </button>
-
+                <div class="collection-media-box position-relative rounded-5 overflow-hidden d-block w-100 mb-3" 
+                    style="background-image: {% if collection.banner %}url('{{ collection.banner.url }}'){% else %}none{% endif %}; background-size: cover !important; background-position: center; height: 350px; border: 1px solid rgba(255, 255, 255, 0.05); background-color: #1a1a1a;">
+                    {% if not collection.banner %}
+                        <div class="brand-logo-container w-100 h-100" 
+                            style="background-image: url('https://www.moctale.in/placeholder-watchlist.svg'); background-size: cover; background-position: center;">
+                        </div>
+                    {% endif %}
                 </div>
 
-            </div>
-        {% empty %}
-            <div class="col-12 text-center py-5">
-                <div class="text-muted mb-3">
-                    <i class="bi bi-collection fs-1"></i>
+                <div>
+                    <div class="d-flex align-items-center w-100 mb-2">
+                        <h2 class="text-white fw-bold h4 mb-0">{{ collection.name }}</h2>
+                        
+                        <div class="d-flex align-items-center gap-2 ms-auto">
+                            
+                            <span class="badge bg-dark border border-secondary text-white-50 px-3 py-2 rounded-pill small">
+                                {{ movies|length }} Movie{{ movies|length|pluralize }}
+                            </span>
+                            <button id="searchOpenBtn" class="nav-static-icon-btn search-toggle-btn" type="button" aria-label="Toggle Search">
+                                <span>Add content</span>
+                                </span>
+                            </button>
+
+                            <div class="dropdown">
+                                <button class="btn btn-sm btn-outline-secondary rounded-circle d-flex align-items-center justify-content-center" 
+                                        type="button" 
+                                        id="editCollectionDropdown" 
+                                        data-bs-toggle="dropdown" 
+                                        aria-expanded="false"
+                                        style="width: 32px; height: 32px; color: #fff; border-color: rgba(255,255,255,0.2);">
+                                    <i class="bi bi-pencil-fill" style="font-size: 0.85rem;"></i>
+                                </button>
+                                
+                                <ul class="dropdown-menu dropdown-menu-end dropdown-menu-dark border border-secondary shadow" aria-labelledby="editCollectionDropdown" style="background-color: #1a1a1a; min-width: 180px;">
+                                    <li>
+                                        <button class="dropdown-item d-flex align-items-center gap-2 small py-2" type="button" data-bs-toggle="modal" data-bs-target="#changeBannerModal">
+                                            <i class="bi bi-image text-white-50"></i> Add/Change banner
+                                        </button>
+                                    </li>
+                                    <li>
+                                        <button class="dropdown-item d-flex align-items-center gap-2 small py-2" type="button" data-bs-toggle="modal" data-bs-target="#editDetailsModal">
+                                            <i class="bi bi-sliders text-white-50"></i> Edit details
+                                        </button>
+                                    </li>
+                                    <li><hr class="dropdown-divider border-secondary"></li>
+                                    <li>
+                                        <button class="dropdown-item d-flex align-items-center gap-2 small py-2 text-danger" type="button" data-bs-toggle="modal" data-bs-target="#deleteCollectionModal">
+                                            <i class="bi bi-trash3-fill"></i> Delete
+                                        </button>
+                                    </li>
+                                </ul>
+                            </div>
+
+                        </div>
+                    </div>
+
+                    {% if collection.description %}
+                        <p class="text-white-50 small mb-0 mt-2">
+                            <strong class="text-white fw-bold me-1">description:</strong>
+                            {{ collection.description }}
+                        </p>
+                    {% endif %}
                 </div>
+            </div> 
 
-                <h3 class="text-white h5">
-                    This collection is empty
-                </h3>
-
-                <p class="text-white-50">
-                    Add some movies to get started.
-                </p>
+            <div class="row hovercard row-cols-2 row-cols-sm-3 row-cols-md-4 row-cols-lg-5 g-3 style-grid-fixes">
+                {% for media in movies %}
+                    <div class="col movie-card-wrapper" data-movie-id="{{ media.id }}">
+                        <div class="position-relative w-100 h-100" style="z-index: 1;">
+                            {% include "movies/partials/card.html" with media=media %}
+                        
+                            <button type="button"
+                                    class="btn btn-danger btn-hover btn-remove-watched d-flex align-items-center justify-content-center"
+                                    data-id="{{ media.id }}"
+                                    data-title="{{ media.title }}"
+                                    data-collection="{{ collection.id }}"
+                                    style="position: absolute; top: 8px; right: 8px; width: 28px; height: 28px; border-radius: 50%; z-index: 9999 !important; padding: 0; border: 1.5px solid #000; box-shadow: 0 4px 10px rgba(0,0,0,0.7); background-color: #dc3545;">
+                                <i class="bi bi-trash3-fill" style="font-size: 0.75rem; color: #fff;"></i>
+                            </button>
+                        </div>
+                    </div>
+                {% empty %}
+                    <div class="col-12 text-center py-5">
+                        <div class="text-muted mb-3">
+                            <i class="bi bi-collection fs-1"></i>
+                        </div>
+                        <h3 class="text-white h5">This collection is empty</h3>
+                        <p class="text-white-50">Add some movies to get started.</p>
+                    </div>
+                {% endfor %}
             </div>
-        {% endfor %}
-    </div>
-</div>
-    </div>
-</div>
+
+        </div>
 
 
 

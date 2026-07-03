@@ -45,10 +45,11 @@
                     <div class="col-sm-6 col-lg-4"> <div class="collection-item-block d-flex flex-column gap-2" style="cursor: pointer; width: 100%; max-width: 280px;">
                             <a href="{% url 'collection_detail' col.id %}">
                             <div class="collection-media-box position-relative rounded-3 overflow-hidden d-flex align-items-center justify-content-center" 
-                                 style="background-image: url('{{ col.banner_url }}'); background-size: cover; background-position: center; height: 160px; border: 1px solid rgba(255, 255, 255, 0.05); background-color: #1a1a1a;">
+                                style="background-image: {% if col.banner %}url('{{ col.banner.url }}'){% else %}none{% endif %}; background-size: cover; background-position: center; height: 160px; border: 1px solid rgba(255, 255, 255, 0.05); background-color: #1a1a1a;">
+                                
                                 {% if not col.banner %}
-                                    <div class="brand-logo-container d-flex align-items-center justify-content-center" style="width: 48px; height: 48px; flex-shrink: 0;">
-                                        <img src="{% static 'images/logo.png' %}" alt="Moctale" style="width: 100%; height: 100%; object-fit: contain; flex-shrink: 0;">
+                                    <div class="brand-logo-container w-100 h-100" 
+                                        style="background-image: url('https://www.moctale.in/placeholder-watchlist.svg'); background-size: cover; background-position: center;">
                                     </div>
                                 {% endif %}
                             </div>
