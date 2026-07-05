@@ -3,12 +3,180 @@
 {% block extra_css %}
 <link href="{% static 'style.css' %}?v=1.1" rel="stylesheet">
 {% endblock %}
+
+
+  {% block navbar %}
+    <nav class="navbar navbar-expand-lg navbar-dark navbar-translucent sticky-top bg-body-tertiary border-bottom border-body-secondary">
+      <div class="container-fluid">
+        <div class="d-flex align-items-center ms-5">
+          <img src="{% static 'images/logo.png' %}" alt="Moctale Logo" style="height: 25px; margin-right: 10px;">
+          <a class="navbar-brand mb-0 fw-bold" href="#">MOCTALE</a>
+        </div>
+        <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarSupportedContent" aria-controls="navbarSupportedContent" aria-expanded="false" aria-label="Toggle navigation">
+          <span class="navbar-toggler-icon"></span>
+        </button>
+        <div class="collapse navbar-collapse" id="navbarSupportedContent">
+          <div class="ms-auto d-flex gap-2">
+            <a href="{% url 'register' %}" class="btn btn-dark btn btn-primary text-center fw-semibold" style="background-color: #000000; margin-right: 5px; width:85.5px;height:37px; font-size:15px;">Sign Up</a>
+            <a href="{% url 'login' %}" class="btn btn btn-primary text-center fw-semibold" style="background-color: #4f15e1; color: white;  margin-right:60px; width: 69px; height:36px; font-size:17px; ">Login</a>
+          </div>
+        </div>
+      </div>
+    </nav>
+    {% endblock  %}
+    
 {% block content %}
-<div class="auth-container">
-    <h2>Join Moctale</h2>
-    <form method="POST">
-        {% csrf_token %} {{ form.as_p }} <button type="submit">Sign Up</button>
-    </form>
-    <p>Already have an account? <a href="{% url 'login' %}">Log In</a></p>
+<style>
+    /* Premium Dark Theme with Subtle Blue Accents */
+    body {
+        background-color: #0a0e17;
+        color: #f3f4f6;
+        font-family: 'Segoe UI', Roboto, Helvetica, Arial, sans-serif;
+    }
+
+    .auth-wrapper {
+        min-height: 85vh;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        padding: 1.5rem;
+    }
+
+    .auth-container {
+        background-color: #111827;
+        border: 1px solid rgba(59, 130, 246, 0.15);
+        border-radius: 12px;
+        padding: 2.5rem;
+        width: 100%;
+        max-width: 420px;
+        box-shadow: 0 20px 25px -5px rgba(0, 0, 0, 0.4), 0 10px 10px -5px rgba(0, 0, 0, 0.4);
+    }
+
+    .auth-container h2 {
+        font-size: 1.75rem;
+        font-weight: 700;
+        margin-bottom: 1.75rem;
+        color: #ffffff;
+        letter-spacing: -0.5px;
+    }
+
+    /* Single Dynamic Validation Banner Style */
+    .validation-alert {
+        background-color: rgba(239, 68, 68, 0.1);
+        border: 1px solid rgba(239, 68, 68, 0.35);
+        border-radius: 6px;
+        padding: 0.75rem 1rem;
+        margin-bottom: 1.5rem;
+    }
+
+    .validation-alert p {
+        color: #fca5a5;
+        font-size: 0.88rem;
+        margin: 0;
+        font-weight: 500;
+    }
+
+    .auth-container form p {
+        margin-bottom: 1.25rem;
+    }
+
+    .auth-container label {
+        display: block;
+        margin-bottom: 0.5rem;
+        font-size: 0.9rem;
+        font-weight: 500;
+        color: #9ca3af;
+    }
+
+    .auth-container input {
+        width: 100%;
+        padding: 0.75rem 1rem;
+        background-color: #1f2937;
+        border: 1px solid #374151;
+        border-radius: 6px;
+        color: #ffffff;
+        font-size: 0.95rem;
+        transition: border-color 0.15s ease, box-shadow 0.15s ease;
+    }
+
+    .auth-container input:focus {
+        outline: none;
+        border-color: #3b82f6;
+        box-shadow: 0 0 0 3px rgba(59, 130, 246, 0.25);
+    }
+
+    /* Hide default complex error templates and helper hints completely */
+    .auth-container .helptext, 
+    .auth-container .errorlist {
+        display: none !important;
+    }
+
+    .btn-submit {
+        width: 100%;
+        padding: 0.75rem;
+        background-color: #2563eb;
+        border: none;
+        border-radius: 6px;
+        color: #ffffff;
+        font-weight: 600;
+        font-size: 1rem;
+        cursor: pointer;
+        transition: background-color 0.15s ease;
+        margin-top: 0.75rem;
+    }
+
+    .btn-submit:hover {
+        background-color: #1d4ed8;
+    }
+
+    .auth-switch {
+        text-align: center;
+        margin-top: 1.75rem;
+        margin-bottom: 0;
+        font-size: 0.9rem;
+        color: #9ca3af;
+    }
+
+    .auth-switch a {
+        color: #60a5fa;
+        text-decoration: none;
+        font-weight: 500;
+    }
+
+    .auth-switch a:hover {
+        text-decoration: underline;
+    }
+</style>
+
+<div class="container auth-wrapper">
+    <div class="auth-container">
+        <h2>Join Moctale</h2>
+        
+        {% if form.errors %}
+            <div class="validation-alert">
+                <p>
+                    {% for errors in form.errors.values %}
+                        {% if forloop.first %}
+                            {{ errors.0|striptags }}
+                        {% endif %}
+                    {% endfor %}
+                </p>
+            </div>
+        {% endif %}
+        <form method="POST">
+            {% csrf_token %} 
+            
+            {% for field in form %}
+                <div class="form-group mb-3">
+                    <label for="{{ field.id_for_label }}">{{ field.label }}</label>
+                    {{ field }}
+                </div>
+            {% endfor %}
+            
+            <button type="submit" class="btn-submit mt-3">Sign Up</button>
+        </form>
+        
+        <p class="auth-switch">Already have an account? <a href="{% url 'login' %}">Log In</a></p>
+    </div>
 </div>
-{% endblock  %}
+{% endblock %}
