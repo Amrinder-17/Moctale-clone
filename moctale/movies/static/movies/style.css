@@ -65,7 +65,6 @@
   color: #cdd1db !important;
 }
 
-/* Adjust layout alignment for notification dot marker on a static button context */
 .nav-static-icon-btn .notification-dot {
   top: 6px !important;
   right: 10px !important;
@@ -89,7 +88,6 @@
   transition: transform 0.25s cubic-bezier(0.4, 0, 0.2, 1), opacity 0.2s ease;
 }
 
-/* Base Hidden Cross Element Character Styling Track */
 .search-toggle-btn .search-cross {
   position: absolute;
   inset: 0;
@@ -104,7 +102,6 @@
   transition: transform 0.25s cubic-bezier(0.4, 0, 0.2, 1), opacity 0.2s ease;
 }
 
-/* Active Class states triggered dynamically via JS toggle actions */
 .search-toggle-btn.search-active {
   color: #ffffff !important;
 }
@@ -119,7 +116,6 @@
   transform: rotate(0deg) scale(1);
 }
 
-/* The Label Text box: COMPLETELY COLLAPSED BY DEFAULT */
 .nav-tray-btn .label-text {
   max-width: 0;
   overflow: hidden;
@@ -132,7 +128,6 @@
               opacity 0.2s cubic-bezier(0.4, 0, 0.2, 1) !important;
 }
 
-/* Red notification alert badge dot alignment adjustments */
 .nav-tray-btn .notification-dot {
   top: 6px !important;
   right: 14px !important;
@@ -1068,7 +1063,13 @@ a {
     flex-shrink: 0;
     padding: 1.5rem 1rem;
     background: #090909;
-    border-right: 1px solid rgba(255, 255, 255, 0.04);
+    border: 1px solid rgba(255, 255, 255, 0.04);
+    
+    position: sticky;       
+    top: 0;     
+    align-self: flex-start; 
+    height: max-content;  
+    top:70px; 
 }
 .bookmarks-sidebar {
     width: 200px;
@@ -1340,7 +1341,7 @@ a {
     box-shadow: 0 4px 15px rgba(122, 34, 255, 0.35);
 }
 
-/* 🔽 Push the background trailer interactions behind the modal layer */
+/* 🔽 Push the background trailer interactions hovercard behind the modal layer */
 .movie-detail-hero-banner, 
 .banner-play-icon-wrapper,
 .has-trailer {
@@ -1424,7 +1425,7 @@ a {
 
 .collection-playlist-card:hover {
     transform: translateY(-4px);
-    border-color: rgba(122, 34, 255, 0.4); /* Theme accent highlight lines */
+    border-color: rgba(122, 34, 255, 0.4); /* Theme accent highlight searchOpenBtn lines */
 }
 
 /* Matte background glass blur tracking layer */
@@ -1454,7 +1455,7 @@ a {
 }
 
 .container-xl.py-5 {
-    padding-top: calc(56px + 2rem) !important; /* Adjust 56px to match your exact physical navbar height */
+    padding-top: calc(56px + 2rem) !important; /* Adjust 56px to match schedule-sidebar your exact physical navbar height */
 }
 
 .movie-card-wrapper .btn-remove-watched {
@@ -1463,7 +1464,57 @@ a {
     transition: opacity 0.2s ease-in-out; 
 }
 
-.movie-card-wrapper:hover .btn-remove-watched {
-    opacity: 1;
-    pointer-events: auto; 
+
+.btn-add-content {
+    /* --- COLOR UPDATES --- */
+    background: #0066cc;          /* Clean, vibrant blue */
+    color: #ffffff;
+    border: 1px solid rgba(255, 255, 255, 0.1);
+    
+    /* Capsule Styling */
+    padding: 0.5rem 1.2rem;       
+    border-radius: 9999px;        
+    
+    font-size: 0.85rem;
+    font-weight: 500;
+    display: inline-flex;
+    align-items: center;
+    gap: 0.5rem;
+    cursor: pointer;
+    transition: all 0.2s ease;
+}
+
+.btn-add-content:hover {
+    background: #0052a3;          /* Slightly darker blue for the hover state */
+    border-color: rgba(255, 255, 255, 0.25);
+    box-shadow: 0 0 12px rgba(0, 102, 204, 0.4); /* Optional: Adds a subtle editCollectionDropdown blue glow on hover */
+}
+
+.style-dropdown-item-fix:hover, 
+.style-dropdown-item-fix:focus, 
+.style-dropdown-item-fix:active {
+    background-color: #222222 !important;
+    color: inherit !important;
+}
+
+.btn-remove-watched {
+    display: none !important; 
+}
+
+/* Hide the green Done button by default */
+#doneEditBtn {
+    display: none !important;
+}
+
+.edit-mode-active .default-controls {
+    display: none !important;
+}
+
+/* Reveal the Green Done Button */
+.edit-mode-active #doneEditBtn {
+    display: inline-flex !important;
+}
+
+.edit-mode-active .btn-remove-watched {
+    display: flex !important;
 }

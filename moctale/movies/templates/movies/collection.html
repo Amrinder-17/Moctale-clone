@@ -7,7 +7,7 @@
 {% block nav_active_bookmark %}active{% endblock %}
 
 {% block content %}
-<div class="container-xl" style="padding-top: 100px !important; min-height: 100vh;">
+<div class="container-xl" style="padding-top: 50px !important; min-height: 100vh;">
     <div class="row">
         
         <div class="col-md-3 mb-4">
@@ -43,16 +43,14 @@
             
             <div class="d-flex flex-column mb-4 w-100">
                 
-                <div class="collection-media-box position-relative rounded-5 overflow-hidden d-block w-100 mb-3" 
-                    style="background-image: {% if collection.banner %}url('{{ collection.banner.url }}'){% else %}none{% endif %}; background-size: cover !important; background-position: center; height: 350px; border: 1px solid rgba(255, 255, 255, 0.05); background-color: #1a1a1a;">
+                <div class="banner-container collection-media-box position-relative rounded-5 overflow-hidden d-block w-100 mb-3" 
+                    style="position:relative;  background-image: {% if collection.banner %}url('{{ collection.banner.url }}'){% else %}none{% endif %}; background-size: cover !important; background-position: center; height: 350px; border: 1px solid rgba(255, 255, 255, 0.05); background-color: #1a1a1a;">
                     {% if not collection.banner %}
                         <div class="brand-logo-container w-100 h-100" 
                             style="background-image: url('https://www.moctale.in/placeholder-watchlist.svg'); background-size: cover; background-position: center;">
                         </div>
                     {% endif %}
                 </div>
-
-                <div>
                     <div class="d-flex align-items-center w-100 mb-2">
                         <h2 class="text-white fw-bold h4 mb-0">{{ collection.name }}</h2>
                         
@@ -61,39 +59,85 @@
                             <span class="badge bg-dark border border-secondary text-white-50 px-3 py-2 rounded-pill small">
                                 {{ movies|length }} Movie{{ movies|length|pluralize }}
                             </span>
-                            <button id="searchOpenBtn" class="nav-static-icon-btn search-toggle-btn" type="button" aria-label="Toggle Search">
-                                <span>Add content</span>
-                                </span>
-                            </button>
+                            <div class="banner-top-actions">
+                                <div class="default-controls d-flex align-items-center gap-2">
+                                    <button id="searchOpenBtn2" class="search-toggle-btn btn-add-content" type="button">
+                                        <i class="bi bi-plus-lg"></i>
+                                        <span>Add Content</span>
+                                    </button>
 
-                            <div class="dropdown">
-                                <button class="btn btn-sm btn-outline-secondary rounded-circle d-flex align-items-center justify-content-center" 
-                                        type="button" 
-                                        id="editCollectionDropdown" 
-                                        data-bs-toggle="dropdown" 
-                                        aria-expanded="false"
-                                        style="width: 32px; height: 32px; color: #fff; border-color: rgba(255,255,255,0.2);">
-                                    <i class="bi bi-pencil-fill" style="font-size: 0.85rem;"></i>
+                                    <div class="dropdown d-inline-block" style="position: relative;">
+                                        <button class="btn btn-sm btn-outline-secondary rounded-circle d-flex align-items-center justify-content-center" 
+                                                type="button" 
+                                                id="editCollectionDropdown" 
+                                                data-bs-toggle="dropdown" 
+                                                data-bs-display="static"
+                                                aria-expanded="false"
+                                                onmouseover="this.style.backgroundColor='#3a3a3a'; this.style.borderColor='rgba(255,255,255,0.4)';"
+                                                onmouseout="this.style.backgroundColor='rgba(0,0,0,0.6)'; this.style.borderColor='rgba(255,255,255,0.2)';"
+                                                style="width: 36px; height: 36px; color: #fff; background-color: rgba(0,0,0,0.6); border: 1px solid rgba(255,255,255,0.2); backdrop-filter: blur(4px); transition: all 0.2s ease;">
+                                            <i class="bi bi-pencil-fill" style="font-size: 0.85rem;"></i>
+                                        </button>
+                                        
+                                        <ul class="dropdown-menu dropdown-menu-end shadow" 
+                                            aria-labelledby="editCollectionDropdown" 
+                                            style="background-color: #161616; min-width: 160px; border: 1px solid #262626; border-radius: 8px; padding: 0.35rem; position: absolute; top: 100%; right: 0; left: auto; margin-top: 4px; z-index: 10000;">
+                                            
+                                            <li>
+                                                <button class="dropdown-item d-flex align-items-center gap-2 text-white style-dropdown-item-fix" 
+                                                        type="button" data-bs-toggle="modal" data-bs-target="#changeBannerModal"
+                                                        style="padding: 0.5rem 0.75rem; border-radius: 6px; font-weight: 500; font-size: 0.9rem; background: transparent;"
+                                                        onmouseover="this.style.backgroundColor='#222222';" onmouseout="this.style.backgroundColor='transparent';">
+                                                    <i class="bi bi-image-fill" style="font-size: 1rem;"></i> <span>Edit Banner</span>
+                                                </button>
+                                            </li>
+                                            <li>
+                                                <button class="dropdown-item d-flex align-items-center gap-2 text-white style-dropdown-item-fix" 
+                                                        type="button" data-bs-toggle="modal" data-bs-target="#editDetailsModal"
+                                                        style="padding: 0.5rem 0.75rem; border-radius: 6px; font-weight: 500; font-size: 0.9rem; background: transparent;"
+                                                        onmouseover="this.style.backgroundColor='#222222';" onmouseout="this.style.backgroundColor='transparent';">
+                                                    <i class="bi bi-pencil" style="font-size: 1rem;"></i> <span>Edit Details</span>
+                                                </button>
+                                            </li>
+                                            
+                                            <li>
+                                                <button class="dropdown-item d-flex align-items-center gap-2 text-white style-dropdown-item-fix" 
+                                                        type="button"
+                                                        onclick="
+                                                            document.querySelector('.default-controls').style.setProperty('display', 'none', 'important');
+                                                            document.getElementById('doneEditBtn').style.setProperty('display', 'inline-flex', 'important');
+                                                            document.querySelectorAll('.btn-remove-watched').forEach(btn => btn.style.setProperty('display', 'flex', 'important'));
+                                                        "
+                                                        style="padding: 0.5rem 0.75rem; border-radius: 6px; font-weight: 500; font-size: 0.9rem; background: transparent;"
+                                                        onmouseover="this.style.backgroundColor='#222222';" onmouseout="this.style.backgroundColor='transparent';">
+                                                    <i class="bi bi-list-task" style="font-size: 1rem;"></i> <span>Edit List</span>
+                                                </button>
+                                            </li>
+                                            <li><hr class="dropdown-divider border-secondary" style="margin: 0.3rem 0;"></li>
+                                            <li>
+                                                <button class="dropdown-item d-flex align-items-center gap-2 style-dropdown-item-fix" 
+                                                        type="button" data-bs-toggle="modal" data-bs-target="#deleteCollectionModal"
+                                                        style="padding: 0.5rem 0.75rem; border-radius: 6px; font-weight: 500; font-size: 0.9rem; color: #e05c5c; background: transparent;"
+                                                        onmouseover="this.style.backgroundColor='#222222';" onmouseout="this.style.backgroundColor='transparent';">
+                                                    <i class="bi bi-trash3" style="font-size: 1rem;"></i> <span>Delete</span>
+                                                </button>
+                                            </li>
+                                        </ul>
+                                    </div>
+                                </div>
+
+                                <button class="btn btn-success" type="button" id="doneEditBtn"
+                                        onclick="
+                                            document.querySelector('.default-controls').style.setProperty('display', 'flex', 'important');
+                                            document.getElementById('doneEditBtn').style.setProperty('display', 'none', 'important');
+                                            document.querySelectorAll('.btn-remove-watched').forEach(btn => btn.style.setProperty('display', 'none', 'important'));
+                                        "
+                                        style="background-color: #198754; color: #ffffff; padding: 0.5rem 1.2rem; border-radius: 9999px; border: 1px solid rgba(255, 255, 255, 0.15); font-size: 0.85rem; font-weight: 500; cursor: pointer; display: none; align-items: center; gap: 0.35rem; transition: background-color 0.2s;"
+                                        onmouseover="this.style.backgroundColor='#157347';"
+                                        onmouseout="this.style.backgroundColor='#198754';">
+                                    <i class="bi bi-check-lg"></i>
+                                    <span>Done</span>
                                 </button>
-                                
-                                <ul class="dropdown-menu dropdown-menu-end dropdown-menu-dark border border-secondary shadow" aria-labelledby="editCollectionDropdown" style="background-color: #1a1a1a; min-width: 180px;">
-                                    <li>
-                                        <button class="dropdown-item d-flex align-items-center gap-2 small py-2" type="button" data-bs-toggle="modal" data-bs-target="#changeBannerModal">
-                                            <i class="bi bi-image text-white-50"></i> Add/Change banner
-                                        </button>
-                                    </li>
-                                    <li>
-                                        <button class="dropdown-item d-flex align-items-center gap-2 small py-2" type="button" data-bs-toggle="modal" data-bs-target="#editDetailsModal">
-                                            <i class="bi bi-sliders text-white-50"></i> Edit details
-                                        </button>
-                                    </li>
-                                    <li><hr class="dropdown-divider border-secondary"></li>
-                                    <li>
-                                        <button class="dropdown-item d-flex align-items-center gap-2 small py-2 text-danger" type="button" data-bs-toggle="modal" data-bs-target="#deleteCollectionModal">
-                                            <i class="bi bi-trash3-fill"></i> Delete
-                                        </button>
-                                    </li>
-                                </ul>
                             </div>
 
                         </div>
@@ -105,7 +149,6 @@
                             {{ collection.description }}
                         </p>
                     {% endif %}
-                </div>
             </div> 
 
             <div class="row hovercard row-cols-2 row-cols-sm-3 row-cols-md-4 row-cols-lg-5 g-3 style-grid-fixes">
@@ -115,11 +158,11 @@
                             {% include "movies/partials/card.html" with media=media %}
                         
                             <button type="button"
-                                    class="btn btn-danger btn-hover btn-remove-watched d-flex align-items-center justify-content-center"
-                                    data-id="{{ media.id }}"
-                                    data-title="{{ media.title }}"
-                                    data-collection="{{ collection.id }}"
-                                    style="position: absolute; top: 8px; right: 8px; width: 28px; height: 28px; border-radius: 50%; z-index: 9999 !important; padding: 0; border: 1.5px solid #000; box-shadow: 0 4px 10px rgba(0,0,0,0.7); background-color: #dc3545;">
+                                class="btn btn-danger btn-remove-watched d-flex align-items-center justify-content-center"
+                                data-id="{{ media.id }}"
+                                data-title="{{ media.title }}"
+                                data-collection="{{ collection.id }}"
+                                style="position: absolute; top: 8px; right: 8px; width: 28px; height: 28px; border-radius: 50%; z-index: 9999 !important; padding: 0; border: 1.5px solid #000; box-shadow: 0 4px 10px rgba(0,0,0,0.7); background-color: #dc3545; display: none !important;">
                                 <i class="bi bi-trash3-fill" style="font-size: 0.75rem; color: #fff;"></i>
                             </button>
                         </div>
@@ -246,6 +289,8 @@ console.log(cardBlock);
     });
 
 });
+
 </script>
+<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"></script>
 {% endblock content %}
 

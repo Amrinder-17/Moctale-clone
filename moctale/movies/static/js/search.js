@@ -1,11 +1,13 @@
 document.addEventListener('DOMContentLoaded', () => {
     const openBtn = document.getElementById('searchOpenBtn');
     
+    document.getElementById('searchOpenBtn2')?.addEventListener('click', (e) => {
+        openBtn && openBtn.click();
+    });
+
     if (!openBtn) return;
 
-    // Grab modal nodes if they exist natively in the template markup
     let searchModal = document.getElementById('moctaleSearchModal');
-
     if (!searchModal) {
         searchModal = document.createElement('div');
         searchModal.id = 'moctaleSearchModal';
