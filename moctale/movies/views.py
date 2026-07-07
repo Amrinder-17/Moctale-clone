@@ -721,6 +721,29 @@ def collection_detail(request, collection_id):
         }
     )
 
-from django.http import JsonResponse
-from django.views.decorators.http import require_POST
+@login_required
+def update_collection(request, collection_id):
+    is_ajax = request.headers.get('x-requested-with') == 'XMLHttpRequest'
+    
+    if request.method == "POST" and is_ajax:
+        collection = get_object_or_404(Collection, id=collection_id, user=request.user)
+        
+        name = request.POST.get('name' ,'').strip()
+        description = request.POST.get('description','').strip()
+        
+        if name: 
+            collection.name = name
+        if description: 
+            collection.description = description
+        
+        collection.save()
+            
+        return JsonResponse({
+            "status": "success", 
+            "name": name, 
+            "description": description
+        })
+        
+    return JsonResponse({"status": "fail", "error": "Invalid request type"}, status=400)
+    
 

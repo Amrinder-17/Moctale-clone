@@ -13,5 +13,6 @@ urlpatterns = [
     path('collection/create/', views.create_custom_collection, name='create_custom_collection'),
     path('bookmark/',views.bookmarks,name='bookmarks'),
     path('watched/',views.watchedlist,name='watchedlist'),
+    path('collection/update/<int:collection_id>/', views.update_collection, name='update_collection'),
     
 ]
