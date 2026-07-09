@@ -747,3 +747,29 @@ def update_collection(request, collection_id):
     return JsonResponse({"status": "fail", "error": "Invalid request type"}, status=400)
     
 
+@login_required
+def update_collection_banner(request, collection_id):
+    # Verify that the request is an AJAX POST request
+    is_ajax = request.headers.get('x-requested-with') == 'XMLHttpRequest'
+    
+    if request.method == "POST" and is_ajax:
+        # Securely grab the collection belonging ONLY to the logged-in user
+        collection = get_object_or_404(Collection, id=collection_id, user=request.user)
+        
+        # Grab the file from the FILES dictionary array
+        uploaded_banner = request.FILES.get('banner')
+        
+        if uploaded_banner:
+            collection.banner = uploaded_banner
+            collection.save()
+            
+            # Send the updated database media folder URL path back to the client
+            return JsonResponse({
+                "status": "success",
+                "banner_url": collection.banner.url
+            })
+            
+        return JsonResponse({"status": "fail", "error": "No file uploaded"}, status=400)
+        
+    return JsonResponse({"status": "fail", "error": "Invalid request type"}, status=400)
+

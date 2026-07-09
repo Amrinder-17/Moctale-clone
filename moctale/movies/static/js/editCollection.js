@@ -94,3 +94,82 @@ const showremovebutton=document.getElementById('editlist')
     })
     .catch(err => console.error(err));
 });
+// Grab the elements securely
+const bannerModal = document.getElementById('editBannerModal');
+const closeBannerBtn = document.getElementById('closeBannerModalBtn');
+const bannerForm = document.getElementById('editBannerForm');
+const bannerInput = document.getElementById('bannerModalInput');
+const saveBannerBtn = document.getElementById('saveBannerBtn');
+
+
+// --- OPEN / CLOSE CONTROLLERS ---
+function openBannerModal() {
+    if (bannerModal) bannerModal.classList.add('show');
+}
+function closeBannerModal() {
+    if (bannerModal) bannerModal.classList.remove('show');
+    if (bannerForm) bannerForm.reset();
+}
+
+// Only attach listeners if the matching modal HTML exists on the current page view
+if (closeBannerBtn && bannerModal) {
+    closeBannerBtn.addEventListener('click', closeBannerModal);
+    bannerModal.addEventListener('click', (e) => {
+        if (e.target === bannerModal) closeBannerModal();
+    });
+}
+
+// Global click event (Always safe because it listens to the document object wrapper)
+document.addEventListener('click', function(e) {
+    const triggerBtn = e.target.closest('.edit-banner-btn');
+    if (triggerBtn) {
+        const collectionId = triggerBtn.getAttribute('data-id');
+        if (bannerForm) {
+            bannerForm.setAttribute('data-current-id', collectionId);
+            openBannerModal();
+        }
+    }
+});
+
+// --- PROCESS FILE UPLOAD ONLY IF BUTTON EXISTS ---
+if (saveBannerBtn && bannerForm && bannerInput) {
+    saveBannerBtn.addEventListener('click', function(e) {
+        e.preventDefault();
+
+        const collectionId = bannerForm.getAttribute('data-current-id');
+        
+        if (bannerInput.files.length === 0) {
+            alert("Please select an image file first.");
+            return;
+        }
+
+        const formData = new FormData();
+        formData.append('banner', bannerInput.files[0]);
+        formData.append('csrfmiddlewaretoken', bannerForm.querySelector('[name=csrfmiddlewaretoken]').value);
+
+        fetch(`/media/collection/update-banner/${collectionId}/`, {
+            method: 'POST',
+            headers: { 'X-Requested-With': 'XMLHttpRequest' },
+            body: formData
+        })
+        .then(res => res.json())
+        .then(data => {
+            if (data.status === 'success') {
+                const bannerContainer = document.getElementById(`collection-banner-container-${collectionId}`);
+                
+                if (bannerContainer && data.banner_url) {
+                    bannerContainer.style.backgroundImage = `url('${data.banner_url}')`;
+                    
+                    const placeholderLogo = bannerContainer.querySelector('.placeholder-logo');
+                    if (placeholderLogo) {
+                        placeholderLogo.remove();
+                    }
+                }
+                closeBannerModal();
+            } else {
+                alert('Error uploading image.');
+            }
+        })
+        .catch(err => console.error(err));
+    });
+}

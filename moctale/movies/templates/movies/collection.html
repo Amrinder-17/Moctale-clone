@@ -43,10 +43,12 @@
             
             <div class="d-flex flex-column mb-4 w-100">
                 
-                <div class="banner-container collection-media-box position-relative rounded-5 overflow-hidden d-block w-100 mb-3" 
-                    style="position:relative;  background-image: {% if collection.banner %}url('{{ collection.banner.url }}'){% else %}none{% endif %}; background-size: cover !important; background-position: center; height: 350px; border: 1px solid rgba(255, 255, 255, 0.05); background-color: #1a1a1a;">
+                <div id="collection-banner-container-{{ collection.id }}"
+                    class="banner-container collection-media-box position-relative rounded-5 overflow-hidden d-block w-100 mb-3" 
+                    style="position:relative; background-image: {% if collection.banner %}url('{{ collection.banner.url }}'){% else %}none{% endif %}; background-size: cover !important; background-position: center; height: 350px; border: 1px solid rgba(255, 255, 255, 0.05); background-color: #1a1a1a;">
+                    
                     {% if not collection.banner %}
-                        <div class="brand-logo-container w-100 h-100" 
+                        <div class="brand-logo-container placeholder-logo w-100 h-100" 
                             style="background-image: url('https://www.moctale.in/placeholder-watchlist.svg'); background-size: cover; background-position: center;">
                         </div>
                     {% endif %}
@@ -84,11 +86,15 @@
                                             style="background-color: #161616; min-width: 160px; border: 1px solid #262626; border-radius: 8px; padding: 0.35rem; position: absolute; top: 100%; right: 0; left: auto; margin-top: 4px; z-index: 10000;">
                                             
                                             <li>
-                                                <button class="dropdown-item d-flex align-items-center gap-2 text-white style-dropdown-item-fix" 
-                                                        type="button" data-bs-toggle="modal" data-bs-target="#changeBannerModal"
+                                               
+                                                <button class="dropdown-item d-flex align-items-center gap-2 text-white style-dropdown-item-fix edit-banner-btn" 
+                                                        type="button" 
+                                                        data-id="{{ collection.id }}"
                                                         style="padding: 0.5rem 0.75rem; border-radius: 6px; font-weight: 500; font-size: 0.9rem; background: transparent;"
-                                                        onmouseover="this.style.backgroundColor='#222222';" onmouseout="this.style.backgroundColor='transparent';">
-                                                    <i class="bi bi-image-fill" style="font-size: 1rem;"></i> <span>Change Banner</span>
+                                                        onmouseover="this.style.backgroundColor='#222222';" 
+                                                        onmouseout="this.style.backgroundColor='transparent';">
+                                                    <i class="bi bi-image" style="font-size: 1rem;"></i> 
+                                                    <span>Change Banner</span>
                                                 </button>
                                             </li>
                                             <li>
@@ -243,6 +249,29 @@
 
         </div>
     </div>
+
+<div class="modal-overlay" id="editBannerModal">
+    <div class="modal-card">
+        <button type="button" class="modal-close-btn" id="closeBannerModalBtn">&times;</button>
+        
+        <h2 class="modal-title">Update Banner Image</h2>
+        
+        <form id="editBannerForm">
+            {% csrf_token %}
+            
+            <div class="form-group">
+                <div class="label-wrapper">
+                    <label for="bannerModalInput">Choose an image from your device</label>
+                </div>
+                <input type="file" id="bannerModalInput" accept="image/*">
+            </div>
+            
+            <button type="button" id="saveBannerBtn" class="modal-submit-btn">Upload Banner</button>
+        </form>
+    </div>
+</div>
+
+
    <script>
 
     document.addEventListener('DOMContentLoaded', () => {
