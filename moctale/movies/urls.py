@@ -15,5 +15,6 @@ urlpatterns = [
     path('watched/',views.watchedlist,name='watchedlist'),
     path('collection/update/<int:collection_id>/', views.update_collection, name='update_collection'),
     path('collection/update-banner/<int:collection_id>/', views.update_collection_banner, name='update_collection_banner'),
+    path('collection/delete/<int:collection_id>/', views.delete_collection, name='delete_collection'),
     
 ]

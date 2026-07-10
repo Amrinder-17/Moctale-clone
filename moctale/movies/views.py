@@ -773,3 +773,22 @@ def update_collection_banner(request, collection_id):
         
     return JsonResponse({"status": "fail", "error": "Invalid request type"}, status=400)
 
+
+@login_required
+def delete_collection(request, collection_id):
+    # Verify that the request is an AJAX POST request
+    is_ajax = request.headers.get('x-requested-with') == 'XMLHttpRequest'
+    
+    if request.method == "POST" and is_ajax:
+        # Securely grab the collection belonging ONLY to the logged-in user
+        collection = get_object_or_404(Collection, id=collection_id, user=request.user)
+        
+        collection.delete()
+        return JsonResponse({
+            "status": "success",
+            "redirect_url": reverse('bookmarks')
+        })
+            
+        
+    return JsonResponse({"status": "fail", "error": "Invalid request type"}, status=400)
+

@@ -188,32 +188,30 @@ document.addEventListener('DOMContentLoaded', () => {
                     
                     const newCardHtml = `
                         <div class="col-sm-6 col-lg-4">
-                            <div class="collection-item-block d-flex flex-column gap-2" style="cursor: pointer; width: 100%; max-width: 280px;">
-                                <div class="collection-media-box position-relative rounded-3 overflow-hidden d-flex align-items-center justify-content-center" 
-                                    style="background-image: url('/static/images/default_collection_banner.png'); background-size: cover; background-position: center; height: 160px; border: 1px solid rgba(255, 255, 255, 0.05); background-color: #1a1a1a;">
-                                    <div class="brand-logo-container d-flex align-items-center justify-content-center" style="width: 48px; height: 48px; flex-shrink: 0;">
-                                        <img src="/static/images/logo.png" alt="Moctale" style="width: 100%; height: 100%; object-fit: contain; flex-shrink: 0;">
-                                    </div>
-                                </div>
-                                <div class="collection-meta-details mt-1">
-                                    <h3 class="text-white fw-bold mb-1" style="font-size: 1.1rem; letter-spacing: -0.2px;">${data.name}</h3>
-                                    <div class="d-flex align-items-center text-muted gap-2 extra-small" style="font-size: 0.85rem; color: #7a7e85 !important;">
-                                        <div class="user-mini-avatar d-flex align-items-center justify-content-center bg-dark rounded-circle" style="width: 20px; height: 20px; background-color: #2a2c30 !important;">
-                                            <i class="bi bi-person-fill" style="font-size: 0.75rem; color: #a0a5b5;"></i>
+                            <a href="/media/collection/${data.id}/" class="text-decoration-none d-block collection-card-link" data-id="${data.id}">
+                                <div class="collection-item-block d-flex flex-column gap-2" style="cursor: pointer; width: 100%; max-width: 280px;">
+                                    <div class="collection-media-box position-relative rounded-3 overflow-hidden d-flex align-items-center justify-content-center" 
+                                        style="background-image: url('/static/images/default_collection_banner.png'); background-size: cover; background-position: center; height: 160px; border: 1px solid rgba(255, 255, 255, 0.05); background-color: #1a1a1a;">
+                                        <div class="brand-logo-container d-flex align-items-center justify-content-center" style="width: 48px; height: 48px; flex-shrink: 0;">
+                                            <img src="/static/images/logo.png" alt="Moctale" style="width: 100%; height: 100%; object-fit: contain; flex-shrink: 0;">
                                         </div>
-                                        <span>•</span>
-                                        
-                                        <span class="d-flex align-items-center">
-                                            <i class="bi bi-lock-fill" style="font-size: 0.85rem;"></i>
-                                        </span>
-                                        <span>•</span>
-
-                                        <span style="font-weight: 500; color: #9ca3af;">
-                                            0 Items
-                                        </span>
+                                    </div>
+                                    <div class="collection-meta-details mt-1">
+                                        <h3 class="text-white fw-bold mb-1" style="font-size: 1.1rem; letter-spacing: -0.2px;">${data.name}</h3>
+                                        <div class="d-flex align-items-center text-muted gap-2 extra-small" style="font-size: 0.85rem; color: #7a7e85 !important;">
+                                            <div class="user-mini-avatar d-flex align-items-center justify-content-center bg-dark rounded-circle" style="width: 20px; height: 20px; background-color: #2a2c30 !important;">
+                                                <i class="bi bi-person-fill" style="font-size: 0.75rem; color: #a0a5b5;"></i>
+                                            </div>
+                                            <span>•</span>
+                                            <span class="d-flex align-items-center">
+                                                <i class="bi bi-lock-fill" style="font-size: 0.85rem;"></i>
+                                            </span>
+                                            <span>•</span>
+                                            <span style="font-weight: 500; color: #9ca3af;">0 Items</span>
+                                        </div>
                                     </div>
                                 </div>
-                            </div>
+                            </a>
                         </div>
                     `;
 

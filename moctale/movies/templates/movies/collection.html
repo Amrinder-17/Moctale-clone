@@ -26,15 +26,6 @@
                         </button>
                     </a>
                     
-                    <button type="button" 
-                            data-bs-toggle="modal" 
-                            data-bs-target="#createCollectionDashboardModal"
-                            class="mt-2 inline-flex w-100 items-center justify-content-center gap-2 h-10 rounded-full text-sm font-medium text-white hover:opacity-90 transition-opacity focus:outline-none" 
-                            style="background: linear-gradient(to right, #B048FF, #8F44F0); border: none; height: 40px; border-radius: 50px; display: inline-flex; align-items: center; justify-content: center;"
-                            aria-label="Add Collection">
-                        <i class="bi bi-plus-lg" style="font-size: 0.9rem; -webkit-text-stroke: 0.5px; margin-right: 4px;"></i>
-                        <span>Add Collection</span>
-                    </button>
                 </nav>
             </aside>
         </div>
@@ -124,10 +115,13 @@
                                             </li>
                                             <li><hr class="dropdown-divider border-secondary" style="margin: 0.3rem 0;"></li>
                                             <li>
-                                                <button class="dropdown-item d-flex align-items-center gap-2 style-dropdown-item-fix" 
-                                                        type="button" data-bs-toggle="modal" data-bs-target="#deleteCollectionModal"
+                                                <button class="dropdown-item d-flex align-items-center gap-2 style-dropdown-item-fix delete-collection-btn" 
+                                                        id="DeleteCollection"
+                                                        data-id="{{ collection.id }}"
+                                                        type="button" 
                                                         style="padding: 0.5rem 0.75rem; border-radius: 6px; font-weight: 500; font-size: 0.9rem; color: #e05c5c; background: transparent;"
-                                                        onmouseover="this.style.backgroundColor='#222222';" onmouseout="this.style.backgroundColor='transparent';">
+                                                        onmouseover="this.style.backgroundColor='#222222';" 
+                                                        onmouseout="this.style.backgroundColor='transparent';">
                                                     <i class="bi bi-trash3" style="font-size: 1rem;"></i> <span>Delete</span>
                                                 </button>
                                             </li>
@@ -271,6 +265,27 @@
     </div>
 </div>
 
+<div class="modal-overlay" id="deleteCollectionModal">
+    <div class="modal-card" style="max-width: 380px; padding: 20px;">
+        
+        <div class="d-flex justify-content-between align-items-center mb-2">
+            <h2 class="modal-title" style="font-size: 1.2rem; margin: 0; font-weight: 600;">Delete Collection</h2>
+        </div>
+        
+        <p style="color: rgba(255, 255, 255, 0.6); font-size: 0.85rem; line-height: 1.4; margin-bottom: 20px;">
+            Are you sure you want to delete this collection? This action cannot be undone.
+        </p>
+        
+        <form id="deleteCollectionForm">
+            {% csrf_token %}
+            <div class="d-flex gap-2 justify-content-end">
+                <button type="button" id="cancelDeleteBtn" class="modal-btn-secondary">Cancel</button>
+                <button type="button" id="deleteCollectionBtn" class="modal-btn-danger">Delete</button>
+            </div>
+        </form>
+    </div>
+</div>
+
 
    <script>
 
@@ -280,7 +295,6 @@
     const movieCountBadge = document.getElementById('movie-count-badge');
     
     removeBtns.forEach(btn => {
-        console.log("Reached before fetch");
 
         btn.addEventListener('click', async (e) => {
 

@@ -95,27 +95,28 @@ const showremovebutton=document.getElementById('editlist')
     .catch(err => console.error(err));
 });
 // Grab the elements securely
-const bannerModal = document.getElementById('editBannerModal');
-const closeBannerBtn = document.getElementById('closeBannerModalBtn');
+
+const DeleteModal = document.getElementById('editDeleteModal');
+const closeDeleteBtn = document.getElementById('closeDeleteModalBtn');
 const bannerForm = document.getElementById('editBannerForm');
-const bannerInput = document.getElementById('bannerModalInput');
+const bannerInput = document.getElementById('DeleteModalInput');
 const saveBannerBtn = document.getElementById('saveBannerBtn');
 
 
 // --- OPEN / CLOSE CONTROLLERS ---
-function openBannerModal() {
-    if (bannerModal) bannerModal.classList.add('show');
+function openDeleteModal() {
+    if (DeleteModal) DeleteModal.classList.add('show');
 }
-function closeBannerModal() {
-    if (bannerModal) bannerModal.classList.remove('show');
+function closeDeleteModal() {
+    if (DeleteModal) DeleteModal.classList.remove('show');
     if (bannerForm) bannerForm.reset();
 }
 
 // Only attach listeners if the matching modal HTML exists on the current page view
-if (closeBannerBtn && bannerModal) {
-    closeBannerBtn.addEventListener('click', closeBannerModal);
-    bannerModal.addEventListener('click', (e) => {
-        if (e.target === bannerModal) closeBannerModal();
+if (closeDeleteBtn && DeleteModal) {
+    closeDeleteBtn.addEventListener('click', closeDeleteModal);
+    DeleteModal.addEventListener('click', (e) => {
+        if (e.target === DeleteModal) closeDeleteModal();
     });
 }
 
@@ -126,7 +127,7 @@ document.addEventListener('click', function(e) {
         const collectionId = triggerBtn.getAttribute('data-id');
         if (bannerForm) {
             bannerForm.setAttribute('data-current-id', collectionId);
-            openBannerModal();
+            openDeleteModal();
         }
     }
 });
@@ -165,11 +166,86 @@ if (saveBannerBtn && bannerForm && bannerInput) {
                         placeholderLogo.remove();
                     }
                 }
-                closeBannerModal();
+                closeDeleteModal();
             } else {
                 alert('Error uploading image.');
             }
         })
         .catch(err => console.error(err));
+    });
+}
+
+const deleteCollectionModal = document.getElementById('deleteCollectionModal');
+const deleteCollectionForm = document.getElementById('deleteCollectionForm');
+const actualDeleteBtn = document.getElementById('deleteCollectionBtn');
+
+const closeCrossBtn = document.getElementById('closeDeleteModalBtn');
+const cancelTextBtn = document.getElementById('cancelDeleteBtn');
+
+// --- MODAL DISPLAY UTILITIES ---
+function openDeleteCollectionModal() {
+    if (deleteCollectionModal) deleteCollectionModal.classList.add('show');
+}
+
+function closeDeleteCollectionModal() {
+    if (deleteCollectionModal) deleteCollectionModal.classList.remove('show');
+}
+
+// --- CONSOLIDATED CLOSE LISTENERS ---
+if (deleteCollectionModal) {
+    
+    // Close via the text 'Cancel' button
+    if (cancelTextBtn) cancelTextBtn.addEventListener('click', closeDeleteCollectionModal);
+    
+    // Close by clicking anywhere on the dim backdrop overlay background
+    deleteCollectionModal.addEventListener('click', (e) => {
+        if (e.target === deleteCollectionModal) closeDeleteCollectionModal();
+    });
+}
+
+// --- GLOBAL CLICK EVENT (Open trigger) ---
+document.addEventListener('click', function(e) {
+    const triggerBtn = e.target.closest('.delete-collection-btn');
+    
+    if (triggerBtn) {
+        const collectionId = triggerBtn.getAttribute('data-id');
+        
+        if (deleteCollectionModal) {
+            deleteCollectionModal.setAttribute('data-target-id', collectionId);
+            openDeleteCollectionModal();
+        } else {
+            alert("JavaScript Error: Could not find HTML element with id='deleteCollectionModal'.");
+        }
+    }
+});
+
+// --- ACTUAL BACKEND AJAX DELETION ---
+if (actualDeleteBtn && deleteCollectionForm) {
+    actualDeleteBtn.addEventListener('click', function(e) {
+        e.preventDefault();
+        
+        const collectionId = deleteCollectionModal.getAttribute('data-target-id');
+        if (!collectionId) {
+            console.error("No collection ID found assigned to the modal container attributes.");
+            return;
+        }
+
+        const formData = new FormData();
+        formData.append('csrfmiddlewaretoken', deleteCollectionForm.querySelector('[name=csrfmiddlewaretoken]').value);
+
+        fetch(`/media/collection/delete/${collectionId}/`, {
+            method: 'POST',
+            headers: { 'X-Requested-With': 'XMLHttpRequest' },
+            body: formData
+        })
+        .then(res => res.json())
+        .then(data => {
+            if (data.status === 'success') {
+                window.location.href = data.redirect_url;
+            } else {
+                alert('Error deleting collection.');
+            }
+        })
+        .catch(err => console.error("Network Fetch Error:", err));
     });
 }

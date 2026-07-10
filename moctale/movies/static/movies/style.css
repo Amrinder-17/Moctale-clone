@@ -1455,7 +1455,7 @@ a {
 }
 
 .container-xl.py-5 {
-    padding-top: calc(56px + 2rem) !important; /* Adjust 56px to match schedule-sidebar your exact physical navbar height */
+    padding-top: calc(56px + 2rem) !important; 
 }
 
 /* 1. The Hidden State (Default) */
@@ -1504,16 +1504,8 @@ a {
     color: inherit !important;
 }
 
-/* 1. Your existing hidden state (Keep this as is) */
 .btn-remove-watched {
     display: none !important; /* Hides it completely by default */
-}
-
-/* 2. Your existing wrapper states (Keep these as is) */
-.movie-card-wrapper .btn-remove-watched {
-    opacity: 0;
-    pointer-events: none;
-    transition: opacity 0.2s ease-in-out;
 }
 
 .btn-remove-watched.show-btn {
@@ -1658,4 +1650,64 @@ a {
 }
 .modal-submit-btn:active {
     transform: scale(0.99);
+}
+
+/* FORCE RESET FOR MODAL BUTTONS */
+.modal-btn-secondary, .modal-btn-danger {
+    /* This completely strips default Windows/Mac browser button styling */
+    -webkit-appearance: none;
+    -moz-appearance: none;
+    appearance: none; 
+    
+    border-radius: 6px !important;
+    padding: 8px 16px !important;
+    font-size: 0.85rem !important;
+    font-weight: 500 !important;
+    cursor: pointer !important;
+    display: inline-flex !important;
+    align-items: center !important;
+    justify-content: center !important;
+    font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif !important;
+    transition: background-color 0.15s ease, transform 0.1s ease !important;
+}
+
+/* 1. Sleek Dark Cancel Button */
+.modal-btn-secondary {
+    background-color: #222222 !important;
+    color: #ffffff !important;
+    border: 1px solid rgba(255, 255, 255, 0.12) !important;
+}
+.modal-btn-secondary:hover {
+    background-color: #2a2a2a !important;
+    border-color: rgba(255, 255, 255, 0.25) !important;
+}
+
+/* 2. Sleek Red Delete Button */
+.modal-btn-danger {
+    background-color: #e05c5c !important; /* Matching your trash icon color */
+    color: #ffffff !important;
+    border: 1px solid transparent !important;
+}
+.modal-btn-danger:hover {
+    background-color: #dc3545 !important;
+}
+
+/* Add a subtle click feedback effect */
+.modal-btn-secondary:active, .modal-btn-danger:active {
+    transform: scale(0.97);
+}
+
+.movie-hover-wrapper:hover .btn-remove-watched-hover{
+    opacity: 1;
+    pointer-events: auto !important;
+}
+
+.movie-hover-wrapper .btn-remove-watched-hover {
+
+    opacity: 0;
+
+    pointer-events: none;
+
+    transition: opacity 0.2s ease-in-out;
+
 }

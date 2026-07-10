@@ -23,16 +23,6 @@
                         <i class="bi bi-card-checklist"></i>
                         <span>Watched list</span>
                     </button>
-                    
-                    <button type="button" 
-                            data-bs-toggle="modal" 
-                            data-bs-target="#createCollectionDashboardModal"
-                            class="mt-2 inline-flex w-100 items-center justify-content-center gap-2 h-10 rounded-full text-sm font-medium text-white hover:opacity-90 transition-opacity focus:outline-none" 
-                            style="background: linear-gradient(to right, #B048FF, #8F44F0); border: none; height: 40px; border-radius: 50px; display: inline-flex; align-items: center; justify-content: center;"
-                            aria-label="Add Collection">
-                        <i class="bi bi-plus-lg" style="font-size: 0.9rem; -webkit-text-stroke: 0.5px; margin-right: 4px;"></i>
-                        <span>Add Collection</span>
-                    </button>
                 </nav>
             </aside>
         </div>
@@ -50,14 +40,14 @@
 
           <div class="row hovercard row-cols-2 row-cols-sm-3 row-cols-md-4 row-cols-lg-5 g-3 style-grid-fixes">
                 {% for media in watched_media %}
-                    <div class="col movie-card-wrapper" data-movie-id="{{ media.id }}">
+                    <div class="col movie-card-wrapper movie-hover-wrapper" data-movie-id="{{ media.id }}">
                         
-                        <div class="position-relative w-100 h-100" style="z-index: 1;">
+                        <div class="position-relative w-100 h-100 " style="z-index: 1;">
                             
                             {% include "movies/partials/card.html" with media=media %}
 
                             <button type="button" 
-                                    class="btn btn-danger btn-hover btn-remove-watched d-flex align-items-center justify-content-center" 
+                                    class="btn btn-danger btn-remove-watched-hover d-flex align-items-center justify-content-center" 
                                     
                                     data-id="{{ media.id }}"
                                     data-title="{{ media.title }}"
@@ -114,10 +104,8 @@
     </div>
     <script>
 
-    {% comment %} console.log("🚀 Script successfully injected into the DOM!"); {% endcomment %}
-
     document.addEventListener('DOMContentLoaded', () => {
-        const removeBtns = document.querySelectorAll('.btn-remove-watched');
+        const removeBtns = document.querySelectorAll('.btn-remove-watched-hover');
         console.log("🎯 Found remove buttons count:", removeBtns.length);
         
         removeBtns.forEach(btn => {
