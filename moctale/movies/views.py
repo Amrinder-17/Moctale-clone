@@ -10,7 +10,7 @@ from django.views.decorators.http import require_POST
 from django.shortcuts import get_object_or_404
 from .models import Collection, UserMovieActivity
 from django.db.models import Count
-
+from django.views.decorators.csrf import csrf_protect
 
 
 @cache_page(3600)
@@ -134,8 +134,6 @@ def _pick_trailer_link(videos):
 
 @login_required
 def media_detail(request, media_type, media_id):
-    print(">>> media_detail called")
-    # 1. Protect unauthenticated request passes gracefully
     if not request.user.is_authenticated:
         return render(request, 'home/welcome.html')
     
@@ -192,6 +190,9 @@ def media_detail(request, media_type, media_id):
         else:
             release_date = media_data.get('release_date') or 'Undated'
             media_data['release_date'] = release_date
+        existing_activity = None
+        if request.user.is_authenticated:
+            existing_activity = UserMovieActivity.objects.filter(user=request.user, movie_id=media_id).first()
         
         context = {
             'movie': media_data,
@@ -201,6 +202,7 @@ def media_detail(request, media_type, media_id):
             'user_collections': user_collections,
             'today': today_string,
             'activity': activity,
+            'existing_activity': existing_activity,
         }
 
         # 6. Render everything safely inside the try block
@@ -792,6 +794,42 @@ def delete_collection(request, collection_id):
         
     return JsonResponse({"status": "fail", "error": "Invalid request type"}, status=400)
 
+@login_required
+def submit_review(request):
+    if request.method == 'POST':
+
+        user=request.user
+        # Grab the data coming from your JavaScript form fields
+        score = request.POST.get('score')
+        review_text = request.POST.get('review_text','').strip()
+        
+        movie_id = request.POST.get('movie_id')
+        movie_title = request.POST.get('movie_title')
+        media_type = request.POST.get('media_type', 'movie')
+        if not movie_id or not score:
+            return JsonResponse({'success': False, 'error': 'Missing required fields.'}, status=400)
+
+        try:
+            activity, created = UserMovieActivity.objects.update_or_create(
+                user=user,movie_id=movie_id,
+                defaults={
+                    'movie_title': movie_title,
+                    'media_type': media_type,
+                    'score': int(score),
+                    'review_text': review_text,
+                    'is_watched': True,
+                }
+            )
+
+            return JsonResponse({
+                'success':True,
+                'message':'Review updated successfully!' if not created else 'Review created successfully!',
+                'is_new': created
+            })
+        except Exception as e:
+            return JsonResponse({'success': False, 'error': str(e)}, status=500)
+        
+    return JsonResponse({'success': False, 'error': 'Invalid request method.'}, status=400)
 
 # @login_required
 # def user_ratedlist(request):

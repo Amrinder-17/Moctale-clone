@@ -1713,67 +1713,118 @@ a {
 }
 
 .custom-review-card {
-    background-color: #171717;
-    border: 1px solid #262626;
+    background-color: #121212;
+    border: 1px solid #1f1f1f;
+    width: 100%;
+    max-width: 650px;   /* Breadth reduced slightly for a balanced squarish look */
+    min-height: 100px;  /* Clean spatial depth */
+    margin-left: 0 !important;
+    margin-right: auto !important;
 }
 
-/* User Avatar Bubble */
-.avatar-circle {
-    width: 40px;
-    height: 40px;
-    background-color: #5d6d7e;
-    color: #ffffff;
-    border-radius: 50%;
+/* 2. COMPACT USER DETAILS & TEXT */
+.review-display-body {
+    font-size: 0.82rem !important; /* Made the comment text smaller and readable */
+    color: #e5e5e5;
+    line-height: 1.4;
+    word-break: break-word;
+}
+
+.lh-1 {
+    line-height: 1 !important;
+}
+
+/* 3. SMALLER RATED STATIC BADGE WITH SPACE AROUND IT */
+.static-pill-badge {
+    font-size: 0.68rem; /* Made the review score text smaller */
+    font-weight: 400;   /* Normal weight text */
+    padding: 3px 10px;  /* Balanced spacing inside the pill */
+    border-radius: 50rem;
+    color: #000000 !important;
+    display: inline-block;
+    text-align: center;
+}
+
+/* 4. EXPLICIT MAPPED STATIC PILL COLORS */
+.score-color-1 { background-color: #ff85a2 !important; } /* Pink for Skip */
+.score-color-2 { background-color: #ffc107 !important; } /* Yellow for Timepass */
+.score-color-3 { background-color: #2ec4b6 !important; } /* Light Tealish Green for Go for it */
+.score-color-4 { background-color: #c8b6ff !important; } /* Purplish Lavender for Perfection */
+
+/* 5. FOOTER INTERACTION ICONS */
+.cursor-pointer-icon {
+    cursor: pointer;
     font-size: 0.9rem;
+    transition: color 0.15s ease-in-out;
 }
 
-/* Pill Selection Group Wrapper */
+.cursor-pointer-icon:hover {
+    color: #ffffff !important;
+}
+
+/* Rating Track Wrapper: Added extra internal padding around the group */
 .rating-pill-group {
-    background-color: #212121;
-    border: 1px solid #333333;
+    background-color: #171717;
+    border: 1px solid #242424;
+    padding: 6px 8px; /* Creates extra space inside the container track around the buttons */
+    gap: 4px; /* Space between individual pills */
 }
 
-/* Individual Rating Pills styling */
+/* Uniform Pill Button Sizing & Base Styles */
 .rating-pill-group .pill-btn {
-    color: #cccccc;
-    padding: 6px 16px;
-    font-size: 0.85rem;
-    font-weight: 500;
+    color: #a3a3a3;
+    padding: 5px 0;    
+    font-size: 0.75rem; 
+    font-weight: 400; /* Removed bold, using completely normal weight text */
     cursor: pointer;
     border-radius: 50rem;
     transition: all 0.2s ease-in-out;
+    
+    /* Forces all pills to look exactly the same size */
+    width: 80px; 
+    display: inline-block;
 }
 
-/* Highlight Selected pill color mapping */
-.rating-pill-group .btn-check:checked + .pill-btn {
-    background-color: #ffc107; /* Matches 'Timepass' amber glow */
-    color: #000000;
-    font-weight: bold;
+.rating-pill-group .pill-btn:hover {
+    color: #ffffff;
 }
 
-/* Textarea input line decoration styling */
+/* --- DYNAMIC CUSTOM COLORS ON ACTIVE SELECTION --- */
+
+/* 1. Pink for Skip */
+.rating-pill-group #score_skip:checked + .pill-skip {
+    background-color: #ff85a2 !important;
+    color: #000000 !important;
+    font-weight: 500;
+}
+
+/* 2. Yellow for Timepass */
+.rating-pill-group #score_timepass:checked + .pill-timepass {
+    background-color: #ffc107 !important;
+    color: #000000 !important;
+    font-weight: 500;
+}
+
+/* 3. Light Tealish Green for Go For It */
+.rating-pill-group #score_goforit:checked + .pill-goforit {
+    background-color: #2ec4b6 !important;
+    color: #000000 !important;
+    font-weight: 500;
+}
+
+/* 4. Purplish Lavender for Perfection */
+.rating-pill-group #score_perfection:checked + .pill-perfection {
+    background-color: #5834c3 !important;
+    color: #000000 !important;
+    font-weight: 500;
+}
+
+/* Textarea controls */
 .custom-textarea {
     resize: none;
-    border-color: #333333 !important;
+    font-size: 0.85rem;
+    border-color: #222222 !important;
     box-shadow: none !important;
-}
-
-.custom-textarea:focus {
-    border-color: #555555 !important;
-}
-
-/* Adjust filter control colors */
-.custom-filter-btn {
-    background-color: #1c1c1c;
-    border-color: #333333;
-    color: #fff;
-}
-.custom-filter-btn:hover {
-    background-color: #292929;
-    border-color: #444;
-}
-
-.custom-checkbox:checked {
-    background-color: #7b2cbf; /* Subtle Purple theme accent optionally */
-    border-color: #7b2cbf;
+    min-height: 80px; 
+    background-color: transparent !important;
 }
