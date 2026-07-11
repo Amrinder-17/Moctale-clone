@@ -88,15 +88,28 @@
         <!-- Profile Section -->
         <div class="nav-profile-section border-start ps-3 border-secondary border-opacity-25">
           <a href="#" class="profile-badge-link" aria-label="User Profile">
-            {% if user.profile.image %}
-              <img src="{{ user.profile.image.url }}" alt="Profile Avatar" class="profile-badge-img">
-            {% else %}
+            {% if request.user.is_authenticated %}
+        
+              {% if request.user.profile.profile_picture %}
+                  <img src="{{ request.user.profile.profile_picture.url }}" alt="Profile Avatar" class="profile-badge-img">
+              {% else %}
+                  <div class="profile-badge-fallback">
+                      <svg viewBox="0 0 24 24" fill="currentColor">
+                          <path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm0 4c1.93 0 3.5 1.57 3.5 3.5S13.93 13 12 13s-3.5-1.57-3.5-3.5S10.07 6 12 6zm0 14c-2.03 0-4.43-.82-6.14-2.27C7.48 16.32 9.62 15 12 15s4.52 1.32 6.14 2.73C16.43 19.18 14.03 20 12 20z"/>
+                      </svg>
+                  </div>
+              {% endif %}
+
+              <span class="fw-semibold text-light">@{{ request.user.username }}</span>
+
+          {% else %}
               <div class="profile-badge-fallback">
-                <svg viewBox="0 0 24 24" fill="currentColor">
-                  <path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm0 4c1.93 0 3.5 1.57 3.5 3.5S13.93 13 12 13s-3.5-1.57-3.5-3.5S10.07 6 12 6zm0 14c-2.03 0-4.43-.82-6.14-2.27C7.48 16.32 9.62 15 12 15s4.52 1.32 6.14 2.73C16.43 19.18 14.03 20 12 20z"/>
-                </svg>
+                  <svg viewBox="0 0 24 24" fill="currentColor">
+                      <path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm0 4c1.93 0 3.5 1.57 3.5 3.5S13.93 13 12 13s-3.5-1.57-3.5-3.5S10.07 6 12 6zm0 14c-2.03 0-4.43-.82-6.14-2.27C7.48 16.32 9.62 15 12 15s4.52 1.32 6.14 2.73C16.43 19.18 14.03 20 12 20z"/>
+                  </svg>
               </div>
-            {% endif %}
+              <span class="fw-semibold text-secondary">@Guest</span>
+          {% endif %}
           </a>
         </div>
 

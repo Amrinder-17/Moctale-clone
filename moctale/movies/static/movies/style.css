@@ -1711,3 +1711,69 @@ a {
     transition: opacity 0.2s ease-in-out;
 
 }
+
+.custom-review-card {
+    background-color: #171717;
+    border: 1px solid #262626;
+}
+
+/* User Avatar Bubble */
+.avatar-circle {
+    width: 40px;
+    height: 40px;
+    background-color: #5d6d7e;
+    color: #ffffff;
+    border-radius: 50%;
+    font-size: 0.9rem;
+}
+
+/* Pill Selection Group Wrapper */
+.rating-pill-group {
+    background-color: #212121;
+    border: 1px solid #333333;
+}
+
+/* Individual Rating Pills styling */
+.rating-pill-group .pill-btn {
+    color: #cccccc;
+    padding: 6px 16px;
+    font-size: 0.85rem;
+    font-weight: 500;
+    cursor: pointer;
+    border-radius: 50rem;
+    transition: all 0.2s ease-in-out;
+}
+
+/* Highlight Selected pill color mapping */
+.rating-pill-group .btn-check:checked + .pill-btn {
+    background-color: #ffc107; /* Matches 'Timepass' amber glow */
+    color: #000000;
+    font-weight: bold;
+}
+
+/* Textarea input line decoration styling */
+.custom-textarea {
+    resize: none;
+    border-color: #333333 !important;
+    box-shadow: none !important;
+}
+
+.custom-textarea:focus {
+    border-color: #555555 !important;
+}
+
+/* Adjust filter control colors */
+.custom-filter-btn {
+    background-color: #1c1c1c;
+    border-color: #333333;
+    color: #fff;
+}
+.custom-filter-btn:hover {
+    background-color: #292929;
+    border-color: #444;
+}
+
+.custom-checkbox:checked {
+    background-color: #7b2cbf; /* Subtle Purple theme accent optionally */
+    border-color: #7b2cbf;
+}

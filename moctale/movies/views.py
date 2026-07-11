@@ -792,3 +792,11 @@ def delete_collection(request, collection_id):
         
     return JsonResponse({"status": "fail", "error": "Invalid request type"}, status=400)
 
+
+# @login_required
+# def user_ratedlist(request):
+#     # Grabs all activities for the logged-in user, sorted by most recently updated
+#     activities = request.user.movie_activities.all().order_by('-updated_at')
+    
+#     return render(request, 'ratedlist.html', {'activities': activities})
+

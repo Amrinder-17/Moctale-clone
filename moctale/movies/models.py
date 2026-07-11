@@ -4,6 +4,7 @@ from django.conf import settings
 from django.db.models.signals import post_save
 from django.dispatch import receiver
 import os
+from django.utils.translation import gettext_lazy as _
 
 def collection_banner_path(instance, filename):
     # Organizes uploaded banners into media/collections/user_id/filename
@@ -19,32 +20,47 @@ class Collection(models.Model):
     is_default = models.BooleanField(default=False)  # True for the auto-generated "Username's Watchlist"
     created_at = models.DateTimeField(auto_now_add=True)
 
+
+    
 class UserMovieActivity(models.Model):
-    user=models.ForeignKey(User, on_delete=models.CASCADE , related_name='movie_activities')
-    movie_id=models.IntegerField()
+    user = models.ForeignKey(User, on_delete=models.CASCADE, related_name='movie_activities')
+    movie_id = models.IntegerField()
     poster_path = models.CharField(max_length=255, blank=True, null=True)
     media_type = models.CharField(
         max_length=10,
         choices=[("movie", "Movie"), ("tv", "TV Show")],
         default="movie"
     )
-    
     movie_title = models.CharField(max_length=255)
     
     is_watched = models.BooleanField(default=False)
-    is_interested = models.BooleanField(default=False)  # Acts as "Notify Me"
+    is_interested = models.BooleanField(default=False)  
     in_collection = models.BooleanField(default=False)
-    Collections= models.ManyToManyField(Collection,related_name="movies", blank=True)
+    Collections = models.ManyToManyField('Collection', related_name="movies", blank=True)
 
-    notification_sent = models.BooleanField(default=False) # Prevents spamming duplicate alerts
-    
+    notification_sent = models.BooleanField(default=False) 
     updated_at = models.DateTimeField(auto_now=True)
 
+    # --- YOUR NEW RATING FIELDS SYSTEM ---
+    class ScoreChoices(models.IntegerChoices):
+        Skip = 1, _('Skip')
+        Timepass = 2, _('Timepass')
+        GoForIt = 3, _('GoForIt')
+        Perfection = 4, _('Perfection')
+
+    # Allow null/blank because a user might add a movie to their "watchlist" without rating it yet
+    score = models.IntegerField(choices=ScoreChoices.choices, blank=True, null=True)
+    review_text = models.TextField(blank=True, null=True) 
+
     class Meta:
-        unique_together= ('user','movie_id')
+        unique_together = ('user', 'movie_id')
     
     def __str__(self):
-        return f"{self.user.username} - {self.movie_title}"
+        # Shows rating label if it exists, otherwise just the title
+        rating_str = f" [{self.get_score_display()}]" if self.score else ""
+        return f"{self.user.username} - {self.movie_title}{rating_str}"
+
+
     
 
 @receiver(post_save, sender=User)
