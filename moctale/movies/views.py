@@ -194,8 +194,6 @@ def media_detail(request, media_type, media_id):
         if request.user.is_authenticated:
             existing_activity = UserMovieActivity.objects.filter(user=request.user, movie_id=media_id).first()
         
-        # 📊 LIVE AGGREGATION QUERY
-        # Fetches counts grouped by score value for this specific movie
         score_counts = (
             UserMovieActivity.objects.filter(movie_id=media_id, score__isnull=False)
             .values('score')
@@ -220,15 +218,7 @@ def media_detail(request, media_type, media_id):
         avg_index = weighted_sum / total_votes if total_votes > 0 else 0
         avg_percentage = (avg_index / 3) * 100
         
-        # If no one has voted yet, find the most picked choice safely
-        if total_votes > 0:
-            max_index = votes.index(max(votes))
-            labels = ["Skip", "Timepass", "Go for it", "Perfection"]
-            most_picked_label = labels[max_index]
-            max_percentage = round((votes[max_index] / total_votes) * 100)
-        else:
-            most_picked_label = "No Ratings"
-            max_percentage = 0
+       
 
         # Calculate percentage splits for individual progress bars or meter segments
         vote_percentages = [
