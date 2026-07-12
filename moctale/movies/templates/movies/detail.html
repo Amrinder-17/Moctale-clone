@@ -209,6 +209,20 @@
         </div> </div> </div> 
 
 
+<div class="meter-card">
+    <h2>Moctale Meter</h2>
+    <div class="meter-display-box">
+        <canvas id="moctaleMeter"></canvas>
+        
+        <div class="meter-text-overlay">
+            <span id="meterLabel" class="category-label"></span>
+            <span id="meterPercent" class="percentage"></span>
+            <span id="meterVotes" class="votes-count"></span>
+        </div>
+    </div>
+
+    <div id="meterLegend" class="custom-legend"></div>
+</div>
 <div class="container my-5 text-white">
     <div class="d-flex flex-column align-items-start gap-2 w-100 mb-2">
         <h2 class="h5 mb-0 fw-bold">Reviews</h2>
@@ -400,4 +414,92 @@
 {% block extra_js %}
 <script src="{% static 'js/detail.js' %}"></script>
 <script src="{% static 'js/review.js' %}"></script>
+<script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+<script>
+    document.addEventListener("DOMContentLoaded", function() {
+    const voteData = {{ votes|safe }}; 
+    const totalVotes = {{ total_votes }};
+    
+    const labels = ['Skip', 'Timepass', 'Go for it', 'Perfection'];
+    const colors = ['#ff6584', '#ffb703', '#10b981', '#b5179e'];
+
+    const percentages = voteData.map(count => totalVotes > 0 ? ((count / totalVotes) * 100).toFixed(0) : 0);
+    const maxIndex = voteData.indexOf(Math.max(...voteData));
+
+    const elLabel = document.getElementById('meterLabel');
+    const elPercent = document.getElementById('meterPercent');
+    const elVotes = document.getElementById('meterVotes');
+    const elLegend = document.getElementById('meterLegend');
+
+    // Track the currently active index to prevent redundant DOM updates on mouse move
+    let currentActiveIndex = null;
+
+    function updateCenterText(index) {
+        if (currentActiveIndex === index) return; // Block layout recalculations if index didn't change
+        currentActiveIndex = index;
+
+        const count = voteData[index];
+        elLabel.innerText = labels[index];
+        elLabel.style.color = colors[index];
+        elPercent.innerText = `${percentages[index]}%`;
+        elPercent.style.color = colors[index];
+        elVotes.innerText = `${count}/${totalVotes} Votes`;
+    }
+
+    // Initial setup
+    updateCenterText(maxIndex);
+
+    labels.forEach((label, i) => {
+        const item = document.createElement('div');
+        item.className = 'legend-item';
+        item.innerHTML = `
+            <span class="legend-color-dot" style="background-color: ${colors[i]};"></span>
+            <span class="legend-name">${label}</span>
+            <span class="legend-pct">${percentages[i]}%</span>
+        `;
+        elLegend.appendChild(item);
+    });
+
+    const ctx = document.getElementById('moctaleMeter').getContext('2d');
+    new Chart(ctx, {
+        type: 'doughnut',
+        data: {
+            labels: labels,
+            datasets: [{
+                data: voteData,
+                backgroundColor: colors, 
+                borderWidth: 0,         
+                cutout: '84%',          
+                borderRadius: 4,        
+                spacing: 5,
+                // 3. Set to 0 to completely kill canvas layout transformations on hover
+                hoverOffset: 0          
+            }]
+        },
+        options: {
+            rotation: -90,      
+            circumference: 180, 
+            responsive: true,
+            aspectRatio: 2, 
+            maintainAspectRatio: true,
+            // Disable chart scale transitions entirely to lock everything down
+            animation: false,
+            layout: {
+                padding: { bottom: 0, top: 8, left: 4, right: 4 } 
+            },
+            onHover: (event, activeElements) => {
+                if (activeElements.length > 0) {
+                    updateCenterText(activeElements[0].index);
+                } else {
+                    updateCenterText(maxIndex);
+                }
+            },
+            plugins: {
+                legend: { display: false },
+                tooltip: { enabled: false }
+            }
+        }
+    });
+});
+</script>
 {% endblock %}

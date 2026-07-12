@@ -194,6 +194,48 @@ def media_detail(request, media_type, media_id):
         if request.user.is_authenticated:
             existing_activity = UserMovieActivity.objects.filter(user=request.user, movie_id=media_id).first()
         
+        # 📊 LIVE AGGREGATION QUERY
+        # Fetches counts grouped by score value for this specific movie
+        score_counts = (
+            UserMovieActivity.objects.filter(movie_id=media_id, score__isnull=False)
+            .values('score')
+            .annotate(total=Count('id'))
+        )
+        
+        # Convert database results into a dictionary lookup mapping score -> count
+        counts_dict = {item['score']: item['total'] for item in score_counts}
+        
+        # Build the final ordered array mapping strictly to ScoreChoices values (1, 2, 3, 4)
+        votes = [
+            counts_dict.get(1, 0),  # Skip
+            counts_dict.get(2, 0),  # Timepass
+            counts_dict.get(3, 0),  # Go For It
+            counts_dict.get(4, 0),  # Perfection
+        ]
+        
+        total_votes = sum(votes)
+        
+        # Meter logic remains clean and identical
+        weighted_sum = sum(count * index for index, count in enumerate(votes))
+        avg_index = weighted_sum / total_votes if total_votes > 0 else 0
+        avg_percentage = (avg_index / 3) * 100
+        
+        # If no one has voted yet, find the most picked choice safely
+        if total_votes > 0:
+            max_index = votes.index(max(votes))
+            labels = ["Skip", "Timepass", "Go for it", "Perfection"]
+            most_picked_label = labels[max_index]
+            max_percentage = round((votes[max_index] / total_votes) * 100)
+        else:
+            most_picked_label = "No Ratings"
+            max_percentage = 0
+
+        # Calculate percentage splits for individual progress bars or meter segments
+        vote_percentages = [
+            round((count / total_votes) * 100) if total_votes > 0 else 0 
+            for count in votes
+        ]
+        
         context = {
             'movie': media_data,
             'credits': credits_data,
@@ -203,8 +245,12 @@ def media_detail(request, media_type, media_id):
             'today': today_string,
             'activity': activity,
             'existing_activity': existing_activity,
+            'votes': votes,
+            'total_votes': total_votes,
+            'avg_percentage': round(avg_percentage, 1)
         }
 
+        
         # 6. Render everything safely inside the try block
         return render(request, 'movies/detail.html', context)
 
@@ -830,6 +876,7 @@ def submit_review(request):
             return JsonResponse({'success': False, 'error': str(e)}, status=500)
         
     return JsonResponse({'success': False, 'error': 'Invalid request method.'}, status=400)
+
 
 # @login_required
 # def user_ratedlist(request):
