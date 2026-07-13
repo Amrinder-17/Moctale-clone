@@ -51,6 +51,13 @@ class UserMovieActivity(models.Model):
     # Allow null/blank because a user might add a movie to their "watchlist" without rating it yet
     score = models.IntegerField(choices=ScoreChoices.choices, blank=True, null=True)
     review_text = models.TextField(blank=True, null=True) 
+    parent = models.ForeignKey(
+        'self', 
+        on_delete=models.CASCADE, 
+        blank=True, 
+        null=True, 
+        related_name='replies'
+    )
 
     class Meta:
         unique_together = ('user', 'movie_id')

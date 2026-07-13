@@ -831,42 +831,76 @@ def delete_collection(request, collection_id):
     return JsonResponse({"status": "fail", "error": "Invalid request type"}, status=400)
 
 @login_required
+@csrf_protect
 def submit_review(request):
     if request.method == 'POST':
-
-        user=request.user
-        # Grab the data coming from your JavaScript form fields
-        score = request.POST.get('score')
-        review_text = request.POST.get('review_text','').strip()
+        user = request.user
         
+        score = request.POST.get('score')
+        review_text = request.POST.get('review_text', '').strip()
         movie_id = request.POST.get('movie_id')
         movie_title = request.POST.get('movie_title')
         media_type = request.POST.get('media_type', 'movie')
-        if not movie_id or not score:
-            return JsonResponse({'success': False, 'error': 'Missing required fields.'}, status=400)
+        
+        # 🌟 NEW: Grab parent_id from the form if the user is replying to someone
+        parent_id = request.POST.get('parent_id') 
+
+        # Validation Rule: If it's a top-level review, a score is REQUIRED.
+        # If it's a reply, score is NOT required (replies shouldn't skew the meter).
+        if not movie_id:
+            return JsonResponse({'success': False, 'error': 'Missing movie ID.'}, status=400)
+        if not parent_id and not score:
+            return JsonResponse({'success': False, 'error': 'Missing rating score.'}, status=400)
 
         try:
-            activity, created = UserMovieActivity.objects.update_or_create(
-                user=user,movie_id=movie_id,
-                defaults={
-                    'movie_title': movie_title,
-                    'media_type': media_type,
-                    'score': int(score),
-                    'review_text': review_text,
-                    'is_watched': True,
-                }
-            )
+            # ==========================================
+            # CASE 1: THIS IS A REPLY
+            # ==========================================
+            if parent_id:
+                # Find the parent review model instance
+                parent_review = UserMovieActivity.objects.get(id=parent_id)
+                
+                # Create a fresh row every time (Allows users to text back and forth)
+                activity = UserMovieActivity.objects.create(
+                    user=user,
+                    movie_id=movie_id,
+                    movie_title=movie_title,
+                    media_type=media_type,
+                    review_text=review_text,
+                    parent=parent_review,
+                    score=None,  # Replies don't carry their own score
+                    is_watched=True
+                )
+                created = True
+                msg = 'Reply added successfully!'
+
+            else:
+                activity, created = UserMovieActivity.objects.update_or_create(
+                    user=user,
+                    movie_id=movie_id,
+                    parent__isnull=True, # 🌟 CRITICAL: Ensure we only match their main review, not a reply!
+                    defaults={
+                        'movie_title': movie_title,
+                        'media_type': media_type,
+                        'score': int(score),
+                        'review_text': review_text,
+                        'is_watched': True,
+                    }
+                )
+                msg = 'Review created successfully!' if created else 'Review updated successfully!'
 
             return JsonResponse({
-                'success':True,
-                'message':'Review updated successfully!' if not created else 'Review created successfully!',
+                'success': True,
+                'message': msg,
                 'is_new': created
             })
+
+        except UserMovieActivity.DoesNotExist:
+            return JsonResponse({'success': False, 'error': 'Parent review not found.'}, status=404)
         except Exception as e:
             return JsonResponse({'success': False, 'error': str(e)}, status=500)
         
     return JsonResponse({'success': False, 'error': 'Invalid request method.'}, status=400)
-
 
 # @login_required
 # def user_ratedlist(request):
