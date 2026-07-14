@@ -1746,11 +1746,10 @@ a {
 }
 
 /* 4. EXPLICIT MAPPED STATIC PILL COLORS */
-.score-color-1 { background-color: #ff85a2 !important; } /* Pink for Skip */
-.score-color-2 { background-color: #ffc107 !important; } /* Yellow for Timepass */
-.score-color-3 { background-color: #2ec4b6 !important; } /* Light Tealish Green for Go for it */
-.score-color-4 { background-color: #c8b6ff !important; } /* Purplish Lavender for Perfection */
-
+.score-color-1 { background-color: #ff6584 !important; } 
+.score-color-2 { background-color: #ffb703 !important; }
+.score-color-3 { background-color: #10b981 !important; } 
+.score-color-4 { background-color: #b5179e !important; } 
 /* 5. FOOTER INTERACTION ICONS */
 .cursor-pointer-icon {
     cursor: pointer;
@@ -1793,28 +1792,28 @@ a {
 
 /* 1. Pink for Skip */
 .rating-pill-group #score_skip:checked + .pill-skip {
-    background-color: #ff85a2 !important;
+    background-color: #ff6584 !important;
     color: #000000 !important;
     font-weight: 500;
 }
 
 /* 2. Yellow for Timepass */
 .rating-pill-group #score_timepass:checked + .pill-timepass {
-    background-color: #ffc107 !important;
+    background-color: #ffb703 !important;
     color: #000000 !important;
     font-weight: 500;
 }
 
 /* 3. Light Tealish Green for Go For It */
 .rating-pill-group #score_goforit:checked + .pill-goforit {
-    background-color: #2ec4b6 !important;
+    background-color: #10b981 !important;
     color: #000000 !important;
     font-weight: 500;
 }
 
 /* 4. Purplish Lavender for Perfection */
 .rating-pill-group #score_perfection:checked + .pill-perfection {
-    background-color: #5834c3 !important;
+    background-color: #b5179e !important;
     color: #000000 !important;
     font-weight: 500;
 }
@@ -1933,3 +1932,51 @@ a {
         color: #ffffff;
         font-weight: 700;
     }
+
+/* Removes double boundaries on the final element of your review list loop */
+.card-feed-item:last-child {
+    border-bottom: none !important;
+}
+
+/* Updated badge values to exactly match the image size scale settings */
+.static-pill-badge {
+    font-size: 0.73rem !important;
+    font-weight: 600 !important;
+    padding: 4px 14px !important;
+    border-radius: 50rem;
+    color: #000000 !important;
+}
+
+.gap-1\.5 {
+    gap: 0.35rem !important;
+}
+
+
+.custom-review-card {
+     
+    border: 1px solid #2a2a2a;
+    border-bottom: 1px solid rgba(255, 255, 255, 0.1) !important;
+    border-radius: 1rem !important;
+    width: 100%;
+    max-width: 900px !important;   
+    padding: 1.5rem 1.25rem !important; 
+    min-height: 150px; 
+    
+    margin-left: 0 !important;
+    margin-right: auto !important;
+    margin-bottom: 2rem !important; 
+}
+
+.card-feed-item {
+    background-color: transparent !important; 
+
+    width: 100%;
+    max-width: 900px !important; 
+    padding: 1.5rem 1.25rem !important; 
+    margin-left: 1px !important;
+    margin-right: auto !important;
+    border-bottom: 1px solid rgba(255, 255, 255, 0.1) !important;
+}
+.card-feed-item:last-child {
+    margin-bottom: 3rem !important;
+}

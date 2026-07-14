@@ -153,12 +153,21 @@ def media_detail(request, media_type, media_id):
     if request.user.is_authenticated:
         activity = UserMovieActivity.objects.filter(user=request.user, movie_id=media_id).first()
         user_collections = request.user.collections.all().order_by('-is_default', 'name')
+        reviews = UserMovieActivity.objects.filter(
+            movie_id=media_id,
+            parent__isnull=True
+        ).exclude(user=request.user).select_related('user__profile').order_by('-updated_at')
         if not request.user.collections.filter(is_default=True).exists():
             Collection.objects.create(
                 user=request.user,
                 name=f"{request.user.username}'s Watchlist",
                 is_default=True
             )
+    else:
+        main_reviews = UserMovieActivity.objects.filter(
+            movie_id=media_id, 
+            parent__isnull=True
+        ).select_related('user__profile').order_by('-created_at')
     
     try:
         # 2. Fetch primary media details first
@@ -225,6 +234,8 @@ def media_detail(request, media_type, media_id):
             round((count / total_votes) * 100) if total_votes > 0 else 0 
             for count in votes
         ]
+
+        
         
         context = {
             'movie': media_data,
@@ -237,7 +248,8 @@ def media_detail(request, media_type, media_id):
             'existing_activity': existing_activity,
             'votes': votes,
             'total_votes': total_votes,
-            'avg_percentage': round(avg_percentage, 1)
+            'avg_percentage': round(avg_percentage, 1),
+            'reviews':reviews,
         }
 
         

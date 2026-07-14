@@ -1,5 +1,6 @@
 {% extends "layout.html" %}
 {% load static %}
+{% load time_filters %}
 
 {% block extra_css %}
     <link rel="stylesheet" href="{% static 'movies/style.css' %}">
@@ -227,23 +228,24 @@
     <div class="d-flex flex-column align-items-start gap-2 w-100 mb-2">
         <h2 class="h5 mb-0 fw-bold">Reviews</h2>
     </div>
-    <div id="user-review-section-wrapper" style="max-width: 580px; margin-left: 0; margin-right: auto;">
+    <div id="user-review-section-wrapper" style=" margin-left: 0; margin-right: auto;">
     
     {% if existing_activity and method_fields_present or existing_activity.score or existing_activity.review_text %}
-        <div class="custom-review-card p-3 rounded-4 d-flex flex-column  text-white">
+        <div class="custom-review-card  p-3 rounded-4 d-flex flex-column  text-white"
+            style="background-color: #1a1a1a !important;">
             <div class="d-flex align-items-center justify-content-between w-100 mb-2">
                 <div class="d-flex align-items-center gap-2">
                     {% if request.user.profile.profile_picture %}
                         <img src="{{ request.user.profile.profile_picture.url }}" alt="{{ request.user.username }}" class="avatar-img rounded-circle" style="width: 32px; height: 32px; object-fit: cover;">
-                    {% else %}
-                        <div class="avatar-circle d-flex align-items-center justify-content-center fw-bold">
-                            {{ request.user.username|slice:":1"|upper }}
+                     {% else %}
+                        <div class="avatar-circle d-flex align-items-center justify-content-center fw-bold text-uppercase" style="width: 38px; height: 38px; background-color: #3a3a3a; font-size: 0.9rem; border-radius: 50%;">
+                            {{ request.user.username|slice:":1" }}
                         </div>
                     {% endif %}
                     <div class="d-flex flex-column">
                         <span class="fw-bold text-light small lh-1">{{ request.user.username }}</span>
-                        <span class="text-secondary tracking-wide mt-1" style="font-size: 0.7rem;">
-                            {% if existing_activity.created_at %}{{ existing_activity.created_at|timesince }} ago{% else %}Just now{% endif %}
+                        <span class="text-secondary opacity-75 mt-0.5" style="font-size: 0.72rem;">
+                            {{ review.updated_at|smart_time }}
                         </span>
                     </div>
                 </div>
@@ -328,6 +330,67 @@
 </div>
 </div>
 
+<div>
+{% for review in reviews %}
+<div class="p-3 d-flex flex-column text-white border-bottom border-secondary border-opacity-25 card-feed-item">
+    
+    <div class="d-flex align-items-center justify-content-between w-100 mb-3">
+        
+        <div class="d-flex align-items-center gap-2">
+            {% if review.user.profile.profile_picture %}
+                <img src="{{ review.user.profile.profile_picture.url }}" alt="{{ review.user.username }}" class="avatar-img rounded-circle" style="width: 38px; height: 38px; object-fit: cover;">
+            {% else %}
+                <div class="avatar-circle d-flex align-items-center justify-content-center fw-bold text-uppercase" style="width: 38px; height: 38px; background-color: #3a3a3a; font-size: 0.9rem; border-radius: 50%;">
+                    {{ review.user.username|slice:":1" }}
+                </div>
+            {% endif %}
+            
+            <div class="d-flex flex-column justify-content-center">
+                <div class="d-flex align-items-center gap-1">
+                    <span class="fw-bold text-light" style="font-size: 0.92rem; letter-spacing: 0.2px;">{{ review.user.username }}</span>
+                </div>
+                <span class="text-secondary opacity-75 mt-0.5" style="font-size: 0.72rem;">
+                    {{ review.updated_at|smart_time }}
+                </span>
+            </div>
+        </div>
+        
+        <span class="static-pill-badge score-color-{{ review.score|slugify }}">
+            {% if review.score == 1 %}Skip
+            {% elif review.score == 2 %}Timepass
+            {% elif review.score == 3 %}Go for it
+            {% elif review.score == 4 %}Perfection
+            {% endif %}
+        </span>
+    </div>
+
+    <div class="review-display-body text-light mb-3" style="font-size: 0.92rem; opacity: 0.9; line-height: 1.5; padding-left: 2px;">
+        {% if review.review_text %}
+            {{ review.review_text }}
+        {% else %}
+            <span class="text-muted fst-italic small">Rated without a written review.</span>
+        {% endif %}
+    </div>
+
+    <div class="d-flex align-items-center justify-content-between w-100 text-secondary mt-1" style="font-size: 0.95rem; padding-left: 2px;">
+        <div class="d-flex align-items-center gap-3">
+            <div class="d-flex align-items-center gap-1.5 cursor-pointer-icon">
+                <i class="bi bi-heart"></i>
+                <span style="font-size: 0.78rem;" class="fw-semibold"></span>
+            </div>
+            <div class="d-flex align-items-center gap-1.5 cursor-pointer-icon">
+                <i class="bi bi-chat"></i>
+                <span style="font-size: 0.78rem;" class="fw-semibold"></span>
+            </div>
+        </div>
+        <div>
+            <i class="bi bi-three-dots cursor-pointer-icon"></i>
+        </div>
+    </div>
+</div>
+{% endfor %}
+
+</div>
 
 
 <div id="moctaleSearchModal" class="search-overlay-modal-screen">
