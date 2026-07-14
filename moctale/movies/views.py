@@ -7,7 +7,7 @@ from django.views.decorators.cache import cache_page
 from django.contrib.auth.decorators import login_required
 from django.urls import reverse
 from django.views.decorators.http import require_POST
-from django.shortcuts import get_object_or_404
+from django.shortcuts import get_object_or_404,redirect
 from .models import Collection, UserMovieActivity
 from django.db.models import Count
 from django.views.decorators.csrf import csrf_protect
@@ -632,7 +632,22 @@ def toggle_collection_movie(request):
         'has_any_collection': has_any_collection
     })
 
-
+@login_required
+def toggle_activity_like(request, activity_id):
+    if request.method == "POST":
+        activity = get_object_or_404(UserMovieActivity, id=activity_id)
+        if activity.likes.filter(id=request.user.id).exists():
+            liked = False
+            activity.likes.remove(request.user)
+        else:
+            activity.likes.add(request.user)
+            liked=True
+            
+        return JsonResponse({
+            'liked': liked,
+            'total_likes': activity.likes.count()
+        })
+    return JsonResponse({'error': 'Invalid request'}, status=400)
 @login_required
 @require_POST
 def create_custom_collection(request):

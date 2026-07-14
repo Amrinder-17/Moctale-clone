@@ -267,16 +267,32 @@
                 {% endif %}
             </div>
 
-            <div class="d-flex align-items-center justify-content-between w-100 mt-2 text-secondary" style="font-size: 0.95rem;">
+            <div class="d-flex align-items-center justify-content-between w-100 text-secondary mt-1" style="font-size: 0.95rem; padding-left: 2px;">
                 <div class="d-flex align-items-center gap-3">
-                    <i class="bi bi-heart cursor-pointer-icon"></i>
-                    <i class="bi bi-chat cursor-pointer-icon"></i>
+                    <div class="d-flex align-items-center gap-1.5 review-box cursor-pointer-icon">
+                        <form action="{% url 'toggle_activity_like' existing_activity.id %}" method="POST" class="like-form" style="display:inline;">
+                            {% csrf_token %}
+                            <button type="submit" class="btn btn-sm btn-link like-btn">
+                                {% if request.user in existing_activity.likes.all %}
+                                    <i class="bi bi-heart-fill text-danger align-middle fs-5"></i>
+                                {% else %}
+                                    <i class="bi bi-heart text-muted align-middle fs-5"></i>
+                                {% endif %}
+                            </button>
+                        </form>
+                        <span class="like-count font-weight-bold ml-1">{{ existing_activity.likes.count }}</span>
+                    
                 </div>
-                <div>
-                    <i class="bi bi-three-dots cursor-pointer-icon"></i>
+                <div class="d-flex align-items-center gap-1.5 cursor-pointer-icon">
+                    <i class="bi bi-chat"></i>
+                    <span style="font-size: 0.78rem;" class="fw-semibold"></span>
                 </div>
             </div>
+            <div>
+                <i class="bi bi-three-dots cursor-pointer-icon"></i>
+            </div>
         </div>
+    </div>
 
     {% else %}
         <form method="POST" action="{% url 'submit_review' %}" class="custom-review-card p-3 rounded-4 d-flex flex-column gap-3">
@@ -374,9 +390,18 @@
 
     <div class="d-flex align-items-center justify-content-between w-100 text-secondary mt-1" style="font-size: 0.95rem; padding-left: 2px;">
         <div class="d-flex align-items-center gap-3">
-            <div class="d-flex align-items-center gap-1.5 cursor-pointer-icon">
-                <i class="bi bi-heart"></i>
-                <span style="font-size: 0.78rem;" class="fw-semibold"></span>
+            <div class="d-flex align-items-center gap-1.5 review-box cursor-pointer-icon">
+                <form action="{% url 'toggle_activity_like' review.id %}" method="POST" class="like-form" style="display:inline;">
+                    {% csrf_token %}
+                    <button type="submit" class="btn btn-sm btn-link like-btn">
+                        {% if request.user in review.likes.all %}
+                            <i class="bi bi-heart-fill text-danger align-middle fs-5"></i>
+                        {% else %}
+                            <i class="bi bi-heart text-muted align-middle fs-5"></i>
+                        {% endif %}
+                    </button>
+                </form>
+                <span class="like-count font-weight-bold ml-1">{{ review.likes.count }}</span>
             </div>
             <div class="d-flex align-items-center gap-1.5 cursor-pointer-icon">
                 <i class="bi bi-chat"></i>
@@ -478,6 +503,46 @@
 <script src="{% static 'js/detail.js' %}"></script>
 <script src="{% static 'js/review.js' %}"></script>
 <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+    // 1. Listen for clicks on all like forms on the page
+    document.querySelectorAll('.like-form').forEach(form => {
+        form.addEventListener('submit', function(e) {
+            e.preventDefault(); // Stop the page from reloading
+            
+            const url = this.getAttribute('action');
+            const csrfToken = this.querySelector('[name=csrfmiddlewaretoken]').value;
+            const button = this.querySelector('.like-btn');
+            const countSpan = this.closest('.review-box').querySelector('.like-count');
+
+            // 2. Send asynchronous background POST request to Django
+            fetch(url, {
+                method: 'POST',
+                headers: {
+                    'X-CSRFToken': csrfToken,
+                    'X-Requested-With': 'XMLHttpRequest'
+                }
+            })
+            .then(response => response.json())
+            .then(data => {
+                if (data.error) return;
+
+                // 3. Dynamically update the count number
+                countSpan.textContent = data.total_likes;
+
+                // 4. Swap the heart icon state instantly
+                const icon = button.querySelector('i');
+                if (data.liked) {
+                    icon.className = 'bi bi-heart-fill text-danger align-middle fs-5';
+                } else {
+                    icon.className = 'bi bi-heart text-muted align-middle fs-5';
+                }
+            })
+            .catch(error => console.error('Error handling like request:', error));
+        });
+    });
+});
+</script>
 <script>
     document.addEventListener("DOMContentLoaded", function() {
     const voteData = {{ votes|safe }}; 

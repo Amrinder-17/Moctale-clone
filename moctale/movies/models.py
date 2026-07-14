@@ -25,6 +25,7 @@ class Collection(models.Model):
 class UserMovieActivity(models.Model):
     user = models.ForeignKey(User, on_delete=models.CASCADE, related_name='movie_activities')
     movie_id = models.IntegerField()
+    likes = models.ManyToManyField(User, related_name='liked_activities', blank=True)
     poster_path = models.CharField(max_length=255, blank=True, null=True)
     media_type = models.CharField(
         max_length=10,
@@ -61,6 +62,9 @@ class UserMovieActivity(models.Model):
 
     class Meta:
         unique_together = ('user', 'movie_id')
+    
+    def total_likes(self):
+        return self.likes.count()
     
     def __str__(self):
         # Shows rating label if it exists, otherwise just the title
