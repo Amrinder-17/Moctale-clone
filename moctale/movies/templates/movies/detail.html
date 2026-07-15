@@ -295,8 +295,14 @@
 
                 <!-- The Menu -->
                 <ul class="dropdown-menu dropdown-menu-end">
-                    <li><a class="dropdown-item" href="#">Edit review</a></li>
-                    <li><a class="dropdown-item" href="#">Post review</a></li>
+                    <li>
+                        <form action="{% url 'toggle_activity_delete_review' existing_activity.id %}" method="POST" class="delete-review-form" style="display:inline;">
+                            {% csrf_token %}
+                            <button type="submit" class="dropdown-item text-danger d-flex align-items-center gap-2 bg-transparent border-0">
+                                <i class="bi bi-trash-fill"></i> Delete review
+                            </button>
+                        </form>
+                    </li>
                 </ul>
             </div>
         </div>

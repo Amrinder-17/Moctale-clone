@@ -1,150 +1,249 @@
 document.addEventListener('DOMContentLoaded', function () {
     const reviewForm = document.querySelector('.custom-review-card');
+    const onlyreviewform = document.querySelector('.no-reviews-msg');
     const textarea = document.getElementById('reviewTextArea');
     const counter = document.getElementById('charCounter');
     const postButton = document.querySelector('.custom-post-btn');
-    
-    // Target the main container where all your reviews live
-    const reviewsContainer = document.getElementById('reviewsContainer'); 
 
     // ==========================================
     // 1. LIVE CHARACTER COUNTER
     // ==========================================
-    textarea.addEventListener('input', function () {
-        const currentLength = textarea.value.length;
-        counter.textContent = `${currentLength}/1000`;
+    if (textarea) {
+        textarea.addEventListener('input', function () {
+            const currentLength = textarea.value.length;
+            counter.textContent = `${currentLength}/1000`;
 
-        if (currentLength >= 900) {
-            counter.classList.remove('text-secondary');
-            counter.classList.add('text-danger');
-        } else {
-            counter.classList.remove('text-danger');
-            counter.classList.add('text-secondary');
-        }
-    });
-
-    // ==========================================
-    // 2. ASYNC AJAX FORM SUBMISSION
-    // ==========================================
-    reviewForm.addEventListener('submit', function (event) {
-        event.preventDefault(); 
-
-        const selectedRadio = reviewForm.querySelector('input[name="score"]:checked');
-        const scoreValue = selectedRadio ? selectedRadio.value : null;
-
-        if (!scoreValue) {
-            alert("Please select a rating before posting!");
-            return;
-        }
-
-        postButton.disabled = true;
-        postButton.textContent = "Posting...";
-
-        const formData = new FormData(reviewForm);
-        formData.set('review_text', textarea.value.trim());
-
-        fetch(reviewForm.action, {
-            method: 'POST',
-            body: formData,
-            headers: {
-                'X-Requested-With': 'XMLHttpRequest',
-            }
-        })
-        .then(response => {
-            if (!response.ok) throw new Error('Network response was not ok');
-            return response.json();
-        })
-       .then(data => {
-            if (data.success) {
-                // 1. Map the numeric score value back to your custom text labels
-                // 1. Map the numeric score value back to your custom text labels
-const ratingLabels = {
-    '1': 'Skip',
-    '2': 'Timepass',
-    '3': 'Go for it',
-    '4': 'Perfection'
-};
-const readableScore = ratingLabels[data.score] || data.score;
-
-// 2. Clone the inner markup from your current avatar element inside the form 
-const avatarContainer = reviewForm.querySelector('.d-flex.align-items-center.gap-2.flex-shrink-0');
-let avatarHtml = '';
-if (avatarContainer) {
-    // Clones either the img tag or the customized letter fallback circle exactly
-    const avatarEl = avatarContainer.querySelector('img, .avatar-circle');
-    avatarHtml = avatarEl ? avatarEl.outerHTML : '';
-}
-
-// 3. Construct the exact card filler structure match
-const newReviewHtml = `
-    <div class="custom-review-card p-3 rounded-4 d-flex flex-column text-white animate-fade-in mb-3"
-         style="background-color: #1a1a1a !important;">
-        <div class="d-flex align-items-center justify-content-between w-100 mb-2">
-            <div class="d-flex align-items-center gap-2">
-                ${avatarHtml}
-                <div class="d-flex flex-column">
-                    <span class="fw-bold text-light small lh-1">${data.user_name}</span>
-                    <span class="text-secondary opacity-75 mt-0.5" style="font-size: 0.72rem;">
-                        ${data.created_at}
-                    </span>
-                </div>
-            </div>
-
-            <span class="static-pill-badge score-color-${data.score}">
-                ${readableScore}
-            </span>
-        </div>
-
-        <div class="review-display-body text-light mb-3" style="font-size: 0.88rem; white-space: pre-line;">
-            ${data.review_text ? data.review_text : '<span class="text-muted italic small">Rated without a written review.</span>'}
-        </div>
-
-        <div class="d-flex align-items-center justify-content-between w-100 text-secondary mt-1" style="font-size: 0.95rem; padding-left: 2px;">
-            <div class="d-flex align-items-center gap-3">
-                <div class="d-flex align-items-center gap-1.5 review-box cursor-pointer-icon">
-                    <span class="like-count font-weight-bold ml-1">0</span>
-                </div>
-            </div>
-            <div class="d-flex align-items-center gap-1.5 cursor-pointer-icon">
-                <i class="bi bi-chat"></i>
-                <span style="font-size: 0.78rem;" class="fw-semibold"></span>
-            </div>
-        </div>
-    </div>
-`;
-
-                // 4. Inject the new review card right at the top of your feed container
-                const reviewsContainer = document.getElementById('user-review-section-wrapper');
-                if (reviewsContainer) {
-                    const noReviewsMsg = reviewsContainer.querySelector('.no-reviews-msg');
-                    if (noReviewsMsg) noReviewsMsg.remove();
-
-                    reviewsContainer.insertAdjacentHTML('afterbegin', newReviewHtml);
-                }
-
-                // 5. Reset Form State
-                textarea.value = '';
-                counter.textContent = '0/1000';
-                
-                // Re-check the default 'Timepass' radio button status
-                const defaultRadio = document.getElementById('score_timepass');
-                if (defaultRadio) defaultRadio.checked = true;
-
-                postButton.disabled = false;
-                postButton.textContent = "Post";
-                
-
+            if (currentLength >= 900) {
+                counter.classList.remove('text-secondary');
+                counter.classList.add('text-danger');
             } else {
-                alert("Error posting review: " + data.error);
+                counter.classList.remove('text-danger');
+                counter.classList.add('text-secondary');
+            }
+        });
+    }
+
+    // ==========================================
+    // 2. MAIN POST FORM SUBMISSION (AJAX)
+    // ==========================================
+    if (onlyreviewform) {
+        reviewForm.addEventListener('submit', function (event) {
+            event.preventDefault(); 
+
+            const selectedRadio = reviewForm.querySelector('input[name="score"]:checked');
+            const scoreValue = selectedRadio ? selectedRadio.value : null;
+
+            if (!scoreValue) {
+                alert("Please select a rating before posting!");
+                return;
+            }
+
+            postButton.disabled = true;
+            postButton.textContent = "Posting...";
+
+            const formData = new FormData(reviewForm);
+            formData.set('review_text', textarea.value.trim());
+
+            fetch(reviewForm.action, {
+                method: 'POST',
+                body: formData,
+                headers: {
+                    'X-Requested-With': 'XMLHttpRequest',
+                }
+            })
+            .then(response => {
+                if (!response.ok) throw new Error('Network response was not ok');
+                return response.json();
+            })
+            .then(data => {
+                if (data.success) {
+                    // Map score keys to labels
+                    const ratingLabels = {
+                        '1': 'Skip',
+                        '2': 'Timepass',
+                        '3': 'Go for it',
+                        '4': 'Perfection'
+                    };
+                    const readableScore = ratingLabels[data.score] || data.score;
+
+                    // Clone the inner markup from your current avatar inside the form
+                    const avatarContainer = reviewForm.querySelector('.d-flex.align-items-center.gap-2.flex-shrink-0');
+                    let avatarHtml = '';
+                    if (avatarContainer) {
+                        const avatarEl = avatarContainer.querySelector('img, .avatar-circle');
+                        avatarHtml = avatarEl ? avatarEl.outerHTML : '';
+                    }
+
+                    // Construct the dynamic card layout, matching your exact dark styles and actions
+                    const newReviewHtml = `
+                        <div class="custom-review-card p-3 rounded-4 d-flex flex-column text-white animate-fade-in mb-3"
+                             style="background-color: #1a1a1a !important;">
+                            <div class="d-flex align-items-center justify-content-between w-100 mb-2">
+                                <div class="d-flex align-items-center gap-2">
+                                    ${avatarHtml}
+                                    <div class="d-flex flex-column">
+                                        <span class="fw-bold text-light small lh-1">${data.user_name}</span>
+                                        <span class="text-secondary opacity-75 mt-0.5" style="font-size: 0.72rem;">
+                                            ${data.created_at}
+                                        </span>
+                                    </div>
+                                </div>
+                                
+                                <div class="d-flex align-items-center gap-2">
+                                    <span class="static-pill-badge score-color-${data.score}">
+                                        ${readableScore}
+                                    </span>
+                                    <div class="dropdown">
+                                        <div data-bs-toggle="dropdown" aria-expanded="false" style="cursor: pointer;">
+                                            <i class="bi bi-three-dots cursor-pointer-icon text-secondary"></i>
+                                        </div>
+                                        <ul class="dropdown-menu dropdown-menu-end bg-dark border-secondary">
+                                            <li><a class="dropdown-item text-light" href="#">Edit review</a></li>
+                                            <li><hr class="dropdown-divider border-secondary"></li>
+                                            <li>
+                                                <form action="/activity/${data.activity_id}/delete/" method="POST" class="delete-review-form" style="display:inline;">
+                                                    <input type="hidden" name="csrfmiddlewaretoken" value="${reviewForm.querySelector('[name=csrfmiddlewaretoken]').value}">
+                                                    <button type="submit" class="dropdown-item text-danger d-flex align-items-center gap-2 bg-transparent border-0">
+                                                        <i class="bi bi-trash-fill"></i> Delete review
+                                                    </button>
+                                                </form>
+                                            </li>
+                                        </ul>
+                                    </div>
+                                </div>
+                            </div>
+
+                            <div class="review-display-body text-light mb-3" style="font-size: 0.88rem; white-space: pre-line;">
+                                ${data.review_text ? data.review_text : '<span class="text-muted italic small">Rated without a written review.</span>'}
+                            </div>
+
+                            <div class="d-flex align-items-center justify-content-between w-100 text-secondary mt-1" style="font-size: 0.95rem; padding-left: 2px;">
+                                <div class="d-flex align-items-center gap-3">
+                                    <div class="d-flex align-items-center gap-1.5 review-box cursor-pointer-icon">
+                                        <form action="/activity/like/${data.activity_id}/toggle/" method="POST" class="like-review-form" style="display:inline;">
+                                            <input type="hidden" name="csrfmiddlewaretoken" value="${reviewForm.querySelector('[name=csrfmiddlewaretoken]').value}">
+                                            <button type="submit" class="btn btn-sm btn-link like-btn p-0 border-0">
+                                                <i class="bi bi-heart text-muted align-middle fs-5"></i>
+                                            </button>
+                                        </form>
+                                        <span class="like-count font-weight-bold ml-1">0</span>
+                                    </div>
+                                </div>
+                                <div class="d-flex align-items-center gap-1.5 cursor-pointer-icon">
+                                    <i class="bi bi-chat"></i>
+                                    <span style="font-size: 0.78rem;" class="fw-semibold"></span>
+                                </div>
+                            </div>
+                        </div>
+                    `;
+
+                    // Inject the new review card right inside the container feed
+                    const reviewsContainer = document.getElementById('user-review-section-wrapper');
+                    if (reviewsContainer) {
+                        const noReviewsMsg = reviewsContainer.querySelector('.no-reviews-msg');
+                        if (noReviewsMsg) noReviewsMsg.remove();
+
+                        // Target the top element below the entry block
+                        reviewsContainer.insertAdjacentHTML('afterbegin', newReviewHtml);
+                    }
+
+                    // Reset Form State safely
+                    textarea.value = '';
+                    counter.textContent = '0/1000';
+                    
+                    const defaultRadio = document.getElementById('score_timepass');
+                    if (defaultRadio) defaultRadio.checked = true;
+
+                    postButton.disabled = false;
+                    postButton.textContent = "Post";
+
+                } else {
+                    alert("Error posting review: " + data.error);
+                    postButton.disabled = false;
+                    postButton.textContent = "Post";
+                }
+            })
+            .catch(error => {
+                console.error('Error:', error);
+                alert("Something went wrong. Please try again.");
                 postButton.disabled = false;
                 postButton.textContent = "Post";
-            }
-        })
-        .catch(error => {
-            console.error('Error:', error);
-            alert("Something went wrong. Please try again.");
-            postButton.disabled = false;
-            postButton.textContent = "Post";
+            });
         });
+    }
+
+    // ==========================================
+    // 3. GLOBAL EVENT DELEGATION FOR INNER SUB-FORMS
+    // ==========================================
+    document.body.addEventListener('submit', function (event) {
+        const targetForm = event.target;
+
+        // --- HANDLE DYNAMIC DELETIONS ---
+        if (targetForm.classList.contains('delete-review-form')) {
+            event.preventDefault();
+
+            if (!confirm("Are you sure you want to delete this review?")) return;
+
+            const reviewCard = targetForm.closest('.custom-review-card');
+            fetch(targetForm.action, {
+                method: 'POST',
+                body: new FormData(targetForm),
+                headers: {
+                    'X-Requested-With': 'XMLHttpRequest'
+                }
+            })
+            .then(response => {
+                if (!response.ok) throw new Error('Network error during deletion.');
+                return response.json();
+            })
+            .then(data => {
+                if (data.success) {
+                    // Smoothly animate out before popping off the DOM tree
+                    if (reviewCard) {
+                        reviewCard.style.transition = 'opacity 0.3s ease, transform 0.3s ease';
+                        reviewCard.style.opacity = '0';
+                        reviewCard.style.transform = 'scale(0.95)';
+                        setTimeout(() => reviewCard.remove(), 300);
+                    }
+                } else {
+                    alert("Error deleting review: " + data.error);
+                }
+            })
+            .catch(error => console.error('Error handling delete:', error));
+        }
+
+        // --- HANDLE DYNAMIC LIKES ---
+        if (targetForm.classList.contains('like-review-form')) {
+            event.preventDefault();
+
+            const likeIcon = targetForm.querySelector('.bi');
+            const reviewBox = targetForm.closest('.review-box');
+            const likeCountSpan = reviewBox ? reviewBox.querySelector('.like-count') : null;
+
+            fetch(targetForm.action, {
+                method: 'POST',
+                body: new FormData(targetForm),
+                headers: {
+                    'X-Requested-With': 'XMLHttpRequest'
+                }
+            })
+            .then(response => {
+                if (!response.ok) throw new Error('Network error during like action.');
+                return response.json();
+            })
+            .then(data => {
+                if (data.success) {
+                    if (likeIcon && likeCountSpan) {
+                        if (data.liked) {
+                            likeIcon.className = 'bi bi-heart-fill text-danger align-middle fs-5';
+                        } else {
+                            likeIcon.className = 'bi bi-heart text-muted align-middle fs-5';
+                        }
+                        likeCountSpan.textContent = data.total_likes;
+                    }
+                }
+            })
+            .catch(error => console.error('Error handling like:', error));
+        }
     });
 });

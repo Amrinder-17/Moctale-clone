@@ -857,6 +857,28 @@ def delete_collection(request, collection_id):
         
     return JsonResponse({"status": "fail", "error": "Invalid request type"}, status=400)
 
+
+@login_required
+def toggle_activity_delete_review(request, activity_id):
+    # Verify that the request is an AJAX POST request
+    is_ajax = request.headers.get('x-requested-with') == 'XMLHttpRequest'
+    
+    if request.method == "POST" and is_ajax:
+        # Securely grab the collection belonging ONLY to the logged-in user
+        activity = get_object_or_404(UserMovieActivity, id=activity_id, user=request.user)
+        if activity.user != request.user:
+            return JsonResponse({'success': False, 'error': 'Unauthorized action.'}, status=403)
+    
+        
+        try:
+            activity.delete()
+            return JsonResponse({'success': True, 'message': 'Review deleted successfully.'})
+        except Exception as e:
+            return JsonResponse({'success': False, 'error': str(e)}, status=500)
+            
+        
+    return JsonResponse({"status": "fail", "error": "Invalid request type"}, status=400)
+
 @login_required
 @csrf_protect
 def submit_review(request):
