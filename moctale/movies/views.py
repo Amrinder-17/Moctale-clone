@@ -905,7 +905,7 @@ def submit_review(request):
                 activity, created = UserMovieActivity.objects.update_or_create(
                     user=user,
                     movie_id=movie_id,
-                    parent__isnull=True, # 🌟 CRITICAL: Ensure we only match their main review, not a reply!
+                    parent__isnull=True, 
                     defaults={
                         'movie_title': movie_title,
                         'media_type': media_type,
@@ -919,7 +919,11 @@ def submit_review(request):
             return JsonResponse({
                 'success': True,
                 'message': msg,
-                'is_new': created
+                'is_new': created,
+                'user_name': request.user.username,
+                'review_text': review_text,
+                'score': score,
+                'created_at': "Just now"
             })
 
         except UserMovieActivity.DoesNotExist:
