@@ -198,16 +198,7 @@ document.addEventListener('DOMContentLoaded', function () {
             })
             .then(data => {
                 if (data.success) {
-                    // Smoothly animate out before popping off the DOM tree
-                    if (reviewCard) {
-                        reviewCard.style.transition = 'opacity 0.3s ease, transform 0.3s ease';
-                        reviewCard.style.opacity = '0';
-                        reviewCard.style.transform = 'scale(0.95)';
-                        setTimeout(() => reviewCard.remove(), 300);
-                    }
-                } else {
-                    alert("Error deleting review: " + data.error);
-                }
+                    window.location.reload();}
             })
             .catch(error => console.error('Error handling delete:', error));
         }
@@ -246,4 +237,146 @@ document.addEventListener('DOMContentLoaded', function () {
             .catch(error => console.error('Error handling like:', error));
         }
     });
+
+    // ==========================================
+// 1. TOGGLE DISPLAY VS EDIT FORM MODES
+// ==========================================
+document.body.addEventListener('click', function (event) {
+    // --- CLICKED EDIT BUTTON ---
+    if (event.target.classList.contains('edit-review-btn')) {
+        event.preventDefault();
+        
+        const wrapper = event.target.closest('#user-review-section-wrapper');
+        if (wrapper) {
+            const viewModeCard = wrapper.querySelector('.review-view-mode');
+            const editModeCard = wrapper.querySelector('.review-edit-mode');
+            
+            if (viewModeCard && editModeCard) {
+                viewModeCard.classList.add('d-none');     // Hide regular display card
+                editModeCard.classList.remove('d-none');  // Show edit form layout
+            }
+        }
+    }
+
+    // --- CLICKED CANCEL BUTTON ---
+    if (event.target.classList.contains('cancel-edit-btn')) {
+        event.preventDefault();
+        
+        const wrapper = event.target.closest('#user-review-section-wrapper');
+        if (wrapper) {
+            const viewModeCard = wrapper.querySelector('.review-view-mode');
+            const editModeCard = wrapper.querySelector('.review-edit-mode');
+            
+            if (viewModeCard && editModeCard) {
+                editModeCard.classList.add('d-none');      // Hide edit form structure
+                viewModeCard.classList.remove('d-none');   // Show regular display card
+            }
+        }
+    }
+});
+
+// ==========================================
+// 2. ASYNC EDIT FORM SUBMISSION
+// ==========================================
+document.body.addEventListener('submit', function (event) {
+    const targetForm = event.target;
+    
+    // Check if the form being submitted belongs to the edit block wrapper
+    const editContainer = targetForm.closest('.review-edit-mode');
+    if (!editContainer) return;
+
+    event.preventDefault(); // Stop page from hard-reloading
+
+    const saveButton = targetForm.querySelector('button[type="submit"]');
+    const wrapper = targetForm.closest('#user-review-section-wrapper');
+    const textarea = targetForm.querySelector('#editReviewTextArea');
+
+    // Prevent double submissions
+    if (saveButton) {
+        saveButton.disabled = true;
+        saveButton.textContent = "Saving...";
+    }
+
+    const formData = new FormData(targetForm);
+    if (textarea) {
+        formData.set('review_text', textarea.value.trim());
+    }
+
+    fetch(targetForm.action, {
+        method: 'POST',
+        body: formData,
+        headers: {
+            'X-Requested-With': 'XMLHttpRequest'
+        }
+    })
+    .then(response => {
+        if (!response.ok) throw new Error('Network error trying to save update.');
+        return response.json();
+    })
+    .then(data => {
+        if (data.success) {
+            // Mapping tables to mirror values back into your View Mode UI components
+            const ratingLabels = { '1': 'Skip', '2': 'Timepass', '3': 'Go for it', '4': 'Perfection' };
+            const readableScore = ratingLabels[data.score] || data.score;
+
+            if (wrapper) {
+                const viewModeCard = wrapper.querySelector('.review-view-mode');
+                
+                // Update badge text and score styling dynamically
+                const badge = viewModeCard.querySelector('.static-pill-badge');
+                if (badge) {
+                    badge.className = `static-pill-badge score-color-${data.score}`;
+                    badge.textContent = readableScore;
+                }
+
+                // Update text block area layout
+                const textBody = viewModeCard.querySelector('.review-display-body');
+                if (textBody) {
+                    if (data.review_text) {
+                        textBody.className = "review-display-body text-light mb-3";
+                        textBody.style.fontSize = "0.88rem";
+                        textBody.style.whiteSpace = "pre-line";
+                        textBody.textContent = data.review_text;
+                    } else {
+                        textBody.innerHTML = '<span class="text-muted italic small">Rated without a written review.</span>';
+                    }
+                }
+
+                // Update the smart time layout label if sent by view response
+                const timeLabel = viewModeCard.querySelector('.text-secondary.opacity-75');
+                if (timeLabel && data.created_at) {
+                    timeLabel.textContent = data.created_at;
+                }
+
+                const likeCountSpan = viewModeCard.querySelector('.like-count');
+                if (likeCountSpan && data.total_likes !== undefined) {
+                    likeCountSpan.textContent = data.total_likes;
+                }
+
+                // Flip display visibility back seamlessly
+                editContainer.classList.add('d-none');
+                viewModeCard.classList.remove('d-none');
+            }
+
+            if (saveButton) {
+                saveButton.disabled = false;
+                saveButton.textContent = "Save Changes";
+            }
+        } else {
+            alert("Error updating review: " + data.error);
+            if (saveButton) {
+                saveButton.disabled = false;
+                saveButton.textContent = "Save Changes";
+            }
+        }
+    })
+    .catch(error => {
+        console.error('Error handling edit save:', error);
+        alert("Something went wrong saving changes.");
+        if (saveButton) {
+            saveButton.disabled = false;
+            saveButton.textContent = "Save Changes";
+        }
+    });
+});
 });

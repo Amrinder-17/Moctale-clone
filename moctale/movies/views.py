@@ -890,12 +890,8 @@ def submit_review(request):
         movie_id = request.POST.get('movie_id')
         movie_title = request.POST.get('movie_title')
         media_type = request.POST.get('media_type', 'movie')
-        
-        # 🌟 NEW: Grab parent_id from the form if the user is replying to someone
         parent_id = request.POST.get('parent_id') 
 
-        # Validation Rule: If it's a top-level review, a score is REQUIRED.
-        # If it's a reply, score is NOT required (replies shouldn't skew the meter).
         if not movie_id:
             return JsonResponse({'success': False, 'error': 'Missing movie ID.'}, status=400)
         if not parent_id and not score:
@@ -906,10 +902,8 @@ def submit_review(request):
             # CASE 1: THIS IS A REPLY
             # ==========================================
             if parent_id:
-                # Find the parent review model instance
                 parent_review = UserMovieActivity.objects.get(id=parent_id)
                 
-                # Create a fresh row every time (Allows users to text back and forth)
                 activity = UserMovieActivity.objects.create(
                     user=user,
                     movie_id=movie_id,
@@ -917,17 +911,21 @@ def submit_review(request):
                     media_type=media_type,
                     review_text=review_text,
                     parent=parent_review,
-                    score=None,  # Replies don't carry their own score
+                    score=None,  
                     is_watched=True
                 )
                 created = True
                 msg = 'Reply added successfully!'
 
+            # ==========================================
+            # CASE 2: MAIN TOP-LEVEL REVIEW (EDIT/CREATE)
+            # ==========================================
             else:
+                # Use parent=None instead of parent__isnull=True
                 activity, created = UserMovieActivity.objects.update_or_create(
                     user=user,
                     movie_id=movie_id,
-                    parent__isnull=True, 
+                    parent=None,  # 👈 Safely forces lookup of the unique top-level review row
                     defaults={
                         'movie_title': movie_title,
                         'media_type': media_type,
@@ -938,13 +936,16 @@ def submit_review(request):
                 )
                 msg = 'Review created successfully!' if created else 'Review updated successfully!'
 
+            # Return the activity_id and dynamic total_likes back to the JavaScript front-end
             return JsonResponse({
                 'success': True,
                 'message': msg,
                 'is_new': created,
+                'activity_id': activity.id, # 👈 Crucial for front-end delete/like targets
+                'total_likes': activity.total_likes(), # 👈 Preserves likes smoothly on edit
                 'user_name': request.user.username,
-                'review_text': review_text,
-                'score': score,
+                'review_text': activity.review_text,
+                'score': activity.score,
                 'created_at': "Just now"
             })
 

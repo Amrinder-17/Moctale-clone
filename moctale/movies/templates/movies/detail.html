@@ -228,16 +228,20 @@
     <div class="d-flex flex-column align-items-start gap-2 w-100 mb-2">
         <h2 class="h5 mb-0 fw-bold">Reviews</h2>
     </div>
-    <div id="user-review-section-wrapper" style=" margin-left: 0; margin-right: auto;">
+<div id="user-review-section-wrapper" style="margin-left: 0; margin-right: auto;">
     
     {% if existing_activity and method_fields_present or existing_activity.score or existing_activity.review_text %}
-        <div class="custom-review-card  p-3 rounded-4 d-flex flex-column  text-white"
-            style="background-color: #1a1a1a !important;">
+        
+        <!-- ==========================================
+             VIEW MODE (Visible by Default)
+             ========================================== -->
+        <div class="custom-review-card p-3 rounded-4 d-flex flex-column text-white review-view-mode"
+             style="background-color: #1a1a1a !important;">
             <div class="d-flex align-items-center justify-content-between w-100 mb-2">
                 <div class="d-flex align-items-center gap-2">
                     {% if request.user.profile.profile_picture %}
                         <img src="{{ request.user.profile.profile_picture.url }}" alt="{{ request.user.username }}" class="avatar-img rounded-circle" style="width: 32px; height: 32px; object-fit: cover;">
-                     {% else %}
+                    {% else %}
                         <div class="avatar-circle d-flex align-items-center justify-content-center fw-bold text-uppercase" style="width: 38px; height: 38px; background-color: #3a3a3a; font-size: 0.9rem; border-radius: 50%;">
                             {{ request.user.username|slice:":1" }}
                         </div>
@@ -245,28 +249,44 @@
                     <div class="d-flex flex-column">
                         <span class="fw-bold text-light small lh-1">{{ request.user.username }}</span>
                         <span class="text-secondary opacity-75 mt-0.5" style="font-size: 0.72rem;">
-                            {{ review.updated_at|smart_time }}
+                            {{ existing_activity.updated_at|smart_time }}
                         </span>
                     </div>
                 </div>
 
-                <span class="static-pill-badge score-color-{{ existing_activity.score }}">
-                    {% if existing_activity.score == 1 %}Skip
-                    {% elif existing_activity.score == 2 %}Timepass
-                    {% elif existing_activity.score == 3 %}Go for it
-                    {% elif existing_activity.score == 4 %}Perfection
-                    {% endif %}
-                </span>
+                <div class="d-flex align-items-center gap-2">
+                    <span class="static-pill-badge score-color-{{ existing_activity.score }}">
+                        {{ existing_activity.get_score_display }}
+                    </span>
+
+                    
+                    <div class="dropdown">
+                        <div data-bs-toggle="dropdown" aria-expanded="false" style="cursor: pointer;">
+                            <i class="bi bi-three-dots cursor-pointer-icon text-secondary"></i>
+                        </div>
+                        <ul class="dropdown-menu dropdown-menu-end bg-dark border-secondary">
+                            <li><a class="dropdown-item text-light edit-review-btn" href="#">Edit review</a></li>
+                            <li><hr class="dropdown-divider border-secondary"></li>
+                            <li>
+                                <form action="{% url 'toggle_activity_delete_review' existing_activity.id %}" method="POST" class="delete-review-form" style="display:inline;">
+                                    {% csrf_token %}
+                                    <button type="submit" class="dropdown-item text-danger bg-transparent border-0 w-100 text-start">
+                                        <i class="bi bi-trash-fill"></i> Delete review
+                                    </button>
+                                </form>
+                            </li>
+                        </ul>
+                    </div>
+                </div>
             </div>
 
-            <div class="review-display-body text-light mb-3" style="font-size: 0.88rem; ">
+            <div class="review-display-body text-light mb-3" style="font-size: 0.88rem;">
                 {% if existing_activity.review_text %}
                     {{ existing_activity.review_text }}
                 {% else %}
                     <span class="text-muted italic small">Rated without a written review.</span>
                 {% endif %}
             </div>
-
             <div class="d-flex align-items-center justify-content-between w-100 text-secondary mt-1" style="font-size: 0.95rem; padding-left: 2px;">
                 <div class="d-flex align-items-center gap-3">
                     <div class="d-flex align-items-center gap-1.5 review-box cursor-pointer-icon">
@@ -282,84 +302,117 @@
                         </form>
                         <span class="like-count font-weight-bold ml-1">{{ existing_activity.likes.count }}</span>
                     
-                </div>
-                <div class="d-flex align-items-center gap-1.5 cursor-pointer-icon">
-                    <i class="bi bi-chat"></i>
-                    <span style="font-size: 0.78rem;" class="fw-semibold"></span>
+                    </div>
+                    <div class="d-flex align-items-center gap-1.5 cursor-pointer-icon">
+                        <i class="bi bi-chat"></i>
+                        <span style="font-size: 0.78rem;" class="fw-semibold"></span>
+                    </div>
                 </div>
             </div>
-            <div class="dropdown">
-                <div data-bs-toggle="dropdown" aria-expanded="false" style="cursor: pointer;">
-                    <i class="bi bi-three-dots"></i>
-                </div>
-
-                <!-- The Menu -->
-                <ul class="dropdown-menu dropdown-menu-end">
-                    <li>
-                        <form action="{% url 'toggle_activity_delete_review' existing_activity.id %}" method="POST" class="delete-review-form" style="display:inline;">
-                            {% csrf_token %}
-                            <button type="submit" class="dropdown-item text-danger d-flex align-items-center gap-2 bg-transparent border-0">
-                                <i class="bi bi-trash-fill"></i> Delete review
-                            </button>
-                        </form>
-                    </li>
-                </ul>
-            </div>
-        </div>
-    </div>
-
-    {% else %}
-    <div class="no-reviews-msg">
-        <form method="POST" action="{% url 'submit_review' %}" class="custom-review-card p-3 rounded-4 d-flex flex-column gap-3">
-            {% csrf_token %}
-            <input type="hidden" name="movie_id" value="{{ movie.id }}">
-            <input type="hidden" name="movie_title" value="{{ movie.title }}">
-            <input type="hidden" name="media_type" value="movie">
             
-            <div class="d-flex align-items-center justify-content-between w-100 gap-3 flex-wrap">
-                <div class="d-flex align-items-center gap-2 flex-shrink-0">
-                    {% if request.user.is_authenticated %}
+        </div>
+        <!-- ==========================================
+             EDIT MODE FORM (Hidden by default)
+             ========================================== -->
+        <div class="review-edit-mode d-none">
+            <form method="POST" action="{% url 'submit_review' %}" class="custom-review-card p-3 rounded-4 d-flex flex-column gap-3">
+                {% csrf_token %}
+                <input type="hidden" name="movie_id" value="{{ movie.id }}">
+                <input type="hidden" name="movie_title" value="{{ movie.title }}">
+                <input type="hidden" name="media_type" value="movie">
+                
+                <div class="d-flex align-items-center justify-content-between w-100 gap-3 flex-wrap">
+                    <div class="d-flex align-items-center gap-2 flex-shrink-0">
                         {% if request.user.profile.profile_picture %}
-                            <img src="{{ request.user.profile.profile_picture.url }}" alt="{{ request.user.username }}" class="avatar-img rounded-circle" style="width: 32px; height: 32px; object-fit: cover;">
+                            <img src="{{ request.user.profile.profile_picture.url }}" class="avatar-img rounded-circle" style="width: 32px; height: 32px; object-fit: cover;">
                         {% else %}
-                            <div class="avatar-circle d-flex align-items-center justify-content-center fw-bold">
-                                {{ request.user.username|slice:":1"|upper }}
+                            <div class="avatar-circle d-flex align-items-center justify-content-center fw-bold text-uppercase" style="width: 38px; height: 38px; background-color: #3a3a3a; font-size: 0.9rem; border-radius: 50%;">
+                                {{ request.user.username|slice:":1" }}
                             </div>
                         {% endif %}
                         <span class="fw-semibold text-light small">@{{ request.user.username }}</span>
-                    {% else %}
-                        <div class="avatar-circle d-flex align-items-center justify-content-center fw-bold text-muted">?</div>
-                        <span class="fw-semibold text-secondary small">@Anonymous</span>
-                    {% endif %}
+                    </div>
+
+                    <div class="rating-pill-group d-flex align-items-center rounded-pill">
+                        <input type="radio" name="score" id="score_skip" value="1" class="btn-check">
+                        <label for="score_skip" class="pill-btn pill-skip text-center">Skip</label>
+
+                        <input type="radio" name="score" id="score_timepass" value="2" class="btn-check" checked>
+                        <label for="score_timepass" class="pill-btn pill-timepass text-center">Timepass</label>
+
+                        <input type="radio" name="score" id="score_goforit" value="3" class="btn-check">
+                        <label for="score_goforit" class="pill-btn pill-goforit text-center">Go for it</label>
+
+                        <input type="radio" name="score" id="score_perfection" value="4" class="btn-check">
+                        <label for="score_perfection" class="pill-btn pill-perfection text-center">Perfection</label>
+                    </div>
                 </div>
 
-                <div class="rating-pill-group d-flex align-items-center rounded-pill">
-                    <input type="radio" name="score" id="score_skip" value="1" class="btn-check">
-                    <label for="score_skip" class="pill-btn pill-skip text-center">Skip</label>
-
-                    <input type="radio" name="score" id="score_timepass" value="2" class="btn-check" checked>
-                    <label for="score_timepass" class="pill-btn pill-timepass text-center">Timepass</label>
-
-                    <input type="radio" name="score" id="score_goforit" value="3" class="btn-check">
-                    <label for="score_goforit" class="pill-btn pill-goforit text-center">Go for it</label>
-
-                    <input type="radio" name="score" id="score_perfection" value="4" class="btn-check">
-                    <label for="score_perfection" class="pill-btn pill-perfection text-center">Perfection</label>
+                <div class="w-100 position-relative flex-grow-1">
+                    <textarea name="review_text" id="editReviewTextArea" class="form-control custom-textarea border-0 border-bottom rounded-0 px-0 pb-1 bg-transparent text-white w-100" placeholder="Update your review..." maxlength="1000">{% if existing_activity.review_text %}{{ existing_activity.review_text }}{% endif %}</textarea>
                 </div>
-            </div>
 
-            <div class="w-100 position-relative flex-grow-1">
-                <textarea name="review_text" id="reviewTextArea" class="form-control custom-textarea border-0 border-bottom rounded-0 px-0 pb-1 bg-transparent text-white w-100" placeholder="Write your review here..." maxlength="1000"></textarea>
-                <div class="text-end text-secondary mt-1" id="charCounter" style="font-size: 0.7rem;">0/1000</div>
-            </div>
+                <div class="d-flex justify-content-end gap-2 w-100 mt-auto">
+                    <button type="button" class="btn btn-outline-secondary rounded-pill px-3 py-1 cancel-edit-btn">Cancel</button>
+                    <button type="submit" class="btn btn-light rounded-pill px-3.5 py-1 custom-post-btn">Save Changes</button>
+                </div>
+            </form>
+        </div> <!-- ✅ Closes .review-edit-mode cleanly -->
 
-            <div class="text-end w-100 mt-auto">
-                <button type="submit" class="btn btn-light rounded-pill px-3.5 py-1 fw-bold custom-post-btn">Post</button>
-            </div>
-        </form>
+    {% else %}
+        <div class="no-reviews-msg">
+            <form method="POST" action="{% url 'submit_review' %}" class="custom-review-card p-3 rounded-4 d-flex flex-column gap-3">
+                {% csrf_token %}
+                <input type="hidden" name="movie_id" value="{{ movie.id }}">
+                <input type="hidden" name="movie_title" value="{{ movie.title }}">
+                <input type="hidden" name="media_type" value="movie">
+                
+                <div class="d-flex align-items-center justify-content-between w-100 gap-3 flex-wrap">
+                    <div class="d-flex align-items-center gap-2 flex-shrink-0">
+                        {% if request.user.is_authenticated %}
+                            {% if request.user.profile.profile_picture %}
+                                <img src="{{ request.user.profile.profile_picture.url }}" alt="{{ request.user.username }}" class="avatar-img rounded-circle" style="width: 32px; height: 32px; object-fit: cover;">
+                            {% else %}
+                                <div class="avatar-circle d-flex align-items-center justify-content-center fw-bold">
+                                    {{ request.user.username|slice:":1"|upper }}
+                                </div>
+                            {% endif %}
+                            <span class="fw-semibold text-light small">@{{ request.user.username }}</span>
+                        {% else %}
+                            <div class="avatar-circle d-flex align-items-center justify-content-center fw-bold text-muted">?</div>
+                            <span class="fw-semibold text-secondary small">@Anonymous</span>
+                        {% endif %}
+                    </div>
+
+                    <div class="rating-pill-group d-flex align-items-center rounded-pill">
+                        <input type="radio" name="score" id="score_skip" value="1" class="btn-check">
+                        <label for="score_skip" class="pill-btn pill-skip text-center">Skip</label>
+
+                        <input type="radio" name="score" id="score_timepass" value="2" class="btn-check" checked>
+                        <label for="score_timepass" class="pill-btn pill-timepass text-center">Timepass</label>
+
+                        <input type="radio" name="score" id="score_goforit" value="3" class="btn-check">
+                        <label for="score_goforit" class="pill-btn pill-goforit text-center">Go for it</label>
+
+                        <input type="radio" name="score" id="score_perfection" value="4" class="btn-check">
+                        <label for="score_perfection" class="pill-btn pill-perfection text-center">Perfection</label>
+                    </div>
+                </div>
+
+                <div class="w-100 position-relative flex-grow-1">
+                    <textarea name="review_text" id="reviewTextArea" class="form-control custom-textarea border-0 border-bottom rounded-0 px-0 pb-1 bg-transparent text-white w-100" placeholder="Write your review here..." maxlength="1000"></textarea>
+                    <div class="text-end text-secondary mt-1" id="charCounter" style="font-size: 0.7rem;">0/1000</div>
+                </div>
+
+                <div class="text-end w-100 mt-auto">
+                    <button type="submit" class="btn btn-light rounded-pill px-3.5 py-1 fw-bold custom-post-btn">Post</button>
+                </div>
+            </form>
         </div>
+
     {% endif %}
-</div>
+    
+    </div> 
 </div>
 
 <div>
