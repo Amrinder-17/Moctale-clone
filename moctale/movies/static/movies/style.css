@@ -1980,3 +1980,155 @@ a {
 .card-feed-item:last-child {
     margin-bottom: 3rem !important;
 }
+.galaxybtn {
+  position: relative; /* 👈 CRUCIAL: Keeps inner stars & glows locked inside the pill */
+  display: inline-flex;
+  justify-content: center;
+  align-items: center;
+  width: 9.5rem; /* 👈 Scaled down from 13rem */
+  height: 2.2rem; /* 👈 Scaled down from 3rem */
+  overflow: hidden;
+  background-size: 300% 300%;
+  backdrop-filter: blur(1rem);
+  border-radius: 5rem;
+  transition: 0.5s;
+  animation: gradient_301 5s ease infinite;
+  border: double 2.5px transparent; /* Slightly thinner border for balanced scaling */
+  
+  /* Deep space background tracking gradients */
+  background-image: linear-gradient(#141416, #141416), 
+                    linear-gradient(137.48deg, #0096c7 10%, #03045e 45%, #00f5d4 67%, #023e8a 87%);
+  background-origin: border-box;
+  background-clip: content-box, border-box;
+  cursor: pointer;
+}
+
+#container-stars {
+  position: absolute;
+  top: 0;
+  left: 0;
+  z-index: -1;
+  width: 100%;
+  height: 100%;
+  overflow: hidden;
+  transition: 0.5s;
+  backdrop-filter: blur(1rem);
+  border-radius: 5rem;
+}
+
+.galaxybtn strong {
+  z-index: 2;
+  font-family: 'Poppins', sans-serif;
+  font-size: 12px; /* 👈 Scaled down from 16px */
+  letter-spacing: 1px; /* 👈 Tightened letter tracking for short width maps */
+  color: #FFFFFF;
+  text-shadow: 0 0 4px rgb(0, 0, 0);
+}
+
+#glow {
+  position: absolute;
+  display: flex;
+  width: 8rem; /* 👈 Balanced to keep glow tight behind text boundary */
+}
+
+.circle {
+  width: 100%;
+  height: 20px;
+  filter: blur(1.5rem);
+  animation: pulse_3011 4s infinite;
+  z-index: -1;
+}
+
+/* Fixed original code syntax typo (removed the extra 0 breaking rgba rendering value maps) */
+.circle:nth-of-type(1) {
+  background: rgba(0, 77, 186, 0.6);
+}
+
+.circle:nth-of-type(2) {
+  background: rgba(0, 150, 199, 0.5);
+}
+
+.galaxybtn:hover #container-stars {
+  z-index: 1;
+  background-color: #0a0a0c;
+}
+
+.galaxybtn:hover {
+  transform: scale(1.04); /* Subtle scaling keeps it from slamming into the cancel button */
+  border-color: double 2.5px rgba(255, 255, 255, 0.4);
+}
+
+.galaxybtn:active {
+  border: double 2.5px #00f5d4;
+  background-origin: border-box;
+  background-clip: content-box, border-box;
+  animation: none;
+}
+
+.galaxybtn:active .circle {
+  background: #00f5d4;
+}
+
+#stars {
+  position: relative;
+  background: transparent;
+  width: 200rem;
+  height: 200rem;
+}
+
+#stars::after {
+  content: "";
+  position: absolute;
+  top: -10rem;
+  left: -100rem;
+  width: 100%;
+  height: 100%;
+  animation: animStarRotate 90s linear infinite;
+  background-image: radial-gradient(#ffffff 1px, transparent 1%);
+  background-size: 40px 40px;
+}
+
+#stars::before {
+  content: "";
+  position: absolute;
+  top: 0;
+  left: -50%;
+  width: 170%;
+  height: 500%;
+  animation: animStar 60s linear infinite;
+  background-image: radial-gradient(#ffffff 1px, transparent 1%);
+  background-size: 40px 40px;
+  opacity: 0.4;
+}
+
+/* --- ANIMATION LAYOUT CORE ENGINE ENTRANCES --- */
+@keyframes animStar {
+  from { transform: translateY(0); }
+  to { transform: translateY(-135rem); }
+}
+
+@keyframes animStarRotate {
+  from { transform: rotate(360deg); }
+  to { transform: rotate(0); }
+}
+
+@keyframes gradient_301 {
+  0% { background-position: 0% 50%; }
+  50% { background-position: 100% 50%; }
+  100% { background-position: 0% 50%; }
+}
+
+@keyframes pulse_3011 {
+  0% {
+    transform: scale(0.75);
+    box-shadow: 0 0 0 0 rgba(0, 0, 0, 0.5);
+  }
+  70% {
+    transform: scale(1);
+    box-shadow: 0 0 0 10px rgba(0, 0, 0, 0);
+  }
+  100% {
+    transform: scale(0.75);
+    box-shadow: 0 0 0 0 rgba(0, 0, 0, 0);
+  }
+}

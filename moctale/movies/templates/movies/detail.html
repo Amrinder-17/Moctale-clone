@@ -259,24 +259,6 @@
                         {{ existing_activity.get_score_display }}
                     </span>
 
-                    
-                    <div class="dropdown">
-                        <div data-bs-toggle="dropdown" aria-expanded="false" style="cursor: pointer;">
-                            <i class="bi bi-three-dots cursor-pointer-icon text-secondary"></i>
-                        </div>
-                        <ul class="dropdown-menu dropdown-menu-end bg-dark border-secondary">
-                            <li><a class="dropdown-item text-light edit-review-btn" href="#">Edit review</a></li>
-                            <li><hr class="dropdown-divider border-secondary"></li>
-                            <li>
-                                <form action="{% url 'toggle_activity_delete_review' existing_activity.id %}" method="POST" class="delete-review-form" style="display:inline;">
-                                    {% csrf_token %}
-                                    <button type="submit" class="dropdown-item text-danger bg-transparent border-0 w-100 text-start">
-                                        <i class="bi bi-trash-fill"></i> Delete review
-                                    </button>
-                                </form>
-                            </li>
-                        </ul>
-                    </div>
                 </div>
             </div>
 
@@ -308,6 +290,23 @@
                         <span style="font-size: 0.78rem;" class="fw-semibold"></span>
                     </div>
                 </div>
+                <div class="dropdown">
+                        <div data-bs-toggle="dropdown" aria-expanded="false" style="cursor: pointer;">
+                            <i class="bi bi-three-dots cursor-pointer-icon text-secondary"></i>
+                        </div>
+                        <ul class="dropdown-menu dropdown-menu-end bg-dark border-secondary">
+                            <li><a class="dropdown-item text-light edit-review-btn" href="#">Edit review</a></li>
+                            <li><hr class="dropdown-divider border-secondary"></li>
+                            <li>
+                                <form action="{% url 'toggle_activity_delete_review' existing_activity.id %}" method="POST" class="delete-review-form" style="display:inline;">
+                                    {% csrf_token %}
+                                    <button type="submit" class="dropdown-item text-danger bg-transparent border-0 w-100 text-start">
+                                        <i class="bi bi-trash-fill"></i> Delete review
+                                    </button>
+                                </form>
+                            </li>
+                        </ul>
+                    </div>
             </div>
             
         </div>
@@ -353,11 +352,20 @@
                 </div>
 
                 <div class="d-flex justify-content-end gap-2 w-100 mt-auto">
-                    <button type="button" class="btn btn-outline-secondary rounded-pill px-3 py-1 cancel-edit-btn">Cancel</button>
-                    <button type="submit" class="btn btn-light rounded-pill px-3.5 py-1 custom-post-btn">Save Changes</button>
+                    <button type="button" class="btn btn-link text-secondary text-decoration-none rounded-pill px-3.5 py-1 small cancel-edit-btn">Cancel</button>
+                    <button type="submit" class="galaxybtn">
+                    <strong>Save Changes</strong>
+                    <div id="container-stars">
+                        <div id="stars"></div>
+                    </div>
+                    <div id="glow">
+                        <div class="circle"></div>
+                        <div class="circle"></div>
+                    </div>
+                </button>
                 </div>
             </form>
-        </div> <!-- ✅ Closes .review-edit-mode cleanly -->
+        </div> 
 
     {% else %}
         <div class="no-reviews-msg">
@@ -405,7 +413,17 @@
                 </div>
 
                 <div class="text-end w-100 mt-auto">
-                    <button type="submit" class="btn btn-light rounded-pill px-3.5 py-1 fw-bold custom-post-btn">Post</button>
+                    <!-- From Uiverse.io by DrashtySoni --> 
+                   <button type="submit" class="galaxybtn">
+                    <strong>Post</strong>
+                    <div id="container-stars">
+                        <div id="stars"></div>
+                    </div>
+                    <div id="glow">
+                        <div class="circle"></div>
+                        <div class="circle"></div>
+                    </div>
+                </button>
                 </div>
             </form>
         </div>
