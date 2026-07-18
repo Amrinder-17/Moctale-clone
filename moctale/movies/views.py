@@ -643,10 +643,7 @@ def toggle_activity_like(request, activity_id):
             activity.likes.add(request.user)
             liked=True
             
-        return JsonResponse({
-            'liked': liked,
-            'total_likes': activity.likes.count()
-        })
+        return JsonResponse({'success': True, 'liked': liked, 'total_likes': activity.likes.count()})
     return JsonResponse({'error': 'Invalid request'}, status=400)
 @login_required
 @require_POST
