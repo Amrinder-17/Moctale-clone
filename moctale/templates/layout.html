@@ -125,7 +125,6 @@
   document.addEventListener('DOMContentLoaded', () => {
       const expansionButtons = document.querySelectorAll('.nav-tray-btn');
       
-      // Handle the text expansion slider behavior for content buttons only
       expansionButtons.forEach(btn => {
           btn.addEventListener('click', () => {
               expansionButtons.forEach(b => b.classList.remove('active'));
