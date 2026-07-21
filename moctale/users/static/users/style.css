@@ -60,7 +60,7 @@
 }
 
 /* CTA Submit Button with fixed structural constraints */
-.btn-primary {
+.btn-primary-1 {
   width: 100%;
   background-color: #eec32d;
   color: #0b0c10;
@@ -74,7 +74,7 @@
   margin-top: 10px;
 }
 
-.btn-primary:hover {
+.btn-primary-1:hover {
   background-color: #dcb324;
 }
 

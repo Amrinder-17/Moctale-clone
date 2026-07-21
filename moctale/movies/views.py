@@ -137,10 +137,8 @@ def media_detail(request, media_type, media_id):
     if not request.user.is_authenticated:
         return render(request, 'home/welcome.html')
     
-    
-        
     api_key = settings.TMDB_API_KEY
-    base_url = "https://api.themoviedb.org/3"  # Standardized base path structure
+    base_url = "https://api.themoviedb.org/3"
     detail_url = f"{base_url}/{media_type}/{media_id}"
 
     params = {
@@ -148,8 +146,11 @@ def media_detail(request, media_type, media_id):
         'language': 'en-US',
         'append_to_response': 'videos',
     }
+    
     activity = None
-    user_collection =[]
+    user_collections = []
+    reviews = []
+
     if request.user.is_authenticated:
         activity = UserMovieActivity.objects.filter(user=request.user, movie_id=media_id).first()
         user_collections = request.user.collections.all().order_by('-is_default', 'name')
@@ -157,6 +158,7 @@ def media_detail(request, media_type, media_id):
             movie_id=media_id,
             parent__isnull=True
         ).exclude(user=request.user).select_related('user__profile').order_by('-updated_at')
+        
         if not request.user.collections.filter(is_default=True).exists():
             Collection.objects.create(
                 user=request.user,
@@ -164,13 +166,13 @@ def media_detail(request, media_type, media_id):
                 is_default=True
             )
     else:
-        main_reviews = UserMovieActivity.objects.filter(
+        reviews = UserMovieActivity.objects.filter(
             movie_id=media_id, 
             parent__isnull=True
         ).select_related('user__profile').order_by('-created_at')
     
     try:
-        # 2. Fetch primary media details first
+        # 1. Fetch primary media details
         response = requests.get(detail_url, params=params)
         if response.status_code == 200:
             media_data = response.json()
@@ -178,10 +180,28 @@ def media_detail(request, media_type, media_id):
         else:
             return render(request, 'movies/404.html', status=404)
 
-        # 3. Fetch credits data
+        # 2. Fetch credits data
         credits_res = requests.get(f"{base_url}/{media_type}/{media_id}/credits", params={'api_key': api_key, 'language': 'en-US'})
         credits_data = credits_res.json() if credits_res.status_code == 200 else {}
 
+        # 3. 🍿 FETCH WATCH PROVIDERS (New Section)
+        providers_url = f"{base_url}/{media_type}/{media_id}/watch/providers"
+        providers_res = requests.get(providers_url, params={'api_key': api_key})
+        watch_providers = {'flatrate': [], 'buy': [], 'rent': [], 'link': ''}
+
+        if providers_res.status_code == 200:
+            provider_results = providers_res.json().get('results', {})
+            # Target Indian region 'IN', fallback to 'US' if empty
+            target_region_data = provider_results.get('IN') or provider_results.get('US') or {}
+            
+            watch_providers = {
+                'flatrate': target_region_data.get('flatrate', []),
+                'buy': target_region_data.get('buy', []),
+                'rent': target_region_data.get('rent', []),
+                'link': target_region_data.get('link', ''),
+            }
+
+        # 4. Process Trailer Link
         trailer_link = _pick_trailer_link(media_data.get('videos', {}).get('results', []))
         video_url = f"{base_url}/{media_type}/{media_id}/videos"
 
@@ -192,27 +212,27 @@ def media_detail(request, media_type, media_id):
                     trailer_link = _pick_trailer_link(video_res.json().get('results', []))
             except Exception as video_err:
                 print(f"Failed to fetch trailer track: {video_err}")
-        # 💡 Use this syntax when your import is: from datetime import datetime
+        
         today_string = datetime.now().date().isoformat()
         if media_type == 'tv':
             release_date = media_data.get('first_air_date') or 'Undated'
         else:
             release_date = media_data.get('release_date') or 'Undated'
             media_data['release_date'] = release_date
+
         existing_activity = None
         if request.user.is_authenticated:
             existing_activity = UserMovieActivity.objects.filter(user=request.user, movie_id=media_id).first()
         
+        # 5. Score aggregation & Meter calculations
         score_counts = (
             UserMovieActivity.objects.filter(movie_id=media_id, score__isnull=False)
             .values('score')
             .annotate(total=Count('id'))
         )
         
-        # Convert database results into a dictionary lookup mapping score -> count
         counts_dict = {item['score']: item['total'] for item in score_counts}
         
-        # Build the final ordered array mapping strictly to ScoreChoices values (1, 2, 3, 4)
         votes = [
             counts_dict.get(1, 0),  # Skip
             counts_dict.get(2, 0),  # Timepass
@@ -221,21 +241,9 @@ def media_detail(request, media_type, media_id):
         ]
         
         total_votes = sum(votes)
-        
-        # Meter logic remains clean and identical
         weighted_sum = sum(count * index for index, count in enumerate(votes))
         avg_index = weighted_sum / total_votes if total_votes > 0 else 0
         avg_percentage = (avg_index / 3) * 100
-        
-       
-
-        # Calculate percentage splits for individual progress bars or meter segments
-        vote_percentages = [
-            round((count / total_votes) * 100) if total_votes > 0 else 0 
-            for count in votes
-        ]
-
-        
         
         context = {
             'movie': media_data,
@@ -249,16 +257,14 @@ def media_detail(request, media_type, media_id):
             'votes': votes,
             'total_votes': total_votes,
             'avg_percentage': round(avg_percentage, 1),
-            'reviews':reviews,
+            'reviews': reviews,
+            'watch_providers': watch_providers,  # 👈 Pass watch_providers to context!
         }
 
-        
-        # 6. Render everything safely inside the try block
         return render(request, 'movies/detail.html', context)
 
     except Exception as e:
         print(f"Detail Fetch Error: {e}")
-        # Global fallback if any of the critical requests above explode
         return render(request, 'movies/404.html', status=500)
 
 @cache_page(3600)
@@ -288,102 +294,80 @@ def schedule_feed(request):
         
     api_key = settings.TMDB_API_KEY
     base_url = "https://api.themoviedb.org/3"
-
     page = int(request.GET.get('page', 1))
     source = request.GET.get('source', 'cinemas')
     media_filter = request.GET.get('media', 'all')
     is_upcoming = request.GET.get('upcoming', 'false').lower() == 'true' or source == 'upcoming'
 
-    today = datetime.today()
-    start_date = (today - timedelta(days=30)).strftime('%Y-%m-%d')
-    end_date = (today + timedelta(days=90)).strftime('%Y-%m-%d')
+    today_dt = datetime.today()
+    today_str = today_dt.strftime('%Y-%m-%d')
+    start_date = (today_dt - timedelta(days=60)).strftime('%Y-%m-%d') # e.g. Last 60 days of releases
+    end_date = (today_dt + timedelta(days=90)).strftime('%Y-%m-%d')
 
-    # 1. Setup base initialization params map
     params = {
         'api_key': api_key,
         'language': 'en-IN',
         'page': page,
     }
 
+    # Determine if we are querying TV or Movie endpoint
+    use_tv = media_filter == 'tv' or (media_filter == 'all' and page % 2 == 0)
+
     if source == 'cinemas':
         discover_url = f"{base_url}/movie/now_playing"
         params['region'] = 'IN'
     else:
-        discover_url = f"{base_url}/discover/movie"
         params['region'] = 'IN'
         params['watch_region'] = 'IN'
         
-        # Establish default timeline fallback windows
-        use_tv = media_filter == 'tv' or (media_filter == 'all' and page % 2 == 0)
+        # 1. Base URL & Dates Setup
         if use_tv:
-            discover_url = f"{base_url}/discover/tv"
-            params['sort_by'] = 'first_air_date.desc'
-            params['air_date.gte'] = start_date
-            params['air_date.lte'] = end_date
-            params.pop('release_date.gte', None)
-            params.pop('release_date.lte', None)
-        else:
-            discover_url = f"{base_url}/discover/movie"
-            params['sort_by'] = 'release_date.desc'
-            params['release_date.gte'] = start_date
-            params['release_date.lte'] = end_date
-            params.pop('air_date.gte', None)
-            params.pop('air_date.lte', None)
-
-        # 2. Overrides Engine Filters Group
-        if source == 'crunchyroll':
-            params['with_watch_providers'] = '283'
-            params['with_genres'] = '16'              
-            params['with_original_language'] = 'ja'   
-            params['watch_region'] = 'US'             
-            
-            params.pop('region', None)
-            params.pop('air_date.gte', None)
-            params.pop('air_date.lte', None)
-            params.pop('release_date.gte', None)
-            params.pop('release_date.lte', None)
-            
             discover_url = f"{base_url}/discover/tv"
             
             if is_upcoming:
-                params['sort_by'] = 'first_air_date.asc'     
-                params['first_air_date.gte'] = end_date      
+                # UPCOMING TAB ONLY: Strictly from tomorrow/today up to future date
+                params['sort_by'] = 'first_air_date.asc'
+                params['first_air_date.gte'] = today_str
+                params['first_air_date.lte'] = end_date
             else:
-                if page == 1:
-                    params['first_air_date.gte'] = start_date
-                    params['first_air_date.lte'] = end_date
-                else:
-                    params['first_air_date.lte'] = end_date
+                # RELEASED PAGES (Prime, Netflix, etc.): Strictly ALREADY RELEASED content up to today
+                params['sort_by'] = 'first_air_date.desc'
+                params['first_air_date.gte'] = start_date
+                params['first_air_date.lte'] = today_str  # 🛑 Hard stop at TODAY (no future content!)
+                
+        else:
+            discover_url = f"{base_url}/discover/movie"
+            
+            if is_upcoming:
+                # UPCOMING TAB ONLY: Strictly from tomorrow/today up to future date
+                params['sort_by'] = 'primary_release_date.asc'
+                params['primary_release_date.gte'] = today_str
+                params['primary_release_date.lte'] = end_date
+            else:
+                # RELEASED PAGES (Prime, Netflix, etc.): Strictly ALREADY RELEASED content up to today
+                params['sort_by'] = 'primary_release_date.desc'
+                params['primary_release_date.gte'] = start_date
+                params['primary_release_date.lte'] = today_str  # 🛑 Hard stop at TODAY (no future content!)
 
+        # 2. Provider Rules Overrides
+        if source == 'crunchyroll':
+            params['with_watch_providers'] = '283'
+            params['with_genres'] = '16'
+            params['with_original_language'] = 'ja'
+            params['watch_region'] = 'US'
+            params.pop('region', None)
+            discover_url = f"{base_url}/discover/tv"
+            
         elif source == 'netflix':
             params['with_watch_providers'] = '8'
+            
         elif source == 'prime':
-            params['with_watch_providers'] = '119'
+            params['with_watch_providers'] = '119|9'
             
-
-        if source == 'upcoming' or is_upcoming:
+        elif source == 'upcoming':
             params['with_original_language'] = 'hi|ta|te|ml|kn|bn|en'
-            params.pop('air_date.gte', None)
-            params.pop('air_date.lte', None)
-            params.pop('release_date.gte', None)
-            params.pop('release_date.lte', None)
             params['popularity.gte'] = 5.0
-            
-            # 1. 🇮🇳 Force target search specifically to the Indian localized market
-            params['region'] = 'IN'
-            params['watch_region'] = 'IN'
-            
-            
-            use_tv = media_filter == 'tv' or (media_filter == 'all' and page % 2 == 0)
-            if use_tv:
-                discover_url = f"{base_url}/discover/tv"
-                params['sort_by'] = 'first_air_date.asc'
-                params['first_air_date.gte'] = end_date
-            else:
-                discover_url = f"{base_url}/discover/movie"
-                params['sort_by'] = 'primary_release_date.asc'
-                params['primary_release_date.gte'] = end_date
-            
+
     try:
         response = requests.get(discover_url, params=params)
         if response.status_code != 200:
@@ -401,9 +385,8 @@ def schedule_feed(request):
             vote_avg = item.get('vote_average', 0)
             vote_count = item.get('vote_count', 0)
             
-            # 🚀 UPDATED LOOP SAFEGUARD:
-            # Let BOTH crunchyroll and global upcoming queries bypass the 0-vote block
-            if source not in ['crunchyroll', 'upcoming'] and not is_upcoming and (vote_avg == 0 or vote_count == 0):
+            # Safe vote filter check
+            if source not in ['crunchyroll', 'upcoming', 'prime', 'netflix'] and not is_upcoming and (vote_avg == 0 or vote_count == 0):
                 continue 
             elif source == 'crunchyroll' and not overview:
                 continue
@@ -422,6 +405,13 @@ def schedule_feed(request):
                     'media_type': current_media_type,
                 })
         
+        if is_upcoming:
+            # Upcoming page: Earliest upcoming first (e.g. Tomorrow -> Next Month)
+            processed_items.sort(key=lambda x: x['release_date'])
+        else:
+            # Released page: Most recent releases first (e.g. Today -> Yesterday -> Last Week)
+            processed_items.sort(key=lambda x: x['release_date'], reverse=True)
+
         sliced_items = processed_items[:15]
         return JsonResponse({'results': sliced_items}, status=200)
         

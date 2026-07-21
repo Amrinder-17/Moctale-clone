@@ -1,7 +1,7 @@
 {% extends "layout.html" %}
 {% load static %}
 {% block extra_css %}
-<link href="{% static 'style.css' %}" rel="stylesheet">
+<link href="{% static 'users/style.css' %}" rel="stylesheet">
 {% endblock %}
 
 
@@ -19,6 +19,7 @@
           <div class="ms-auto d-flex gap-2">
             <a href="{% url 'register' %}" class="btn btn-dark btn btn-primary text-center fw-semibold" style="background-color: #000000; margin-right: 5px; width:85.5px;height:37px; font-size:15px;">Sign Up</a>
             <a href="{% url 'login' %}" class="btn btn btn-primary text-center fw-semibold" style="background-color: #4f15e1; color: white;  margin-right:60px; width: 69px; height:36px; font-size:17px; ">Login</a>
+          </div>
           </div>
         </div>
       </div>
@@ -51,7 +52,7 @@
                 {{ form.password }}
             </div>
             
-            <button type="submit" class="btn-primary">Sign In</button>
+            <button type="submit" class="btn-primary-1">Sign In</button>
         </form>
         
         <p class="auth-switch">New to Moctale? <a href="{% url 'register' %}">Create an account</a></p>
