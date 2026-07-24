@@ -65,6 +65,14 @@ class UserMovieActivity(models.Model):
     
     def total_likes(self):
         return self.likes.count()
+
+    def review_date_formatted(self):
+        """Returns readable date like '18 Jul 2026'."""
+        return self.updated_at.strftime("%d %b %Y")
+
+    def review_year(self):
+        """Returns the year the review was posted/updated."""
+        return self.updated_at.year
     
     def __str__(self):
         # Shows rating label if it exists, otherwise just the title

@@ -1,0 +1,94 @@
+{% extends 'layout.html' %}
+{% load static %}
+
+{% block extra_css %}
+    <link rel="stylesheet" href="{% static 'movies/style.css' %}">
+{% endblock %}
+
+{% block content %}
+<div class="container py-4" style="max-width: 900px;">
+    
+    <!-- Header Summary -->
+    <div class="d-flex align-items-center justify-content-between mb-4 pb-2 border-bottom border-secondary">
+        <div>
+            <h3 class="fw-bold text-white mb-1">My Movie & TV Reviews</h3>
+            <span class="text-secondary small">Total Reviews: {{ total_reviews }}</span>
+        </div>
+    </div>
+
+    <!-- Review Feed Stream -->
+    <div class="d-flex flex-column gap-3">
+        {% for activity in reviews %}
+            <div class="custom-review-card p-3 rounded-4 text-white d-flex gap-3 position-relative"
+                 style="background-color: #1a1a1a !important; border: 1px solid #2a2a2a;">
+                
+                <!-- Poster Image (if stored) -->
+                {% if activity.poster_path %}
+                    <a href="/media/{{ activity.media_type }}/{{ activity.movie_id }}/" class="flex-shrink-0">
+                        <img src="https://image.tmdb.org/t/p/w185{{ activity.poster_path }}" 
+                             alt="{{ activity.movie_title }}" 
+                             class="rounded-3 shadow-sm" 
+                             style="width: 70px; height: 105px; object-fit: cover;">
+                    </a>
+                {% endif %}
+
+                <!-- Content Area -->
+                <div class="d-flex flex-column flex-grow-1">
+                    
+                    <!-- Top Title & Badge Line -->
+                    <div class="d-flex align-items-center justify-content-between w-100 mb-1">
+                        <div class="d-flex align-items-center gap-2 flex-wrap">
+                            <a href="/media/{{ activity.media_type }}/{{ activity.movie_id }}/" 
+                                class="text-decoration-none text-white fw-bold fs-5 hover-underline">
+                                    {% if activity.movie_title %}
+                                        {{ activity.movie_title }}
+                                    {% else %}
+                                        <!-- Fallback if title wasn't saved in database -->
+                                        {{ activity.get_media_type_display }} #{{ activity.movie_id }}
+                                    {% endif %}
+                                </a>
+                            
+                            <!-- Media Type Tag -->
+                            <span class="badge bg-dark border border-secondary text-secondary extra-small text-uppercase">
+                                {{ activity.get_media_type_display }}
+                            </span>
+                        </div>
+
+                        <!-- Rating Score Pill -->
+                        <span class="static-pill-badge score-color-{{ activity.score }}">
+                            {{ activity.get_score_display }}
+                        </span>
+                    </div>
+
+                    <!-- Date Line -->
+                    <div class="text-secondary opacity-75 mb-2" style="font-size: 0.78rem;">
+                        Reviewed on {{ activity.review_date_formatted }}
+                    </div>
+
+                    <!-- Review Text Body -->
+                    <div class="review-body-text text-light" style="font-size: 0.9rem; white-space: pre-line;">
+                        {% if activity.review_text %}
+                            {{ activity.review_text }}
+                        {% else %}
+                            <span class="text-muted fst-italic">Rated without a written review.</span>
+                        {% endif %}
+                    </div>
+
+                    <!-- Bottom Action Links -->
+                    <div class="d-flex align-items-center gap-3 mt-auto pt-2 text-secondary" style="font-size: 0.82rem;">
+                        <span><i class="bi bi-heart-fill text-danger me-1"></i>{{ activity.total_likes }} Likes</span>
+                    </div>
+
+                </div>
+            </div>
+        {% empty %}
+            <!-- Empty State -->
+            <div class="text-center py-5 text-secondary">
+                <i class="bi bi-journal-x fs-1 d-block mb-2 opacity-50"></i>
+                <p class="mb-0">You haven't written any reviews or assigned scores yet.</p>
+            </div>
+        {% endfor %}
+    </div>
+
+</div>
+{% endblock %}

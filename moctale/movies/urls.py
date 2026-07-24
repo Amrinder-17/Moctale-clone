@@ -19,4 +19,5 @@ urlpatterns = [
     path('review/submit/', views.submit_review, name='submit_review'),
     path('activity/<int:activity_id>/like/', views.toggle_activity_like, name='toggle_activity_like'),
     path('activity/<int:activity_id>/delete/', views.toggle_activity_delete_review, name='toggle_activity_delete_review'),
+    path('<str:username>/reviews/',views.user_ratedlist,name="reviews_list"),
 ]

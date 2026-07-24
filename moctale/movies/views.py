@@ -943,10 +943,20 @@ def submit_review(request):
         
     return JsonResponse({'success': False, 'error': 'Invalid request method.'}, status=400)
 
-# @login_required
-# def user_ratedlist(request):
-#     # Grabs all activities for the logged-in user, sorted by most recently updated
-#     activities = request.user.movie_activities.all().order_by('-updated_at')
+@login_required
+def user_ratedlist(request, username=None):
+    # Fetch only parent activities where a score has been explicitly assigned
+    # Excludes plain watchlists/interests and nested reply comments
+    reviews = (
+        request.user.movie_activities
+        .filter(score__isnull=False, parent__isnull=True)
+        .order_by('-updated_at')
+    )
     
-#     return render(request, 'ratedlist.html', {'activities': activities})
+    context = {
+        'reviews': reviews,
+        'total_reviews': reviews.count(),
+    }
+    
+    return render(request, 'movies/ratedlist.html', context)
 

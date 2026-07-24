@@ -88,7 +88,7 @@
 
         <!-- Profile Section -->
         <div class="nav-profile-section border-start ps-3 border-secondary border-opacity-25">
-          <a href="#" class="profile-badge-link" aria-label="User Profile">
+          <a href="{% url "reviews_list" username=request.user.username %}" class="profile-badge-link" aria-label="User Profile">
             {% if request.user.is_authenticated %}
         
               {% if request.user.profile.profile_picture %}
