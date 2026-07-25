@@ -10,6 +10,7 @@ from django.views.decorators.http import require_POST
 from django.shortcuts import get_object_or_404,redirect
 from .models import Collection, UserMovieActivity
 from django.db.models import Count
+from django.contrib.auth.models import User
 from django.views.decorators.csrf import csrf_protect
 
 
@@ -878,11 +879,22 @@ def submit_review(request):
         movie_title = request.POST.get('movie_title')
         media_type = request.POST.get('media_type', 'movie')
         parent_id = request.POST.get('parent_id') 
+        poster_path = request.POST.get('poster_path')
 
         if not movie_id:
             return JsonResponse({'success': False, 'error': 'Missing movie ID.'}, status=400)
         if not parent_id and not score:
             return JsonResponse({'success': False, 'error': 'Missing rating score.'}, status=400)
+
+        # 🚀 FIX 1 & 2: Safe TMDB Fallback for missing title or poster_path
+        if not movie_title or not poster_path:
+            tmdb_url = f"https://api.themoviedb.org/3/{media_type}/{movie_id}"
+            res = requests.get(tmdb_url, params={'api_key': settings.TMDB_API_KEY})
+            if res.status_code == 200:
+                data = res.json()
+                # 'title' for movies, 'name' for TV shows
+                movie_title = movie_title or data.get('title') or data.get('name') or 'Untitled'
+                poster_path = poster_path or data.get('poster_path')
 
         try:
             # ==========================================
@@ -896,6 +908,7 @@ def submit_review(request):
                     movie_id=movie_id,
                     movie_title=movie_title,
                     media_type=media_type,
+                    poster_path=poster_path,  # 👈 Ensure poster_path is saved on reply
                     review_text=review_text,
                     parent=parent_review,
                     score=None,  
@@ -908,14 +921,14 @@ def submit_review(request):
             # CASE 2: MAIN TOP-LEVEL REVIEW (EDIT/CREATE)
             # ==========================================
             else:
-                # Use parent=None instead of parent__isnull=True
                 activity, created = UserMovieActivity.objects.update_or_create(
                     user=user,
                     movie_id=movie_id,
-                    parent=None,  # 👈 Safely forces lookup of the unique top-level review row
+                    parent=None,
                     defaults={
                         'movie_title': movie_title,
                         'media_type': media_type,
+                        'poster_path': poster_path,  # 👈 FIX 3: Added poster_path to defaults!
                         'score': int(score),
                         'review_text': review_text,
                         'is_watched': True,
@@ -923,13 +936,13 @@ def submit_review(request):
                 )
                 msg = 'Review created successfully!' if created else 'Review updated successfully!'
 
-            # Return the activity_id and dynamic total_likes back to the JavaScript front-end
+            # Return activity fields back to front-end
             return JsonResponse({
                 'success': True,
                 'message': msg,
                 'is_new': created,
-                'activity_id': activity.id, # 👈 Crucial for front-end delete/like targets
-                'total_likes': activity.total_likes(), # 👈 Preserves likes smoothly on edit
+                'activity_id': activity.id,
+                'total_likes': activity.total_likes(),
                 'user_name': request.user.username,
                 'review_text': activity.review_text,
                 'score': activity.score,
@@ -940,23 +953,45 @@ def submit_review(request):
             return JsonResponse({'success': False, 'error': 'Parent review not found.'}, status=404)
         except Exception as e:
             return JsonResponse({'success': False, 'error': str(e)}, status=500)
-        
-    return JsonResponse({'success': False, 'error': 'Invalid request method.'}, status=400)
+
+    return JsonResponse({'success': False, 'error': 'Invalid request method.'}, status=405)
 
 @login_required
 def user_ratedlist(request, username=None):
-    # Fetch only parent activities where a score has been explicitly assigned
-    # Excludes plain watchlists/interests and nested reply comments
-    reviews = (
-        request.user.movie_activities
+    if username is None:
+        target_user = request.user
+    else:
+        target_user = get_object_or_404(User, username=username)
+
+    reviews = list(
+        target_user.movie_activities
         .filter(score__isnull=False, parent__isnull=True)
         .order_by('-updated_at')
     )
-    
-    context = {
-        'reviews': reviews,
-        'total_reviews': reviews.count(),
-    }
-    
-    return render(request, 'movies/ratedlist.html', context)
 
+    api_key = settings.TMDB_API_KEY
+
+    for activity in reviews:
+        # If media_type or title is incorrect, force a check against the correct endpoint
+        m_type = activity.media_type or 'movie'
+        
+        # Call TMDB for current assigned media type
+        url = f"https://api.themoviedb.org/3/{m_type}/{activity.movie_id}"
+        res = requests.get(url, params={'api_key': api_key, 'language': 'en-US'})
+        
+        if res.status_code == 200:
+            data = res.json()
+            title = data.get('title') if m_type == 'movie' else data.get('name')
+            
+            # If movie title was saved wrong or empty, update it
+            if title and activity.movie_title != title:
+                activity.movie_title = title
+                if not activity.poster_path and data.get('poster_path'):
+                    activity.poster_path = data.get('poster_path')
+                activity.save()
+
+    return render(request, 'movies/ratedlist.html', {
+        'target_user': target_user,
+        'reviews': reviews,
+        'total_reviews': len(reviews),
+    })
