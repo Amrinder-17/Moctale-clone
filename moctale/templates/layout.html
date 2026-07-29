@@ -13,7 +13,7 @@
 </head>
 <body >
 
-  {% block navbar %}
+{% block navbar %}
 <nav class="navbar navbar-expand-lg navbar-dark navbar-translucent sticky-top bg-body-tertiary border-bottom border-body-secondary">
   <div class="container-fluid px-4">
     
@@ -36,13 +36,14 @@
         <div class="d-flex align-items-center nav-icon-links-container me-3">
           
           <!-- Tab 1: Explore (Active by Default) -->
-           <a href="{% url 'dashboard' %}">
+          <a href="{% url 'dashboard' %}">
             <button type="button" class="nav-tray-btn {% block nav_active_explore %}active{% endblock %}">
               <i class="bi bi-compass"></i>
               <span class="label-text">Explore</span>
             </button>
           </a>
 
+          <!-- Tab 2: Schedule -->
           <a href="{% url 'Schedule' %}">
             <button type="button" class="nav-tray-btn {% block nav_active_schedule %}{% endblock %}">
               <i class="bi bi-calendar"></i>
@@ -50,17 +51,15 @@
             </button>
           </a>
           
-        
-          
-          <!-- Tab 4: Bookmark -->
-           <a href="{% url "bookmarks" %}">
-          <button type="button" class="nav-tray-btn {% block nav_active_bookmark %}{% endblock  %}">
-            <i class="bi bi-bookmark"></i>
-            <span class="label-text">Bookmarks</span>
-          </button>
+          <!-- Tab 3: Bookmarks -->
+          <a href="{% url 'bookmarks' %}">
+            <button type="button" class="nav-tray-btn {% block nav_active_bookmark %}{% endblock %}">
+              <i class="bi bi-bookmark"></i>
+              <span class="label-text">Bookmarks</span>
+            </button>
           </a>
           
-          <!-- Tab 5: Grid Menu (Static Icon Only) -->
+          <!-- Tab 4: Grid Menu (Static Icon Only) -->
           <div class="dropdown d-inline-block">
             <button type="button" class="nav-static-icon-btn" id="gridDropdownMenu" data-bs-toggle="dropdown" aria-expanded="false" aria-label="Menu">
               <i class="bi bi-grid"></i>
@@ -68,7 +67,7 @@
             {# {% include "movies/partials/mega_dropdown.html" ignore missing %} #}
           </div>
           
-          <!-- Tab 6: Notifications Dropdown (Static Icon Only) -->
+          <!-- Tab 5: Notifications Dropdown (Static Icon Only) -->
           <div class="dropdown d-inline-block">
             <button type="button" class="nav-static-icon-btn position-relative" id="notificationDropdownMenu" data-bs-toggle="dropdown" aria-expanded="false" aria-label="Alerts">
               <i class="bi bi-bell"></i>
@@ -77,8 +76,8 @@
             <!-- (Your notifications dropdown panel body goes here) -->
           </div>
           
-          <!-- Tab 7: Fullscreen Search Trigger -->
-          <button  id="searchOpenBtn" class="nav-static-icon-btn  search-toggle-btn" type="button" aria-label="Toggle Search">
+          <!-- Tab 6: Fullscreen Search Trigger -->
+          <button id="searchOpenBtn" class="nav-static-icon-btn search-toggle-btn" type="button" aria-label="Toggle Search">
             <span class="search-icon-wrapper">
               <i class="bi bi-search search-lens"></i>
             </span>
@@ -87,54 +86,89 @@
         </div> 
 
         <!-- Profile Section -->
-        <div class="nav-profile-section border-start ps-3 border-secondary border-opacity-25">
-          <a href="{% url "reviews_list" username=request.user.username %}" class="profile-badge-link" aria-label="User Profile">
-            {% if request.user.is_authenticated %}
-        
-              {% if request.user.profile.profile_picture %}
-                  <img src="{{ request.user.profile.profile_picture.url }}" alt="Profile Avatar" class="profile-badge-img">
-              {% else %}
-                  <div class="profile-badge-fallback">
-                      <svg viewBox="0 0 24 24" fill="currentColor">
-                          <path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm0 4c1.93 0 3.5 1.57 3.5 3.5S13.93 13 12 13s-3.5-1.57-3.5-3.5S10.07 6 12 6zm0 14c-2.03 0-4.43-.82-6.14-2.27C7.48 16.32 9.62 15 12 15s4.52 1.32 6.14 2.73C16.43 19.18 14.03 20 12 20z"/>
-                      </svg>
+        <div class="nav-profile-section border-start ps-3 border-secondary border-opacity-25 d-flex align-items-center">
+          <div class="dropdown">
+            <!-- Dropdown Trigger -->
+            <button class="btn p-0 border-0 d-inline-flex align-items-center gap-2 dropdown-toggle shadow-none" 
+                    type="button"
+                    id="profileDropdownMenu" 
+                    data-bs-toggle="dropdown" 
+                    data-bs-auto-close="true"
+                    aria-expanded="false" 
+                    style="background: transparent; color: inherit;">
+              
+              {% if request.user.is_authenticated %}
+                {% if request.user.profile.profile_picture %}
+                  <img src="{{ request.user.profile.profile_picture.url }}" 
+                       alt="{{ request.user.username }}" 
+                       class="rounded-circle" 
+                       style="width: 36px; height: 36px; object-fit: cover;">
+                {% else %}
+                  <div class="rounded-circle d-flex align-items-center justify-content-center bg-secondary text-white fw-bold" 
+                       style="width: 36px; height: 36px; font-size: 0.9rem;">
+                    {{ request.user.username|slice:":1"|upper }}
                   </div>
+                {% endif %}
+                
+              {% else %}
+                <div class="rounded-circle d-flex align-items-center justify-content-center bg-secondary text-muted fw-bold" 
+                     style="width: 36px; height: 36px; font-size: 0.9rem;">
+                  ?
+                </div>
               {% endif %}
+            </button>
 
-              <span class="fw-semibold text-light">@{{ request.user.username }}</span>
-
-          {% else %}
-              <div class="profile-badge-fallback">
-                  <svg viewBox="0 0 24 24" fill="currentColor">
-                      <path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm0 4c1.93 0 3.5 1.57 3.5 3.5S13.93 13 12 13s-3.5-1.57-3.5-3.5S10.07 6 12 6zm0 14c-2.03 0-4.43-.82-6.14-2.27C7.48 16.32 9.62 15 12 15s4.52 1.32 6.14 2.73C16.43 19.18 14.03 20 12 20z"/>
-                  </svg>
-              </div>
-              <span class="fw-semibold text-secondary">@Guest</span>
-          {% endif %}
-          </a>
+            <!-- Dropdown Menu -->
+            <ul class="dropdown-menu dropdown-menu-end bg-dark border-secondary mt-2 shadow" aria-labelledby="profileDropdownMenu" style="z-index: 1080;">
+              {% if request.user.is_authenticated %}
+                <li>
+                  <a href="{% url 'reviews_list' username=request.user.username %}" class="dropdown-item text-light py-2">
+                    <i class="bi bi-person-fill me-2 text-secondary"></i>My Profile
+                  </a>
+                </li>
+                <li><hr class="dropdown-divider border-secondary my-1"></li>
+                <li>
+                  <form action="{% url 'logout' %}" method="POST" class="m-0 p-0">
+                    {% csrf_token %}
+                    <button type="submit" class="dropdown-item text-danger py-2 w-100 text-start bg-transparent border-0">
+                      <i class="bi bi-box-arrow-right me-2"></i>Logout
+                    </button>
+                  </form>
+                </li>
+              {% else %}
+                <li>
+                  <a href="{% url 'login' %}" class="dropdown-item text-light py-2">
+                    <i class="bi bi-box-arrow-in-right me-2 text-secondary"></i>Log In
+                  </a>
+                </li>
+                <li>
+                  <a href="{% url 'register' %}" class="dropdown-item text-light py-2">
+                    <i class="bi bi-person-plus-fill me-2 text-secondary"></i>Register
+                  </a>
+                </li>
+              {% endif %}
+            </ul>
+          </div>
         </div>
 
       </div>
     </div>
-    
   </div>
 </nav>
 
 <!-- Clean Driver Script Logic -->
 <script>
-  document.addEventListener('DOMContentLoaded', () => {
+    document.addEventListener('DOMContentLoaded', () => {
       const expansionButtons = document.querySelectorAll('.nav-tray-btn');
-      
       expansionButtons.forEach(btn => {
-          btn.addEventListener('click', () => {
-              expansionButtons.forEach(b => b.classList.remove('active'));
-              btn.classList.add('active');
-          });
+        btn.addEventListener('click', () => {
+          expansionButtons.forEach(b => b.classList.remove('active'));
+          btn.classList.add('active');
+        });
       });
-  });
-
-  
-</script>
+    });
+  </script>
+<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/js/bootstrap.bundle.min.js"></script>
 <script src="{% static 'js/search.js' %}"></script>
 {% endblock %}
 

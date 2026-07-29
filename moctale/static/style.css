@@ -12,7 +12,9 @@
 }
 
 
-
+#profileDropdownMenu.dropdown-toggle::after {
+    display: none !important;
+}
 /* Force Bootstrap components to use your dark blue surface color */
 [data-bs-theme="dark"] body {
     background-color: #000000 !important;
