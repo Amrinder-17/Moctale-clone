@@ -61,7 +61,13 @@ class UserMovieActivity(models.Model):
     )
 
     class Meta:
-        unique_together = ('user', 'movie_id')
+        constraints = [
+            models.UniqueConstraint(
+                fields=['user', 'movie_id'],
+                condition=models.Q(parent__isnull=True),
+                name='unique_user_top_level_movie_review'
+            )
+        ]
     
     def total_likes(self):
         return self.likes.count()

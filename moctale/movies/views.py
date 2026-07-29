@@ -883,39 +883,58 @@ def submit_review(request):
 
         if not movie_id:
             return JsonResponse({'success': False, 'error': 'Missing movie ID.'}, status=400)
+        
+        # Main reviews REQUIRE a score, but Replies do NOT require a score
         if not parent_id and not score:
             return JsonResponse({'success': False, 'error': 'Missing rating score.'}, status=400)
 
-        # 🚀 FIX 1 & 2: Safe TMDB Fallback for missing title or poster_path
+        # Safe TMDB Fallback for missing title or poster_path
         if not movie_title or not poster_path:
             tmdb_url = f"https://api.themoviedb.org/3/{media_type}/{movie_id}"
             res = requests.get(tmdb_url, params={'api_key': settings.TMDB_API_KEY})
             if res.status_code == 200:
                 data = res.json()
-                # 'title' for movies, 'name' for TV shows
                 movie_title = movie_title or data.get('title') or data.get('name') or 'Untitled'
                 poster_path = poster_path or data.get('poster_path')
 
         try:
+            # Helper to safely extract profile picture URL
+            profile_pic = None
+            if hasattr(user, 'profile') and user.profile.profile_picture:
+                profile_pic = user.profile.profile_picture.url
+
             # ==========================================
-            # CASE 1: THIS IS A REPLY
+            # CASE 1: REPLY TO A REVIEW (NO SCORE)
             # ==========================================
             if parent_id:
                 parent_review = UserMovieActivity.objects.get(id=parent_id)
                 
-                activity = UserMovieActivity.objects.create(
+                reply_activity = UserMovieActivity.objects.create(
                     user=user,
                     movie_id=movie_id,
                     movie_title=movie_title,
                     media_type=media_type,
-                    poster_path=poster_path,  # 👈 Ensure poster_path is saved on reply
+                    poster_path=poster_path,
                     review_text=review_text,
                     parent=parent_review,
-                    score=None,  
+                    score=None,  # 👈 Replies explicitly have no rating score
                     is_watched=True
                 )
-                created = True
-                msg = 'Reply added successfully!'
+
+                return JsonResponse({
+                    'success': True,
+                    'message': 'Reply added successfully!',
+                    'is_reply': True,  # 👈 Signals frontend that this is a reply thread item
+                    'reply': {
+                        'id': reply_activity.id,
+                        'user': user.username,
+                        'profile_picture': profile_pic,
+                        'review_text': reply_activity.review_text,
+                        'likes_count': 0,
+                        'is_liked': False,
+                        'updated_at': 'Just now'
+                    }
+                })
 
             # ==========================================
             # CASE 2: MAIN TOP-LEVEL REVIEW (EDIT/CREATE)
@@ -924,11 +943,11 @@ def submit_review(request):
                 activity, created = UserMovieActivity.objects.update_or_create(
                     user=user,
                     movie_id=movie_id,
-                    parent=None,
+                    parent=None,  # 👈 Ensures lookup targets the main review
                     defaults={
                         'movie_title': movie_title,
                         'media_type': media_type,
-                        'poster_path': poster_path,  # 👈 FIX 3: Added poster_path to defaults!
+                        'poster_path': poster_path,
                         'score': int(score),
                         'review_text': review_text,
                         'is_watched': True,
@@ -936,18 +955,19 @@ def submit_review(request):
                 )
                 msg = 'Review created successfully!' if created else 'Review updated successfully!'
 
-            # Return activity fields back to front-end
-            return JsonResponse({
-                'success': True,
-                'message': msg,
-                'is_new': created,
-                'activity_id': activity.id,
-                'total_likes': activity.total_likes(),
-                'user_name': request.user.username,
-                'review_text': activity.review_text,
-                'score': activity.score,
-                'created_at': "Just now"
-            })
+                return JsonResponse({
+                    'success': True,
+                    'message': msg,
+                    'is_reply': False,
+                    'is_new': created,
+                    'activity_id': activity.id,
+                    'total_likes': activity.total_likes(),
+                    'user_name': user.username,
+                    'profile_picture': profile_pic,
+                    'review_text': activity.review_text,
+                    'score': activity.score,
+                    'created_at': "Just now"
+                })
 
         except UserMovieActivity.DoesNotExist:
             return JsonResponse({'success': False, 'error': 'Parent review not found.'}, status=404)
@@ -995,3 +1015,46 @@ def user_ratedlist(request, username=None):
         'reviews': reviews,
         'total_reviews': len(reviews),
     })
+
+def get_replies(request, parent_id):
+    parent_review = get_object_or_404(UserMovieActivity, id=parent_id)
+    
+    # 👈 Changed 'created_at' to 'updated_at' (or 'id')
+    replies = parent_review.replies.all().select_related('user__profile').order_by('updated_at')
+    
+    replies_data = []
+    for r in replies:
+        profile_picture = None
+        if hasattr(r.user, 'profile') and r.user.profile.profile_picture:
+            profile_picture = r.user.profile.profile_picture.url
+
+        replies_data.append({
+            'id': r.id,
+            'user': r.user.username,
+            'profile_picture': profile_picture,
+            'review_text': r.review_text,
+            'likes_count': r.total_likes(),
+            'is_liked': request.user in r.likes.all() if request.user.is_authenticated else False,
+            'is_owner': request.user == r.user,
+            'updated_at': r.updated_at.strftime('%b %d, %Y'),  # 👈 Use updated_at here too
+        })
+
+    return JsonResponse({'success': True, 'replies': replies_data})
+
+
+@login_required
+def edit_review(request, activity_id):
+    if request.method == 'POST':
+        activity = get_object_or_404(UserMovieActivity, id=activity_id, user=request.user)
+        new_text = request.POST.get('review_text', '').strip()
+        
+        activity.review_text = new_text
+        activity.save()
+        
+        return JsonResponse({
+            'success': True,
+            'message': 'Updated successfully!',
+            'review_text': activity.review_text
+        })
+        
+    return JsonResponse({'success': False, 'error': 'Invalid request method.'}, status=405)

@@ -242,83 +242,119 @@
     {% if existing_activity and method_fields_present or existing_activity.score or existing_activity.review_text %}
         
         <!-- ==========================================
-             VIEW MODE (Visible by Default)
-             ========================================== -->
-        <div class="custom-review-card p-3 rounded-4 d-flex flex-column text-white review-view-mode"
-             style="background-color: #1a1a1a !important;">
-            <div class="d-flex align-items-center justify-content-between w-100 mb-2">
-                <div class="d-flex align-items-center gap-2">
-                    {% if request.user.profile.profile_picture %}
-                        <img src="{{ request.user.profile.profile_picture.url }}" alt="{{ request.user.username }}" class="avatar-img rounded-circle" style="width: 32px; height: 32px; object-fit: cover;">
-                    {% else %}
-                        <div class="avatar-circle d-flex align-items-center justify-content-center fw-bold text-uppercase" style="width: 38px; height: 38px; background-color: #3a3a3a; font-size: 0.9rem; border-radius: 50%;">
-                            {{ request.user.username|slice:":1" }}
-                        </div>
-                    {% endif %}
-                    <div class="d-flex flex-column">
-                        <span class="fw-bold text-light small lh-1">{{ request.user.username }}</span>
-                        <span class="text-secondary opacity-75 mt-0.5" style="font-size: 0.72rem;">
-                            {{ existing_activity.updated_at|smart_time }}
-                        </span>
-                    </div>
+     VIEW MODE (Visible by Default)
+     ========================================== -->
+<div class="custom-review-card p-3 rounded-4 d-flex flex-column text-white review-view-mode card-feed-item"
+     style="background-color: #1a1a1a !important;" data-review-id="{{ existing_activity.id }}">
+    
+    <!-- Top Header User Info & Score -->
+    <div class="d-flex align-items-center justify-content-between w-100 mb-2">
+        <div class="d-flex align-items-center gap-2">
+            {% if request.user.profile.profile_picture %}
+                <img src="{{ request.user.profile.profile_picture.url }}" alt="{{ request.user.username }}" class="avatar-img rounded-circle" style="width: 32px; height: 32px; object-fit: cover;">
+            {% else %}
+                <div class="avatar-circle d-flex align-items-center justify-content-center fw-bold text-uppercase" style="width: 38px; height: 38px; background-color: #3a3a3a; font-size: 0.9rem; border-radius: 50%;">
+                    {{ request.user.username|slice:":1" }}
                 </div>
-
-                <div class="d-flex align-items-center gap-2">
-                    <span class="static-pill-badge score-color-{{ existing_activity.score }}">
-                        {{ existing_activity.get_score_display }}
-                    </span>
-
-                </div>
+            {% endif %}
+            <div class="d-flex flex-column">
+                <span class="fw-bold text-light small lh-1">{{ request.user.username }}</span>
+                <span class="text-secondary opacity-75 mt-0.5" style="font-size: 0.72rem;">
+                    {{ existing_activity.updated_at|smart_time }}
+                </span>
             </div>
-
-            <div class="review-display-body text-light mb-3" style="font-size: 0.88rem;">
-                {% if existing_activity.review_text %}
-                    {{ existing_activity.review_text }}
-                {% else %}
-                    <span class="text-muted italic small">Rated without a written review.</span>
-                {% endif %}
-            </div>
-            <div class="d-flex align-items-center justify-content-between w-100 text-secondary mt-1" style="font-size: 0.95rem; padding-left: 2px;">
-                <div class="d-flex align-items-center gap-3">
-                    <div class="d-flex align-items-center gap-1.5 review-box cursor-pointer-icon">
-                        <form action="{% url 'toggle_activity_like' existing_activity.id %}" method="POST" class="like-form" style="display:inline;">
-                            {% csrf_token %}
-                            <button type="submit" class="btn btn-sm btn-link like-btn">
-                                {% if request.user in existing_activity.likes.all %}
-                                    <i class="bi bi-heart-fill text-danger align-middle fs-5"></i>
-                                {% else %}
-                                    <i class="bi bi-heart text-muted align-middle fs-5"></i>
-                                {% endif %}
-                            </button>
-                        </form>
-                        <span class="like-count font-weight-bold ml-1">{{ existing_activity.likes.count }}</span>
-                    
-                    </div>
-                    <div class="d-flex align-items-center gap-1.5 cursor-pointer-icon">
-                        <i class="bi bi-chat"></i>
-                        <span style="font-size: 0.78rem;" class="fw-semibold"></span>
-                    </div>
-                </div>
-                <div class="dropdown">
-                        <div data-bs-toggle="dropdown" aria-expanded="false" style="cursor: pointer;">
-                            <i class="bi bi-three-dots cursor-pointer-icon text-secondary"></i>
-                        </div>
-                        <ul class="dropdown-menu dropdown-menu-end bg-dark border-secondary">
-                            <li><a class="dropdown-item text-light edit-review-btn" href="#">Edit review</a></li>
-                            <li><hr class="dropdown-divider border-secondary"></li>
-                            <li>
-                                <form action="{% url 'toggle_activity_delete_review' existing_activity.id %}" method="POST" class="delete-review-form" style="display:inline;">
-                                    {% csrf_token %}
-                                    <button type="submit" class="dropdown-item text-danger bg-transparent border-0 w-100 text-start">
-                                        <i class="bi bi-trash-fill"></i> Delete review
-                                    </button>
-                                </form>
-                            </li>
-                        </ul>
-                    </div>
-            </div>
-            
         </div>
+
+        <div class="d-flex align-items-center gap-2">
+            <span class="static-pill-badge score-color-{{ existing_activity.score }}">
+                {{ existing_activity.get_score_display }}
+            </span>
+        </div>
+    </div>
+
+    <!-- Review Text Body -->
+    <div class="review-display-body text-light mb-3" style="font-size: 0.88rem;">
+        {% if existing_activity.review_text %}
+            {{ existing_activity.review_text }}
+        {% else %}
+            <span class="text-muted italic small">Rated without a written review.</span>
+        {% endif %}
+    </div>
+
+    <!-- Action Bar (Like, Chat/Reply, Dropdown) -->
+    <div class="d-flex align-items-center justify-content-between w-100 text-secondary mt-1" style="font-size: 0.95rem; padding-left: 2px;">
+        <div class="d-flex align-items-center gap-3">
+            <!-- Like Button -->
+            <div class="d-flex align-items-center gap-1.5 review-box cursor-pointer-icon">
+                <form action="{% url 'toggle_activity_like' existing_activity.id %}" method="POST" class="like-form" style="display:inline;">
+                    {% csrf_token %}
+                    <button type="submit" class="btn btn-sm btn-link like-btn p-0 border-0">
+                        {% if request.user in existing_activity.likes.all %}
+                            <i class="bi bi-heart-fill text-danger align-middle fs-5"></i>
+                        {% else %}
+                            <i class="bi bi-heart text-muted align-middle fs-5"></i>
+                        {% endif %}
+                    </button>
+                </form>
+                <span class="like-count font-weight-bold ml-1">{{ existing_activity.likes.count }}</span>
+            </div>
+
+            <!-- Chat / Reply Button for Own Review -->
+            <button type="button" class="btn btn-sm btn-link text-secondary text-decoration-none p-0 d-flex align-items-center gap-1 toggle-reply-box-btn">
+                <i class="bi bi-chat fs-5"></i>
+                <span style="font-size: 0.78rem;" class="fw-semibold">Reply</span>
+            </button>
+        </div>
+
+        <!-- Three Dots Menu -->
+        <div class="dropdown">
+            <div data-bs-toggle="dropdown" aria-expanded="false" style="cursor: pointer;">
+                <i class="bi bi-three-dots cursor-pointer-icon text-secondary"></i>
+            </div>
+            <ul class="dropdown-menu dropdown-menu-end bg-dark border-secondary">
+                <li><a class="dropdown-item text-light edit-review-btn" href="#">Edit review</a></li>
+                <li><hr class="dropdown-divider border-secondary"></li>
+                <li>
+                    <form action="{% url 'toggle_activity_delete_review' existing_activity.id %}" method="POST" class="delete-review-form" style="display:inline;">
+                        {% csrf_token %}
+                        <button type="submit" class="dropdown-item text-danger bg-transparent border-0 w-100 text-start">
+                            <i class="bi bi-trash-fill"></i> Delete review
+                        </button>
+                    </form>
+                </li>
+            </ul>
+        </div>
+    </div>
+
+    <!-- View Existing Replies Trigger (if any exist) -->
+    {% if existing_activity.replies.count > 0 %}
+        <div class="mt-2 pt-1">
+            <button type="button" class="btn btn-sm btn-link text-info text-decoration-none p-0 load-replies-btn" data-parent-id="{{ existing_activity.id }}">
+                <i class="bi bi-arrow-return-right me-1"></i>
+                <span>View {{ existing_activity.replies.count }} reply{% if existing_activity.replies.count > 1 %}ies{% endif %}</span>
+            </button>
+        </div>
+    {% endif %}
+
+    <!-- Hidden Inline Reply Textbox Form -->
+    <div class="reply-form-wrapper mt-3 d-none">
+        <form class="reply-submit-form d-flex gap-2 align-items-center" action="{% url 'submit_review' %}" method="POST">
+            {% csrf_token %}
+            <input type="hidden" name="movie_id" value="{{ movie.id }}">
+            <input type="hidden" name="movie_title" value="{% if movie.title %}{{ movie.title }}{% else %}{{ movie.name }}{% endif %}">
+            <input type="hidden" name="media_type" value="{{ media_type }}">
+            <input type="hidden" name="poster_path" value="{{ movie.poster_path }}">
+            <input type="hidden" name="parent_id" value="{{ review.id }}">
+
+            <textarea name="review_text" class="form-control bg-dark text-white border-secondary rounded-3" rows="1" placeholder="Write a reply..." style="font-size: 0.85rem;" required></textarea>
+            <button type="submit" class="btn btn-primary btn-sm rounded-pill px-3 flex-shrink-0">Reply</button>
+        </form>
+    </div>
+
+    <!-- Container where Replies populate -->
+    <div class="replies-list-container mt-3 ps-3 border-start border-secondary border-opacity-25 d-none"></div>
+
+</div>
         <!-- ==========================================
              EDIT MODE FORM (Hidden by default)
              ========================================== -->
@@ -450,10 +486,10 @@
 
 <div>
 {% for review in reviews %}
-<div class="p-3 d-flex flex-column text-white border-bottom border-secondary border-opacity-25 card-feed-item">
+<div class="p-3 d-flex flex-column text-white border-bottom border-secondary border-opacity-25 card-feed-item" data-review-id="{{ review.id }}">
     
+    <!-- Top Header User Info & Score Badge -->
     <div class="d-flex align-items-center justify-content-between w-100 mb-3">
-        
         <div class="d-flex align-items-center gap-2">
             {% if review.user.profile.profile_picture %}
                 <img src="{{ review.user.profile.profile_picture.url }}" alt="{{ review.user.username }}" class="avatar-img rounded-circle" style="width: 38px; height: 38px; object-fit: cover;">
@@ -482,6 +518,7 @@
         </span>
     </div>
 
+    <!-- Review Text Body -->
     <div class="review-display-body text-light mb-3" style="font-size: 0.92rem; opacity: 0.9; line-height: 1.5; padding-left: 2px;">
         {% if review.review_text %}
             {{ review.review_text }}
@@ -490,12 +527,14 @@
         {% endif %}
     </div>
 
+    <!-- Action Toolbar (Likes & Reply Trigger) -->
     <div class="d-flex align-items-center justify-content-between w-100 text-secondary mt-1" style="font-size: 0.95rem; padding-left: 2px;">
         <div class="d-flex align-items-center gap-3">
+            <!-- Like Form -->
             <div class="d-flex align-items-center gap-1.5 review-box cursor-pointer-icon">
                 <form action="{% url 'toggle_activity_like' review.id %}" method="POST" class="like-form" style="display:inline;">
                     {% csrf_token %}
-                    <button type="submit" class="btn btn-sm btn-link like-btn">
+                    <button type="submit" class="btn btn-sm btn-link like-btn p-0 border-0">
                         {% if request.user in review.likes.all %}
                             <i class="bi bi-heart-fill text-danger align-middle fs-5"></i>
                         {% else %}
@@ -505,15 +544,50 @@
                 </form>
                 <span class="like-count font-weight-bold ml-1">{{ review.likes.count }}</span>
             </div>
-            <div class="d-flex align-items-center gap-1.5 cursor-pointer-icon">
-                <i class="bi bi-chat"></i>
-                <span style="font-size: 0.78rem;" class="fw-semibold"></span>
-            </div>
+
+            <!-- Chat / Reply Button -->
+            <button type="button" class="btn btn-sm btn-link text-secondary text-decoration-none p-0 d-flex align-items-center gap-1 toggle-reply-box-btn">
+                <i class="bi bi-chat fs-5"></i>
+                <span style="font-size: 0.78rem;" class="fw-semibold">Reply</span>
+            </button>
         </div>
+
         <div>
             <i class="bi bi-three-dots cursor-pointer-icon"></i>
         </div>
     </div>
+
+    <!-- Load Existing Replies Button (if review has replies) -->
+    {% if review.replies.count > 0 %}
+        <div class="mt-2 pt-1">
+            <button type="button" class="btn btn-sm btn-link text-info text-decoration-none p-0 load-replies-btn" data-parent-id="{{ review.id }}">
+                <i class="bi bi-arrow-return-right me-1"></i>
+                <span>View {{ review.replies.count }} reply{% if review.replies.count > 1 %}ies{% endif %}</span>
+            </button>
+        </div>
+    {% endif %}
+
+    <!-- Hidden Reply Input Textbox -->
+    <div class="reply-form-wrapper mt-3 d-none">
+        <form class="reply-submit-form d-flex gap-2 align-items-center" action="{% url 'submit_review' %}" method="POST">
+            {% csrf_token %}
+            <input type="hidden" name="movie_id" value="{{ movie.id }}">
+            <input type="hidden" name="movie_title" value="{% if movie.title %}{{ movie.title }}{% else %}{{ movie.name }}{% endif %}">
+            <input type="hidden" name="media_type" value="{{ media_type }}">
+            <input type="hidden" name="poster_path" value="{{ movie.poster_path }}">
+            <input type="hidden" name="parent_id" value="{{ review.id }}">
+
+            <textarea name="review_text" class="form-control bg-dark text-white border-secondary rounded-3" rows="1" placeholder="Write a reply..." style="font-size: 0.85rem;" required></textarea>
+            
+            <button type="submit" class="btn btn-primary btn-sm rounded-pill px-3 flex-shrink-0">
+                Reply
+            </button>
+        </form>
+    </div>
+
+    <!-- Mount Container for Loaded/Created Replies -->
+    <div class="replies-list-container mt-3 ps-3 border-start border-secondary border-opacity-25 d-none"></div>
+
 </div>
 {% endfor %}
 

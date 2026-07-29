@@ -1131,9 +1131,6 @@ a {
     scrollbar-width: none;
 }
 
-.schedule-mobile-sources::-webkit-scrollbar {
-    display: none;
-}
 
 .schedule-mobile-sources .schedule-source-btn {
     width: auto;
