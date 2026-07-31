@@ -1,122 +1,304 @@
 {% extends 'layout.html' %}
 {% load static %}
-{% block nav_active_explore %}{% endblock %}
 
 {% block extra_css %}
     <link rel="stylesheet" href="{% static 'movies/style.css' %}">
     <style>
         body {
-            background-color: #0b0b0b;
+            background-color: #080808;
+            color: #e1e1e1;
         }
-        .media-poster-img {
-            width: 80px;
-            height: 120px;
-            object-fit: cover;
-            border-radius: 8px;
+
+        /* Card Container Styles */
+        .profile-card, .section-card, .sidebar-card {
+            background-color: #121212;
+            border: 1px solid #1e1e1e;
+            border-radius: 16px;
         }
-        .media-title {
+
+        /* Avatar Styling */
+        .profile-avatar {
+            width: 110px;
+            height: 110px;
+            border-radius: 50%;
+            background-color: #313a48;
             color: #ffffff;
-            font-size: 1.15rem;
-            font-weight: 700;
-            line-height: 1.2;
-            text-decoration: none;
+            font-size: 2.2rem;
+            font-weight: 600;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            object-fit: cover;
         }
-        .media-title:hover {
-            color: #e0e0e0;
+
+        /* Custom Tabs & Pills */
+        .nav-segment-container {
+            background-color: #1a1a1a;
+            border-radius: 12px;
+            padding: 4px;
         }
-        .media-meta-text {
+        .nav-segment-btn {
+            border: none;
+            background: transparent;
             color: #8c8c8c;
+            padding: 8px 24px;
+            border-radius: 8px;
+            font-weight: 600;
+            font-size: 0.9rem;
+            transition: all 0.2s ease;
+        }
+        .nav-segment-btn.active {
+            background-color: #2a2a2a;
+            color: #ffffff;
+        }
+
+        .filter-pill {
+            background-color: #1a1a1a;
+            color: #8c8c8c;
+            border-radius: 20px;
+            padding: 5px 16px;
+            font-size: 0.8rem;
+            font-weight: 500;
+            text-decoration: none;
+            border: 1px solid transparent;
+            transition: all 0.2s;
+        }
+        .filter-pill.active, .filter-pill:hover {
+            background-color: #2a2a2a;
+            color: #ffffff;
+            border-color: #3a3a3a;
+        }
+
+        /* Poster Image */
+        .review-poster {
+            width: 100px;
+            height: 145px;
+            object-fit: cover;
+            border-radius: 10px;
+        }
+        .sidebar-poster {
+            width: 50px;
+            height: 70px;
+            object-fit: cover;
+            border-radius: 6px;
+        }
+
+        /* Action Buttons & Badges */
+        .btn-edit-profile {
+            background-color: #282828;
+            color: #d1d1d1;
+            border: none;
+            border-radius: 8px;
+            font-weight: 600;
             font-size: 0.85rem;
         }
+        .btn-edit-profile:hover {
+            background-color: #333333;
+            color: #ffffff;
+        }
+
+        /* Rating Badges (matching reference pill shapes) */
+        .badge-rating {
+            border-radius: 20px;
+            padding: 4px 14px;
+            font-size: 0.75rem;
+            font-weight: 600;
+        }
+        .badge-perfection { background-color: #a855f7; color: #fff; }
+        .badge-go-for-it { background-color: #22c55e; color: #fff; }
+        .badge-timepass { background-color: #eab308; color: #000; }
+        .badge-skip { background-color: #f43f5e; color: #fff; }
     </style>
 {% endblock %}
 
 {% block content %}
-<div class="container py-4" style="max-width: 900px;">
-
-    <!-- Header Summary -->
-    <div class="d-flex align-items-center justify-content-between mb-4 pb-2 border-bottom border-secondary opacity-25">
-        <div>
-            <h4 class="fw-bold text-white mb-1">My Movie & TV Reviews</h4>
-            <span class="text-secondary small">Total Reviews: {{ total_reviews }}</span>
-        </div>
-    </div>
-
-    <!-- Review Feed Stream -->
-    <div class="d-flex flex-column gap-3">
-        {% for activity in reviews %}
-            <div class="p-3 rounded-4 text-white d-flex gap-3 position-relative" 
-                 style="background-color: #1a1a1a !important; border: 1px solid #2a2a2a;">
+<div class="container-fluid px-4 py-4" style="max-width: 1400px;">
+    <div class="row g-4">
+        
+        <!-- ================= LEFT COLUMN: PROFILE CARD ================= -->
+        <div class="col-lg-3 col-md-4">
+            <div class="profile-card p-4 text-center d-flex flex-column align-items-center">
                 
-                <!-- Poster Image -->
-                {% if activity.poster_path %}
-                    <a href="/media/{{ activity.media_type }}/{{ activity.movie_id }}/" class="flex-shrink-0">
-                        <img src="https://image.tmdb.org/t/p/w185{{ activity.poster_path }}" 
-                             alt="{{ activity.movie_title }}" 
-                             class="media-poster-img shadow-sm">
-                    </a>
-                {% endif %}
-
-                <!-- Details Column -->
-                <div class="d-flex flex-column flex-grow-1 gap-1">
-                    
-                    <!-- Top Title & Badge Line -->
-                    <div class="d-flex align-items-center justify-content-between w-100 mb-1">
-                        <div class="d-flex align-items-center gap-2 flex-wrap">
-                            <a href="/media/{{ activity.media_type }}/{{ activity.movie_id }}/" class="media-title">
-                                {% if activity.movie_title %}
-                                    {{ activity.movie_title }}
-                                {% else %}
-                                    {{ activity.get_media_type_display }} #{{ activity.movie_id }}
-                                {% endif %}
-                            </a>
-                            
-                            <!-- Media Type Tag -->
-                            <span class="badge bg-dark border border-secondary text-secondary extra-small text-uppercase ms-1">
-                                {{ activity.get_media_type_display }}
-                            </span>
-                        </div>
-
-                        <!-- Styled Rating Score Pill Badge -->
-                        {% if activity.score %}
-                            <span class="static-pill-badge score-color-{{ activity.score }}">
-                                {{ activity.get_score_display }}
-                            </span>
-                        {% endif %}
-                    </div>
-
-                    <!-- Date & Metadata Line -->
-                    <div class="media-meta-text opacity-75">
-                        Reviewed {{ activity.review_date_formatted }}
-                        {% if activity.release_year %} • {{ activity.release_year }}{% endif %}
-                    </div>
-
-                    <!-- Review Text Body (if present) -->
-                    {% if activity.review_text %}
-                        <div class="text-light mt-2 opacity-90" style="font-size: 0.9rem; white-space: pre-line;">
-                            {{ activity.review_text }}
-                        </div>
+                <!-- Avatar / Profile Picture -->
+                <div class="mb-3">
+                    {% if profile_user.profile.profile_picture %}
+                        <img src="{{ profile_user.profile.profile_picture.url }}" alt="{{ profile_user.username }}" class="profile-avatar">
                     {% else %}
-                        <div class="text-muted fst-italic mt-1" style="font-size: 0.82rem;">
-                            Rated without a written review.
+                        <div class="profile-avatar">
+                            {{ profile_user.username|slice:":2"|title }}
                         </div>
                     {% endif %}
+                </div>
 
-                    <!-- Likes counter -->
-                    <div class="d-flex align-items-center gap-3 mt-auto pt-2 text-secondary" style="font-size: 0.82rem;">
-                        <span><i class="bi bi-heart-fill text-danger me-1"></i>{{ activity.total_likes }} Likes</span>
+                <!-- Display Name & Username -->
+                <h5 class="fw-bold text-white mb-0">
+                    {% if profile_user.get_full_name %}{{ profile_user.get_full_name }}{% else %}{{ profile_user.username }}{% endif %}
+                </h5>
+                <span class="text-secondary small mb-4">@{{ profile_user.username }}</span>
+
+                <!-- Stats Row -->
+                <div class="row w-100 mb-3 py-2 border-top border-bottom border-secondary border-opacity-10 text-center">
+                    <div class="col-6 border-end border-secondary border-opacity-10">
+                        <div class="fw-bold text-white fs-5">{{ total_reviews|default:0 }}</div>
+                        <div class="text-secondary extra-small" style="font-size: 0.75rem;">Reviews Posted</div>
                     </div>
+                    <div class="col-6">
+                        <div class="fw-bold text-white fs-5">{{ total_collections|default:0 }}</div>
+                        <div class="text-secondary extra-small" style="font-size: 0.75rem;">Public Collections</div>
+                    </div>
+                </div>
 
+                <!-- Followers Count -->
+                <div class="text-secondary small mb-3" style="font-size: 0.82rem;">
+                    <i class="bi bi-people me-1"></i> 
+                    <strong class="text-white">0</strong> Followers &bull; <strong class="text-white">0</strong> Following
+                </div>
+
+                <!-- Date Joined -->
+                <div class="text-secondary small mb-4" style="font-size: 0.8rem;">
+                    <i class="bi bi-calendar3 me-1"></i> Joined {{ profile_user.date_joined|date:"F Y" }}
+                </div>
+
+                <!-- Edit Profile Button (only if owner) -->
+                {% if request.user == profile_user %}
+                    <a href="#" class="btn btn-edit-profile w-100 py-2">Edit Profile</a>
+                {% endif %}
+
+            </div>
+        </div>
+
+        <!-- ================= CENTER COLUMN: REVIEWS FEED ================= -->
+        <div class="col-lg-6 col-md-8">
+            
+            <!-- Navigation Tabs (Reviews vs Collections) -->
+            <div class="d-flex align-items-center justify-content-center nav-segment-container mb-3">
+                <button class="nav-segment-btn active w-50">
+                    <i class="bi bi-pencil-square me-2"></i>Reviews
+                </button>
+                <button class="nav-segment-btn w-50">
+                    <i class="bi bi-collection me-2"></i>Collections
+                </button>
+            </div>
+
+            <!-- Filter Pills & View Controls -->
+            <div class="d-flex align-items-center justify-content-between flex-wrap gap-2 mb-4">
+                <div class="d-flex align-items-center gap-2 flex-wrap">
+                    <a href="#" class="filter-pill active">All</a>
+                    <a href="#" class="filter-pill">Skip</a>
+                    <a href="#" class="filter-pill">Timepass</a>
+                    <a href="#" class="filter-pill">Go For It</a>
+                    <a href="#" class="filter-pill">Perfection</a>
+                </div>
+                <div class="d-flex align-items-center gap-2 text-secondary">
+                    <button class="btn btn-sm text-secondary p-1"><i class="bi bi-list-task fs-5"></i></button>
+                    <button class="btn btn-sm text-secondary p-1"><i class="bi bi-grid fs-5"></i></button>
+                    <button class="btn btn-sm text-secondary p-1"><i class="bi bi-search fs-5"></i></button>
                 </div>
             </div>
-        {% empty %}
-            <!-- Empty State -->
-            <div class="text-center py-5 text-secondary">
-                <i class="bi bi-journal-x fs-1 d-block mb-2 opacity-50"></i>
-                <p class="mb-0">You haven't written any reviews or assigned scores yet.</p>
-            </div>
-        {% endfor %}
-    </div>
 
+            <!-- Review Cards Stream -->
+            <div class="d-flex flex-column gap-3">
+                {% for activity in reviews %}
+                    <div class="p-3 rounded-4 text-white d-flex gap-3 position-relative" style="background-color: #121212; border: 1px solid #1e1e1e;">
+                        
+                        <!-- Media Poster -->
+                        {% if activity.poster_path %}
+                            <a href="/media/{{ activity.media_type }}/{{ activity.movie_id }}/" class="flex-shrink-0">
+                                <img src="https://image.tmdb.org/t/p/w185{{ activity.poster_path }}" alt="{{ activity.movie_title }}" class="review-poster shadow-sm">
+                            </a>
+                        {% endif %}
+
+                        <!-- Review Info -->
+                        <div class="d-flex flex-column flex-grow-1">
+                            
+                            <!-- Header: Title & Rating Badge -->
+                            <div class="d-flex align-items-start justify-content-between gap-2 mb-1">
+                                <div>
+                                    <a href="/media/{{ activity.media_type }}/{{ activity.movie_id }}/" class="text-white text-decoration-none fw-bold fs-5 d-block">
+                                        {% if activity.movie_title %}{{ activity.movie_title }}{% else %}{{ activity.get_media_type_display }} #{{ activity.movie_id }}{% endif %}
+                                    </a>
+                                    <div class="text-secondary small" style="font-size: 0.82rem;">
+                                        <span class="text-capitalize">{{ activity.get_media_type_display }}</span>
+                                        {% if activity.release_year %} &bull; {{ activity.release_year }}{% endif %}
+                                        &bull; {{ activity.review_date_formatted }}
+                                    </div>
+                                </div>
+
+                                <!-- Dynamic Rating Score Badge -->
+                                {% if activity.score %}
+                                    <span class="badge badge-rating 
+                                        {% if activity.score == 'perfection' or activity.score == 5 %}badge-perfection
+                                        {% elif activity.score == 'go_for_it' or activity.score == 4 %}badge-go-for-it
+                                        {% elif activity.score == 'timepass' or activity.score == 3 %}badge-timepass
+                                        {% else %}badge-skip{% endif %}">
+                                        {{ activity.get_score_display }}
+                                    </span>
+                                {% endif %}
+                            </div>
+
+                            <!-- Review Text -->
+                            <div class="text-light my-2 opacity-90" style="font-size: 0.9rem; white-space: pre-line;">
+                                {% if activity.review_text %}
+                                    {{ activity.review_text }}
+                                {% else %}
+                                    <span class="text-muted fst-italic">Rated without a written review.</span>
+                                {% endif %}
+                            </div>
+
+                            <!-- Footer Actions: Like, Comment, Options -->
+                            <div class="d-flex align-items-center justify-content-between mt-auto pt-2 text-secondary">
+                                <div class="d-flex align-items-center gap-3">
+                                    <button class="btn btn-link p-0 text-secondary text-decoration-none border-0 fs-6">
+                                        <i class="bi bi-heart me-1"></i>
+                                    </button>
+                                    <button class="btn btn-link p-0 text-secondary text-decoration-none border-0 fs-6">
+                                        <i class="bi bi-chat me-1"></i>
+                                    </button>
+                                </div>
+                                <button class="btn btn-link p-0 text-secondary text-decoration-none border-0">
+                                    <i class="bi bi-three-dots"></i>
+                                </button>
+                            </div>
+
+                        </div>
+                    </div>
+                {% empty %}
+                    <div class="text-center py-5 text-secondary section-card">
+                        <i class="bi bi-journal-x fs-1 d-block mb-2 opacity-50"></i>
+                        <p class="mb-0">No reviews posted yet.</p>
+                    </div>
+                {% endfor %}
+            </div>
+
+        </div>
+
+        <!-- ================= RIGHT COLUMN: INTERESTED IN SIDEBAR ================= -->
+        <div class="col-lg-3 d-none d-lg-block">
+            <h6 class="fw-bold text-white mb-3">Interested In</h6>
+            
+            <div class="d-flex flex-column gap-2">
+                <!-- Sidebar Item 1 -->
+                <div class="sidebar-card p-2 d-flex align-items-center gap-3">
+                    <img src="https://image.tmdb.org/t/p/w92/1E5ba82S2md23R33R33R3.jpg" class="sidebar-poster bg-secondary" alt="Poster" onerror="this.src='https://via.placeholder.com/50x70/1a1a1a/888888?text=Film';">
+                    <div>
+                        <a href="#" class="text-white fw-bold text-decoration-none d-block small">Resident Evil</a>
+                        <div class="text-secondary extra-small" style="font-size: 0.75rem;">18 Sep, 2026</div>
+                        <span class="badge bg-dark border border-secondary text-secondary extra-small" style="font-size: 0.65rem;">In Theatre</span>
+                    </div>
+                </div>
+
+                <!-- Sidebar Item 2 -->
+                <div class="sidebar-card p-2 d-flex align-items-center gap-3">
+                    <img src="https://image.tmdb.org/t/p/w92/2E5ba82S2md23R33R33R3.jpg" class="sidebar-poster bg-secondary" alt="Poster" onerror="this.src='https://via.placeholder.com/50x70/1a1a1a/888888?text=Film';">
+                    <div>
+                        <a href="#" class="text-white fw-bold text-decoration-none d-block small">Werewolf</a>
+                        <div class="text-secondary extra-small" style="font-size: 0.75rem;">25 Dec, 2026</div>
+                        <span class="badge bg-dark border border-secondary text-secondary extra-small" style="font-size: 0.65rem;">In Theatre</span>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+    </div>
 </div>
 {% endblock %}

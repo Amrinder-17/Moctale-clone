@@ -142,6 +142,7 @@ LOGIN_REDIRECT_URL = '/'
 
 # If an unauthenticated user tries to visit a private page, send them here
 LOGIN_URL = '/accounts/login/'
+LOGOUT_REDIRECT_URL = 'home'
 
 STATIC_URL = 'static/'
 STATICFILES_DIRS=[os.path.join(BASE_DIR,'static')]
