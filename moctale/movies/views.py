@@ -12,6 +12,10 @@ from .models import Collection, UserMovieActivity
 from django.db.models import Count
 from django.contrib.auth.models import User
 from django.views.decorators.csrf import csrf_protect
+from requests.adapters import HTTPAdapter
+from urllib3.util.retry import Retry
+
+
 
 
 @cache_page(3600)
@@ -991,29 +995,55 @@ def user_ratedlist(request, username=None):
 
     api_key = settings.TMDB_API_KEY
 
+    # 1. Setup a resilient requests session with automated retries and standard headers
+    session = requests.Session()
+    session.headers.update({'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64)'})
+    
+    retries = Retry(total=2, backoff_factor=0.5, status_forcelist=[500, 502, 503, 504])
+    session.mount('https://', HTTPAdapter(max_retries=retries))
+
+    # 2. Safely query TMDB for missing/incorrect titles
     for activity in reviews:
-        # If media_type or title is incorrect, force a check against the correct endpoint
         m_type = activity.media_type or 'movie'
-        
-        # Call TMDB for current assigned media type
         url = f"https://api.themoviedb.org/3/{m_type}/{activity.movie_id}"
-        res = requests.get(url, params={'api_key': api_key, 'language': 'en-US'})
         
-        if res.status_code == 200:
-            data = res.json()
-            title = data.get('title') if m_type == 'movie' else data.get('name')
+        try:
+            # Added a 3-second timeout so a dropped SSL connection won't hang the request
+            res = session.get(
+                url, 
+                params={'api_key': api_key, 'language': 'en-US'}, 
+                timeout=3,
+                verify=True
+            )
             
-            # If movie title was saved wrong or empty, update it
-            if title and activity.movie_title != title:
-                activity.movie_title = title
+            if res.status_code == 200:
+                data = res.json()
+                title = data.get('title') if m_type == 'movie' else data.get('name')
+                
+                # If title or poster is wrong/missing, update the database record
+                updated = False
+                if title and activity.movie_title != title:
+                    activity.movie_title = title
+                    updated = True
+                    
                 if not activity.poster_path and data.get('poster_path'):
                     activity.poster_path = data.get('poster_path')
-                activity.save()
+                    updated = True
 
+                if updated:
+                    activity.save()
+
+        except (requests.exceptions.RequestException, requests.exceptions.SSLError) as e:
+            # Log the network error to console and skip to next item gracefully without throwing a 500
+            print(f"Failed to sync TMDB details for {m_type} ID {activity.movie_id}: {e}")
+            continue
+
+    # 3. Render template with updated keys matching the profile template
     return render(request, 'movies/ratedlist.html', {
-        'target_user': target_user,
+        'profile_user': target_user,
         'reviews': reviews,
         'total_reviews': len(reviews),
+        'total_collections': 0, # Pass your collections queryset/count here when ready
     })
 
 def get_replies(request, parent_id):

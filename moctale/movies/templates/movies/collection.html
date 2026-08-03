@@ -255,7 +255,7 @@
 </div>
 
 
-   <script>
+<script>
 
     document.addEventListener('DOMContentLoaded', () => {
 
@@ -297,8 +297,6 @@
 
                 const data = await response.json();
 
-                console.log(data);
-console.log(cardBlock);
 
                 if (data.success) {
 
@@ -316,9 +314,6 @@ console.log(cardBlock);
                                 `${remainingCards} Movie${remainingCards === 1 ? "" : "s"}`;
                         }
 
-                        if (remainingCards === 0) {
-                            // Show empty state here if you want
-                        }
                     }, 200);
                 }
 
