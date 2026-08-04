@@ -22,4 +22,5 @@ urlpatterns = [
     path('<str:username>/reviews/',views.user_ratedlist,name="reviews_list"),
     path('reviews/<int:parent_id>/replies/', views.get_replies, name='get_replies'),
     path('activity/<int:activity_id>/edit/', views.edit_review, name='edit_review'),
+    path('person/<int:person_id>/', views.person_detail, name='person_detail'),
 ]

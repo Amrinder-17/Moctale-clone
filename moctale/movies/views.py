@@ -14,7 +14,7 @@ from django.contrib.auth.models import User
 from django.views.decorators.csrf import csrf_protect
 from requests.adapters import HTTPAdapter
 from urllib3.util.retry import Retry
-
+from django.http import Http404
 
 
 
@@ -145,6 +145,10 @@ def media_detail(request, media_type, media_id):
     api_key = settings.TMDB_API_KEY
     base_url = "https://api.themoviedb.org/3"
     detail_url = f"{base_url}/{media_type}/{media_id}"
+    headers = {
+        "Authorization": f"Bearer {api_key}",
+        "User-Agent": "MyMovieApp/1.0"
+    }
 
     params = {
         'api_key': api_key,
@@ -178,7 +182,7 @@ def media_detail(request, media_type, media_id):
     
     try:
         # 1. Fetch primary media details
-        response = requests.get(detail_url, params=params)
+        response = requests.get(detail_url, params=params,headers=headers, timeout=5)
         if response.status_code == 200:
             media_data = response.json()
             media_data['media_type'] = media_type
@@ -1071,6 +1075,47 @@ def get_replies(request, parent_id):
 
     return JsonResponse({'success': True, 'replies': replies_data})
 
+def person_detail(request, person_id):
+    api_key = getattr(settings, 'TMDB_API_KEY', '')
+    
+    # Query person details and combine credits into one single API call
+    url = f"https://api.themoviedb.org/3/person/{person_id}"
+    params = {
+        'api_key': api_key,
+        'append_to_response': 'combined_credits'
+    }
+    
+    response = requests.get(url, params=params)
+    
+    if response.status_code == 404:
+        raise Http404("Person not found on TMDb.")
+    
+    response.raise_for_status()
+    person_data = response.json()
+    
+    # Extract combined credits
+    credits = person_data.get('combined_credits', {})
+    
+    # Cast credits (acting roles)
+    cast_credits = credits.get('cast', [])
+    # Crew credits (directing, writing, producing, etc.)
+    crew_credits = credits.get('crew', [])
+    
+    # Sort filmography by release date / first air date descending
+    def get_release_date(item):
+        return item.get('release_date') or item.get('first_air_date') or ''
+
+    cast_credits.sort(key=get_release_date, reverse=True)
+    crew_credits.sort(key=get_release_date, reverse=True)
+    
+    context = {
+        'person': person_data,
+        'cast_credits': cast_credits,
+        'crew_credits': crew_credits,
+        'tmdb_image_base': 'https://image.tmdb.org/t/p/w500',
+    }
+    
+    return render(request, 'personinfo.html', context)
 
 @login_required
 def edit_review(request, activity_id):

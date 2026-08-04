@@ -1,0 +1,154 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>{{ person.name }} - TMDb Profile</title>
+    <!-- Tailwind CSS CDN for styling -->
+    <script src="https://cdn.tailwindcss.com"></script>
+</head>
+<body class="bg-gray-900 text-gray-100 min-h-screen">
+
+    <div class="container mx-auto px-4 py-8 max-w-6xl">
+        <div class="grid grid-cols-1 md:grid-cols-4 gap-8">
+            
+            <!-- Sidebar / Profile Image & Basic Meta -->
+            <div class="md:col-span-1 space-y-4">
+                {% if person.profile_path %}
+                    <img src="{{ tmdb_image_base }}{{ person.profile_path }}" 
+                         alt="{{ person.name }}" 
+                         class="w-full rounded-lg shadow-lg border border-gray-700">
+                {% else %}
+                    <div class="w-full h-80 bg-gray-800 rounded-lg flex items-center justify-center text-gray-500 border border-gray-700">
+                        No Image Available
+                    </div>
+                {% endif %}
+
+                <h1 class="text-3xl font-bold md:hidden text-white">{{ person.name }}</h1>
+
+                <div class="bg-gray-800 p-4 rounded-lg shadow space-y-3 text-sm">
+                    <h2 class="text-lg font-semibold border-b border-gray-700 pb-2 text-gray-200">Personal Info</h2>
+                    
+                    <div>
+                        <span class="block text-gray-400 font-medium">Known For</span>
+                        <span>{{ person.known_for_department|default:"N/A" }}</span>
+                    </div>
+
+                    <div>
+                        <span class="block text-gray-400 font-medium">Date of Birth</span>
+                        <span>{{ person.birthday|default:"Not listed" }}</span>
+                    </div>
+
+                    {% if person.deathday %}
+                    <div>
+                        <span class="block text-gray-400 font-medium">Date of Death</span>
+                        <span>{{ person.deathday }}</span>
+                    </div>
+                    {% endif %}
+
+                    <div>
+                        <span class="block text-gray-400 font-medium">Place of Birth</span>
+                        <span>{{ person.place_of_birth|default:"Not listed" }}</span>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Main Content Area -->
+            <div class="md:col-span-3 space-y-8">
+                
+                <!-- Name & Biography -->
+                <div>
+                    <h1 class="hidden md:block text-4xl font-extrabold text-white mb-4">{{ person.name }}</h1>
+                    
+                    <h2 class="text-xl font-bold mb-2 text-gray-200">Biography</h2>
+                    <div class="text-gray-300 leading-relaxed text-sm md:text-base">
+                        {% if person.biography %}
+                            <p class="whitespace-pre-line">{{ person.biography }}</p>
+                        {% else %}
+                            <p class="text-gray-500 italic">We don't have a biography for {{ person.name }}.</p>
+                        {% endif %}
+                    </div>
+                </div>
+
+                <!-- Filmography / Credits -->
+                <div>
+                    <h2 class="text-2xl font-bold mb-4 border-b border-gray-700 pb-2 text-gray-200">Filmography</h2>
+                    
+                    <!-- Acting Credits -->
+                    {% if cast_credits %}
+                        <div class="mb-6">
+                            <h3 class="text-lg font-semibold text-indigo-400 mb-3">Acting ({{ cast_credits|length }})</h3>
+                            <div class="bg-gray-800 rounded-lg divide-y divide-gray-700 shadow">
+                                {% for credit in cast_credits %}
+                                    <div class="p-3 flex items-center justify-between text-sm hover:bg-gray-750 transition">
+                                        <div class="flex items-center space-x-3">
+                                            <span class="text-gray-400 font-mono w-12 text-right">
+                                                {% if credit.release_date %}
+                                                    {{ credit.release_date|slice:":4" }}
+                                                {% elif credit.first_air_date %}
+                                                    {{ credit.first_air_date|slice:":4" }}
+                                                {% else %}
+                                                    —
+                                                {% endif %}
+                                            </span>
+                                            <div>
+                                                <span class="font-medium text-white">
+                                                    {{ credit.title|default:credit.name }}
+                                                </span>
+                                                {% if credit.character %}
+                                                    <span class="text-gray-400"> as {{ credit.character }}</span>
+                                                {% endif %}
+                                            </div>
+                                        </div>
+                                        <span class="text-xs uppercase px-2 py-0.5 rounded bg-gray-700 text-gray-300">
+                                            {{ credit.media_type }}
+                                        </span>
+                                    </div>
+                                {% endfor %}
+                            </div>
+                        </div>
+                    {% endif %}
+
+                    <!-- Crew Credits -->
+                    {% if crew_credits %}
+                        <div>
+                            <h3 class="text-lg font-semibold text-indigo-400 mb-3">Production / Crew ({{ crew_credits|length }})</h3>
+                            <div class="bg-gray-800 rounded-lg divide-y divide-gray-700 shadow">
+                                {% for credit in crew_credits %}
+                                    <div class="p-3 flex items-center justify-between text-sm hover:bg-gray-750 transition">
+                                        <div class="flex items-center space-x-3">
+                                            <span class="text-gray-400 font-mono w-12 text-right">
+                                                {% if credit.release_date %}
+                                                    {{ credit.release_date|slice:":4" }}
+                                                {% elif credit.first_air_date %}
+                                                    {{ credit.first_air_date|slice:":4" }}
+                                                {% else %}
+                                                    —
+                                                {% endif %}
+                                            </span>
+                                            <div>
+                                                <span class="font-medium text-white">
+                                                    {{ credit.title|default:credit.name }}
+                                                </span>
+                                                {% if credit.job %}
+                                                    <span class="text-gray-400"> ... {{ credit.job }}</span>
+                                                {% endif %}
+                                            </div>
+                                        </div>
+                                        <span class="text-xs uppercase px-2 py-0.5 rounded bg-gray-700 text-gray-300">
+                                            {{ credit.media_type }}
+                                        </span>
+                                    </div>
+                                {% endfor %}
+                            </div>
+                        </div>
+                    {% endif %}
+
+                </div>
+
+            </div>
+        </div>
+    </div>
+
+</body>
+</html>
