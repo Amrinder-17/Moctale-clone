@@ -1050,6 +1050,7 @@ def user_ratedlist(request, username=None):
         'total_collections': 0, # Pass your collections queryset/count here when ready
     })
 
+@login_required
 def get_replies(request, parent_id):
     parent_review = get_object_or_404(UserMovieActivity, id=parent_id)
     
@@ -1075,47 +1076,53 @@ def get_replies(request, parent_id):
 
     return JsonResponse({'success': True, 'replies': replies_data})
 
+@login_required
 def person_detail(request, person_id):
-    api_key = getattr(settings, 'TMDB_API_KEY', '')
-    
-    # Query person details and combine credits into one single API call
+    api_key = settings.TMDB_API_KEY
     url = f"https://api.themoviedb.org/3/person/{person_id}"
     params = {
         'api_key': api_key,
         'append_to_response': 'combined_credits'
     }
     
-    response = requests.get(url, params=params)
-    
-    if response.status_code == 404:
-        raise Http404("Person not found on TMDb.")
-    
-    response.raise_for_status()
-    person_data = response.json()
-    
-    # Extract combined credits
+    # Add a custom User-Agent header
+    headers = {
+        'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36'
+    }
+
+    try:
+        response = requests.get(url, params=params, headers=headers, timeout=5)
+        
+        if response.status_code == 404:
+            raise Http404("Person not found on TMDb.")
+            
+        response.raise_for_status()
+        person_data = response.json()
+
+    except requests.exceptions.RequestException as e:
+        # Catch network/connection errors gracefully instead of crashing with a 500
+        print(f"Detail Fetch Error: {e}")
+        raise Http404("Unable to fetch person details from TMDb at this time.")
+
     credits = person_data.get('combined_credits', {})
-    
-    # Cast credits (acting roles)
     cast_credits = credits.get('cast', [])
-    # Crew credits (directing, writing, producing, etc.)
     crew_credits = credits.get('crew', [])
-    
-    # Sort filmography by release date / first air date descending
+
     def get_release_date(item):
         return item.get('release_date') or item.get('first_air_date') or ''
 
     cast_credits.sort(key=get_release_date, reverse=True)
     crew_credits.sort(key=get_release_date, reverse=True)
-    
+
     context = {
         'person': person_data,
         'cast_credits': cast_credits,
         'crew_credits': crew_credits,
         'tmdb_image_base': 'https://image.tmdb.org/t/p/w500',
     }
-    
+
     return render(request, 'personinfo.html', context)
+
 
 @login_required
 def edit_review(request, activity_id):
