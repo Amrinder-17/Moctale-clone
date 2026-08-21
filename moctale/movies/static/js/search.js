@@ -216,7 +216,6 @@ document.addEventListener('DOMContentLoaded', () => {
             return;
         }
 
-        // 💡 Ensure the master grid element expands nicely to handle layouts
         resultsGrid.style.cssText = `
             display: grid !important;
             grid-template-columns: repeat(auto-fill, minmax(280px, 1fr)) !important;
@@ -230,12 +229,17 @@ document.addEventListener('DOMContentLoaded', () => {
             cardLink.className = 'search-result-card-item text-decoration-none';
             cardLink.style.cssText = "text-decoration: none !important; display: block;";
 
-            if (type === 'person') {
-                // --- 👤 CAST & CREW LAYOUT (CIRCULAR VERTICAL CARD) ---
-                cardLink.href = `/media/person/${item.id}/`;
+            // Check if the individual item is a Person (via tab type, item media_type, or known department)
+            const isPerson = (type === 'person') || (item.media_type === 'person') || Boolean(item.known_for_department);
+
+            if (isPerson) {
+                // --- 👤 CAST & CREW LAYOUT ---
+                cardLink.href = `/media/person/${item.id}/`;  
                 const displayName = item.name || 'Unknown Individual';
                 const departmentLabel = item.known_for_department || 'Cast/Crew';
-                const profileImg = item.profile_path ? item.profile_path : 'https://placehold.co/300x450/16171b/717685?text=No+Image';
+                const profileImg = item.profile_path 
+                    ? (item.profile_path.startsWith('http') ? item.profile_path : `https://image.tmdb.org/t/p/w185${item.profile_path}`) 
+                    : 'https://placehold.co/300x450/16171b/717685?text=No+Image';
 
                 cardLink.innerHTML = `
                     <div class="search-person-card" style="background-color: #1e2026 !important; border-radius: 12px !important; padding: 16px !important; display: flex !important; flex-direction: column !important; align-items: center !important; text-align: center !important; gap: 12px !important; box-sizing: border-box !important; height: 100% !important;">
@@ -249,8 +253,10 @@ document.addEventListener('DOMContentLoaded', () => {
                     </div>
                 `;
             } else {
-                // --- 🎬 MOVIES & TV SHOWS LAYOUT (HORIZONTAL POSTER CARD) ---
-                cardLink.href = `/media/${item.media_type || 'movie'}/${item.id}/`;
+                // --- 🎬 MOVIES & TV SHOWS LAYOUT ---
+                const mediaType = item.media_type || (type === 'tv' ? 'tv' : 'movie');
+                cardLink.href = `/media/${mediaType}/${item.id}/`;
+                
                 const displayTitle = item.title || item.name || 'Untitled Production';
                 
                 let releaseYear = 'N/A';
@@ -259,8 +265,10 @@ document.addEventListener('DOMContentLoaded', () => {
                     releaseYear = rawDate.split('-')[0];
                 }
 
-                const mediaLabel = item.media_type === 'movie' ? 'Movie' : 'TV Show';
-                const posterImg = item.poster_path ? item.poster_path : 'https://placehold.co/300x450/16171b/717685?text=No+Poster';
+                const mediaLabel = mediaType === 'tv' ? 'TV Show' : 'Movie';
+                const posterImg = item.poster_path 
+                    ? (item.poster_path.startsWith('http') ? item.poster_path : `https://image.tmdb.org/t/p/w342${item.poster_path}`) 
+                    : 'https://placehold.co/300x450/16171b/717685?text=No+Poster';
 
                 cardLink.innerHTML = `
                     <div class="search-movie-horizontal-card" style="background-color: #1e2026 !important; border-radius: 12px !important; padding: 12px !important; display: flex !important; align-items: center !important; gap: 16px !important; box-sizing: border-box !important; height: 100% !important;">
@@ -277,20 +285,8 @@ document.addEventListener('DOMContentLoaded', () => {
             resultsGrid.appendChild(cardLink);
         });
 
-        if (results.length > 0) {
-            // 1. Force hide the default state pane completely using standard CSS visibility properties
-            defaultState.style.display = 'none';
-            defaultState.style.setProperty('display', 'none', 'important');
-            
-            // 2. Uncover and reveal your cards grid layout cleanly
-            resultsGrid.classList.remove('hidden');
-            resultsGrid.style.display = 'grid';
-            resultsGrid.style.setProperty('display', 'grid', 'important');
-        } else {
-            // If results array is empty, run your clean empty fallback state layout instead
-            resultsGrid.innerHTML = `<div style="color: #717685; text-align: center; width: 100%; padding-top: 40px; font-size: 1.1rem;">No results match your search criteria.</div>`;
-            resultsGrid.classList.remove('hidden');
-            defaultState.style.setProperty('display', 'none', 'important');
-        }
+        defaultState.style.setProperty('display', 'none', 'important');
+        resultsGrid.classList.remove('hidden');
+        resultsGrid.style.setProperty('display', 'grid', 'important');
     }
 });

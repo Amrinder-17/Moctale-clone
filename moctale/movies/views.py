@@ -136,124 +136,118 @@ def _pick_trailer_link(videos):
                 return _video_watch_url(video)
 
     return _video_watch_url(playable[0])
-
 @login_required
 def media_detail(request, media_type, media_id):
-    if not request.user.is_authenticated:
-        return render(request, 'home/welcome.html')
-    
+    if media_type == 'person':
+        return redirect('person_detail', person_id=media_id)
     api_key = settings.TMDB_API_KEY
     base_url = "https://api.themoviedb.org/3"
     detail_url = f"{base_url}/{media_type}/{media_id}"
-    headers = {
+
+    # Setup database collections and user activity
+    activity = UserMovieActivity.objects.filter(user=request.user, movie_id=media_id).first()
+    user_collections = request.user.collections.all().order_by('-is_default', 'name')
+    reviews = UserMovieActivity.objects.filter(
+        movie_id=media_id,
+        parent__isnull=True
+    ).exclude(user=request.user).select_related('user__profile').order_by('-updated_at')
+
+    if not request.user.collections.filter(is_default=True).exists():
+        Collection.objects.create(
+            user=request.user,
+            name=f"{request.user.username}'s Watchlist",
+            is_default=True
+        )
+
+    # 1. Initialize a reusable session with custom headers
+    session = requests.Session()
+    session.headers.update({
         "Authorization": f"Bearer {api_key}",
-        "User-Agent": "MyMovieApp/1.0"
-    }
+        "User-Agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120.0.0.0 Safari/537.36"
+    })
 
     params = {
         'api_key': api_key,
         'language': 'en-US',
         'append_to_response': 'videos',
     }
-    
-    activity = None
-    user_collections = []
-    reviews = []
 
-    if request.user.is_authenticated:
-        activity = UserMovieActivity.objects.filter(user=request.user, movie_id=media_id).first()
-        user_collections = request.user.collections.all().order_by('-is_default', 'name')
-        reviews = UserMovieActivity.objects.filter(
-            movie_id=media_id,
-            parent__isnull=True
-        ).exclude(user=request.user).select_related('user__profile').order_by('-updated_at')
-        
-        if not request.user.collections.filter(is_default=True).exists():
-            Collection.objects.create(
-                user=request.user,
-                name=f"{request.user.username}'s Watchlist",
-                is_default=True
-            )
-    else:
-        reviews = UserMovieActivity.objects.filter(
-            movie_id=media_id, 
-            parent__isnull=True
-        ).select_related('user__profile').order_by('-created_at')
-    
     try:
-        # 1. Fetch primary media details
-        response = requests.get(detail_url, params=params,headers=headers, timeout=5)
+        # 2. Fetch primary media details
+        response = session.get(detail_url, params=params, timeout=10)
         if response.status_code == 200:
             media_data = response.json()
             media_data['media_type'] = media_type
+        elif response.status_code == 404:
+            raise Http404("Media not found on TMDB")
         else:
-            return render(request, 'movies/404.html', status=404)
+            print(f"TMDB Details Error: status {response.status_code}")
+            return render(request, 'movies/404.html', status=response.status_code)
 
-        # 2. Fetch credits data
-        credits_res = requests.get(f"{base_url}/{media_type}/{media_id}/credits", params={'api_key': api_key, 'language': 'en-US'})
+        # 3. Fetch credits data
+        credits_res = session.get(
+            f"{base_url}/{media_type}/{media_id}/credits",
+            params={'api_key': api_key, 'language': 'en-US'},
+            timeout=10
+        )
         credits_data = credits_res.json() if credits_res.status_code == 200 else {}
 
-        # 3. 🍿 FETCH WATCH PROVIDERS (New Section)
-        providers_url = f"{base_url}/{media_type}/{media_id}/watch/providers"
-        providers_res = requests.get(providers_url, params={'api_key': api_key})
+        # 4. Fetch watch providers (with isolated try/except so failures don't break the page)
         watch_providers = {'flatrate': [], 'buy': [], 'rent': [], 'link': ''}
+        try:
+            providers_url = f"{base_url}/{media_type}/{media_id}/watch/providers"
+            providers_res = session.get(providers_url, params={'api_key': api_key}, timeout=5)
+            if providers_res.status_code == 200:
+                provider_results = providers_res.json().get('results', {})
+                target_region_data = provider_results.get('IN') or provider_results.get('US') or {}
+                watch_providers = {
+                    'flatrate': target_region_data.get('flatrate', []),
+                    'buy': target_region_data.get('buy', []),
+                    'rent': target_region_data.get('rent', []),
+                    'link': target_region_data.get('link', ''),
+                }
+        except requests.exceptions.RequestException as e:
+            print(f"Watch provider fetch failed: {e}")
 
-        if providers_res.status_code == 200:
-            provider_results = providers_res.json().get('results', {})
-            # Target Indian region 'IN', fallback to 'US' if empty
-            target_region_data = provider_results.get('IN') or provider_results.get('US') or {}
-            
-            watch_providers = {
-                'flatrate': target_region_data.get('flatrate', []),
-                'buy': target_region_data.get('buy', []),
-                'rent': target_region_data.get('rent', []),
-                'link': target_region_data.get('link', ''),
-            }
-
-        # 4. Process Trailer Link
+        # 5. Process Trailer Link
         trailer_link = _pick_trailer_link(media_data.get('videos', {}).get('results', []))
-        video_url = f"{base_url}/{media_type}/{media_id}/videos"
-
         if not trailer_link:
             try:
-                video_res = requests.get(video_url, params={'api_key': api_key})
+                video_url = f"{base_url}/{media_type}/{media_id}/videos"
+                video_res = session.get(video_url, params={'api_key': api_key}, timeout=5)
                 if video_res.status_code == 200:
                     trailer_link = _pick_trailer_link(video_res.json().get('results', []))
             except Exception as video_err:
                 print(f"Failed to fetch trailer track: {video_err}")
-        
+
+        # 6. Dates and Activity
         today_string = datetime.now().date().isoformat()
         if media_type == 'tv':
             release_date = media_data.get('first_air_date') or 'Undated'
         else:
             release_date = media_data.get('release_date') or 'Undated'
-            media_data['release_date'] = release_date
+        media_data['release_date'] = release_date
 
-        existing_activity = None
-        if request.user.is_authenticated:
-            existing_activity = UserMovieActivity.objects.filter(user=request.user, movie_id=media_id).first()
-        
-        # 5. Score aggregation & Meter calculations
+        existing_activity = UserMovieActivity.objects.filter(user=request.user, movie_id=media_id).first()
+
+        # 7. Score aggregation & Meter calculations
         score_counts = (
             UserMovieActivity.objects.filter(movie_id=media_id, score__isnull=False)
             .values('score')
             .annotate(total=Count('id'))
         )
-        
         counts_dict = {item['score']: item['total'] for item in score_counts}
-        
         votes = [
             counts_dict.get(1, 0),  # Skip
             counts_dict.get(2, 0),  # Timepass
             counts_dict.get(3, 0),  # Go For It
             counts_dict.get(4, 0),  # Perfection
         ]
-        
         total_votes = sum(votes)
         weighted_sum = sum(count * index for index, count in enumerate(votes))
         avg_index = weighted_sum / total_votes if total_votes > 0 else 0
         avg_percentage = (avg_index / 3) * 100
-        
+
         context = {
             'movie': media_data,
             'credits': credits_data,
@@ -267,15 +261,19 @@ def media_detail(request, media_type, media_id):
             'total_votes': total_votes,
             'avg_percentage': round(avg_percentage, 1),
             'reviews': reviews,
-            'watch_providers': watch_providers,  # 👈 Pass watch_providers to context!
+            'watch_providers': watch_providers,
         }
 
         return render(request, 'movies/detail.html', context)
 
+    except requests.exceptions.RequestException as net_err:
+        print(f"TMDB Network/SSL Exception: {net_err}")
+        return render(request, 'movies/404.html', status=502)
     except Exception as e:
-        print(f"Detail Fetch Error: {e}")
-        return render(request, 'movies/404.html', status=500)
+        print(f"General Detail Error: {e}")
+        raise e
 
+    
 @cache_page(3600)
 @login_required
 def schedule(request):
@@ -1121,7 +1119,7 @@ def person_detail(request, person_id):
         'tmdb_image_base': 'https://image.tmdb.org/t/p/w500',
     }
 
-    return render(request, 'personinfo.html', context)
+    return render(request, 'movies/personinfo.html', context)
 
 
 @login_required

@@ -4,6 +4,7 @@ from . import views
 urlpatterns = [
     path('dashboard/',views.dashboard,name='dashboard'),
     path("collection/<int:collection_id>/",views.collection_detail,name="collection_detail",),
+    path('person/<int:person_id>/', views.person_detail, name='person_detail'),
     path('<str:media_type>/<int:media_id>/',views.media_detail,name='media_detail'),
     path('schedule/',views.schedule, name='Schedule'),
     path('movies/api/schedule-feed/',views.schedule_feed, name='schedule_feed_api'),
@@ -22,5 +23,4 @@ urlpatterns = [
     path('<str:username>/reviews/',views.user_ratedlist,name="reviews_list"),
     path('reviews/<int:parent_id>/replies/', views.get_replies, name='get_replies'),
     path('activity/<int:activity_id>/edit/', views.edit_review, name='edit_review'),
-    path('person/<int:person_id>/', views.person_detail, name='person_detail'),
 ]
