@@ -5,240 +5,339 @@
 
 {% block extra_css %}
 <style>
-  .person-page-wrapper {
-    padding: 32px 0 64px 0;
-    color: #e5e7eb;
+  body {
+    background-color: #000000;
+    color: #ffffff;
   }
-  .person-sidebar-card {
-    background-color: #1e2026;
-    border: 1px solid rgba(255, 255, 255, 0.08);
-    border-radius: 12px;
-    padding: 20px;
+
+  /* Full-bleed hero banner with subtle cinematic blue light */
+  .person-hero-full {
+    position: relative;
+    width: 100vw;
+    margin-left: calc(-50vw + 50%);
+    margin-top: -24px; /* Adjust if your layout has top padding */
+    height: 480px;
+    background: radial-gradient(circle at 65% 15%, #18283e 0%, #0c1420 40%, #03060a 75%, #000000 100%);
+    display: flex;
+    align-items: flex-end;
+    padding-bottom: 40px;
+    box-shadow: inset 0 -40px 40px -10px #000000;
   }
-  .person-avatar {
+
+  .person-content-container {
+    max-width: 1380px;
+    margin: 0 auto;
+    padding: 0 48px;
     width: 100%;
-    aspect-ratio: 2 / 3;
+  }
+
+  .person-profile-row {
+    display: flex;
+    align-items: center;
+    gap: 32px;
+  }
+
+  .person-avatar-circle {
+    width: 130px;
+    height: 130px;
+    border-radius: 50%;
     object-fit: cover;
-    border-radius: 10px;
-    border: 1px solid rgba(255, 255, 255, 0.08);
+    border: 3px solid rgba(255, 255, 255, 0.08);
+    box-shadow: 0 8px 24px rgba(0, 0, 0, 0.6);
+    flex-shrink: 0;
   }
-  .person-meta-label {
-    color: #717685;
-    font-size: 0.8rem;
-    text-transform: uppercase;
-    letter-spacing: 0.5px;
-    margin-bottom: 2px;
+
+  .person-avatar-placeholder {
+    width: 130px;
+    height: 130px;
+    border-radius: 50%;
+    background-color: #12151b;
+    border: 3px solid rgba(255, 255, 255, 0.08);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    color: #4b5563;
+    font-size: 2.5rem;
+    flex-shrink: 0;
   }
-  .person-meta-val {
+
+  .person-header-details {
+    display: flex;
+    flex-direction: column;
+    gap: 14px;
+  }
+
+  .person-name-title {
+    font-size: 2rem;
+    font-weight: 700;
+    color: #ffffff;
+    letter-spacing: -0.3px;
+    margin: 0;
+    line-height: 1.1;
+  }
+
+  .person-meta-inline {
+    display: flex;
+    align-items: center;
+    gap: 48px;
+    flex-wrap: wrap;
+  }
+
+  .meta-item-label {
+    color: #8b929e;
+    font-size: 0.82rem;
+    margin-bottom: 3px;
+  }
+
+  .meta-item-value {
     color: #f3f4f6;
     font-size: 0.95rem;
     font-weight: 500;
   }
-  .bio-text {
-    color: #9ca3af;
-    line-height: 1.65;
-    font-size: 0.95rem;
+
+  /* Main Body Sections */
+  .section-title {
+    color: #ffffff;
+    font-size: 1.35rem;
+    font-weight: 700;
+    letter-spacing: -0.2px;
+    margin-bottom: 16px;
   }
+
+  .bio-section {
+    margin-top: 48px;
+    margin-bottom: 56px;
+    max-width: 1100px;
+  }
+
+  .bio-text {
+    color: #9ea3ae;
+    font-size: 0.92rem;
+    line-height: 1.65;
+    margin: 0;
+  }
+
+  /* Filmography Grid */
   .filmography-grid {
     display: grid;
-    grid-template-columns: repeat(auto-fill, minmax(160px, 1fr));
-    gap: 16px;
+    grid-template-columns: repeat(auto-fill, minmax(185px, 1fr));
+    gap: 24px 18px;
+    margin-bottom: 80px;
   }
+
   .credit-card {
-    background-color: #1e2026;
-    border: 1px solid rgba(255, 255, 255, 0.06);
-    border-radius: 10px;
-    overflow: hidden;
     display: flex;
     flex-direction: column;
     text-decoration: none !important;
-    transition: transform 0.2s ease, border-color 0.2s ease;
+    background: transparent;
+    transition: transform 0.2s ease;
   }
+
   .credit-card:hover {
     transform: translateY(-4px);
-    border-color: rgba(255, 255, 255, 0.25);
   }
-  .credit-poster {
+
+  .poster-container {
     width: 100%;
     aspect-ratio: 2 / 3;
-    object-fit: cover;
-    background-color: #16171b;
+    border-radius: 12px;
+    overflow: hidden;
+    background-color: #3b3f46;
+    margin-bottom: 10px;
+    box-shadow: 0 4px 14px rgba(0, 0, 0, 0.4);
   }
+
+  .credit-poster {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+    display: block;
+  }
+
+  .credit-poster-empty {
+    width: 100%;
+    height: 100%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    background-color: #383c44;
+  }
+
+  .moctale-icon {
+    width: 26px;
+    height: 14px;
+    background: #ffffff;
+    border-radius: 14px;
+    position: relative;
+    opacity: 0.9;
+  }
+
+  .moctale-icon::before,
+  .moctale-icon::after {
+    content: '';
+    position: absolute;
+    top: 50%;
+    transform: translateY(-50%);
+    width: 14px;
+    height: 14px;
+    background: #ffffff;
+    border-radius: 50%;
+  }
+
+  .moctale-icon::before { left: 0; }
+  .moctale-icon::after { right: 0; }
+
   .credit-info {
-    padding: 10px;
     display: flex;
     flex-direction: column;
-    flex: 1;
-    justify-content: space-between;
+    gap: 2px;
   }
+
   .credit-title {
     color: #ffffff;
     font-size: 0.9rem;
     font-weight: 600;
-    margin-bottom: 4px;
-    display: -webkit-box;
-    -webkit-line-clamp: 2;
-    -webkit-box-orient: vertical;
-    overflow: hidden;
-  }
-  .credit-role {
-    color: #717685;
-    font-size: 0.78rem;
+    line-height: 1.3;
     display: -webkit-box;
     -webkit-line-clamp: 1;
     -webkit-box-orient: vertical;
     overflow: hidden;
   }
-  .credit-year {
-    color: #4b5563;
+
+  .credit-meta {
+    color: #7b8290;
+    font-size: 0.78rem;
+    display: flex;
+    align-items: center;
+    gap: 4px;
+    text-transform: capitalize;
+  }
+
+  .credit-role {
+    color: #636a77;
     font-size: 0.75rem;
-    font-family: monospace;
-    margin-top: 6px;
+    display: -webkit-box;
+    -webkit-line-clamp: 1;
+    -webkit-box-orient: vertical;
+    overflow: hidden;
+  }
+
+  @media (max-width: 768px) {
+    .person-hero-full {
+      height: 360px;
+      padding-bottom: 24px;
+    }
+    .person-content-container {
+      padding: 0 20px;
+    }
+    .person-avatar-circle,
+    .person-avatar-placeholder {
+      width: 90px;
+      height: 90px;
+    }
+    .filmography-grid {
+      grid-template-columns: repeat(auto-fill, minmax(140px, 1fr));
+      gap: 16px 12px;
+    }
   }
 </style>
+<link rel="stylesheet" href="{% static 'movies/style.css' %}">
 {% endblock %}
 
 {% block content %}
-<div class="person-page-wrapper">
-  <div class="row g-4">
-    
-    <!-- Sidebar: Profile & Personal Details -->
-    <div class="col-12 col-md-4 col-lg-3">
-      <div class="d-flex flex-column gap-3">
-        
-        {% if person.profile_path %}
-          <img src="https://image.tmdb.org/t/p/w500{{ person.profile_path }}" 
-               alt="{{ person.name }}" 
-               class="person-avatar shadow">
-        {% else %}
-          <div class="person-avatar d-flex align-items-center justify-content-center bg-dark text-muted">
-            <i class="bi bi-person fs-1"></i>
-          </div>
-        {% endif %}
+<!-- Full-width Cinematic Hero Area -->
+<div class="person-hero-full">
+  <div class="person-content-container">
+    <div class="person-profile-row">
+      {% if person.profile_path %}
+        <img src="https://image.tmdb.org/t/p/w300{{ person.profile_path }}" 
+             alt="{{ person.name }}" 
+             class="person-avatar-circle">
+      {% else %}
+        <div class="person-avatar-placeholder">
+          <i class="bi bi-person"></i>
+        </div>
+      {% endif %}
 
-        <div class="person-sidebar-card d-flex flex-column gap-3">
-          <h5 class="fw-bold text-white border-bottom border-secondary border-opacity-25 pb-2 mb-0">Personal Info</h5>
-          
+      <div class="person-header-details">
+        <h1 class="person-name-title">{{ person.name }}</h1>
+        <div class="person-meta-inline">
           <div>
-            <div class="person-meta-label">Gender</div>
-            <div class="person-meta-val">
-              {% if person.gender == 1 %}Female{% elif person.gender == 2 %}Male{% elif person.gender == 3 %}Non-Binary{% else %}Not Specified{% endif %}
+            <div class="meta-item-label">Born</div>
+            <div class="meta-item-value">
+              {% if person.birthday %}
+                {{ person.birthday|date:"F j, Y" }}
+              {% else %}
+                —
+              {% endif %}
             </div>
           </div>
-
+          {% if person.place_of_birth %}
           <div>
-            <div class="person-meta-label">Date of Birth</div>
-            <div class="person-meta-val">{{ person.birthday|default:"Not listed" }}</div>
-          </div>
-
-          {% if person.deathday %}
-          <div>
-            <div class="person-meta-label">Date of Death</div>
-            <div class="person-meta-val">{{ person.deathday }}</div>
+            <div class="meta-item-label">Birthplace</div>
+            <div class="meta-item-value">{{ person.place_of_birth }}</div>
           </div>
           {% endif %}
-
+          {% if person.deathday %}
           <div>
-            <div class="person-meta-label">Place of Birth</div>
-            <div class="person-meta-val">{{ person.place_of_birth|default:"Not listed" }}</div>
+            <div class="meta-item-label">Died</div>
+            <div class="meta-item-value">{{ person.deathday|date:"F j, Y" }}</div>
           </div>
+          {% endif %}
         </div>
-
       </div>
     </div>
+  </div>
+</div>
 
-    <!-- Main Content: Bio & Filmography -->
-    <div class="col-12 col-md-8 col-lg-9">
-      <div class="d-flex flex-column gap-4">
-        
-        <!-- Header & Shortened Bio -->
-        <div>
-          <h1 class="fw-bold text-white display-6 mb-3">{{ person.name }}</h1>
-          
-          <h6 class="text-uppercase fw-semibold text-secondary tracking-wider mb-2" style="font-size: 0.8rem;">Biography</h6>
-          <div class="bio-text">
-            {% if person.biography %}
-              <p class="mb-0">{{ person.biography|truncatewords:65 }}</p>
+<!-- Main Page Body -->
+<div class="person-content-container">
+
+  <!-- Biography Section -->
+  <div class="bio-section">
+    <h2 class="section-title">Biography</h2>
+    <p class="bio-text">
+      {% if person.biography %}
+        {{ person.biography }}
+      {% else %}
+        No biography available for {{ person.name }}.
+      {% endif %}
+    </p>
+  </div>
+
+  <!-- Filmography Grid -->
+  {% if cast_credits or crew_credits %}
+  <div>
+    <h2 class="section-title">Filmography</h2>
+    <div class="filmography-grid">
+      {% for credit in cast_credits %}
+        <a href="{% url 'media_detail' credit.media_type|default:'movie' credit.id %}" class="credit-card">
+          <div class="poster-container">
+            {% if credit.poster_path %}
+              <img src="https://image.tmdb.org/t/p/w342{{ credit.poster_path }}" 
+                   alt="{% firstof credit.title credit.name 'Poster' %}" 
+                   loading="lazy" 
+                   class="credit-poster">
             {% else %}
-              <p class="text-muted fst-italic mb-0">No biography available for {{ person.name }}.</p>
+              <div class="credit-poster-empty">
+                <div class="moctale-icon"></div>
+              </div>
             {% endif %}
           </div>
-        </div>
-
-        <hr class="border-secondary border-opacity-25 my-1">
-
-        <!-- Acting Filmography Grid -->
-        {% if cast_credits %}
-        <div>
-          <div class="d-flex align-items-center justify-content-between mb-3">
-            <h5 class="fw-bold text-white mb-0">Acting Credits</h5>
-            <span class="badge bg-secondary bg-opacity-25 text-light fw-normal">{{ cast_credits|length }} titles</span>
+          <div class="credit-info">
+            <span class="credit-title">{% firstof credit.title credit.name "Untitled" %}</span>
+            <span class="credit-meta">
+              {{ credit.media_type|default:"Movie" }} • {% firstof credit.release_date|slice:":4" credit.first_air_date|slice:":4" "TBA" %}
+            </span>
+            {% if credit.character %}
+              <span class="credit-role">as {{ credit.character }}</span>
+            {% endif %}
           </div>
-
-          <div class="filmography-grid">
-            {% for credit in cast_credits %}
-              <a href="{% url 'media_detail' credit.media_type|default:'movie' credit.id %}" class="credit-card">
-                {% if credit.poster_path %}
-                  <img src="https://image.tmdb.org/t/p/w342{{ credit.poster_path }}" 
-                       alt="{% firstof credit.title credit.name 'Poster' %}" 
-                       loading="lazy" 
-                       class="credit-poster">
-                {% else %}
-                  <div class="credit-poster d-flex align-items-center justify-content-center text-muted" style="font-size: 0.75rem;">
-                    No Poster
-                  </div>
-                {% endif %}
-
-                <div class="credit-info">
-                  <div>
-                    <div class="credit-title">{% firstof credit.title credit.name "Untitled" %}</div>
-                    <div class="credit-role">{{ credit.character|default:"Cast" }}</div>
-                  </div>
-                  <div class="credit-year">
-                    {% firstof credit.release_date|slice:":4" credit.first_air_date|slice:":4" "—" %}
-                  </div>
-                </div>
-              </a>
-            {% endfor %}
-          </div>
-        </div>
-        {% endif %}
-
-        <!-- Crew Filmography List -->
-        {% if crew_credits %}
-        <div class="mt-2">
-          <div class="d-flex align-items-center justify-content-between mb-3">
-            <h5 class="fw-bold text-white mb-0">Production & Crew</h5>
-            <span class="badge bg-secondary bg-opacity-25 text-light fw-normal">{{ crew_credits|length }} credits</span>
-          </div>
-
-          <div class="list-group list-group-flush rounded-3 overflow-hidden border border-secondary border-opacity-25">
-            {% for credit in crew_credits %}
-              <a href="{% url 'media_detail' credit.media_type|default:'movie' credit.id %}" 
-                 class="list-group-item list-group-item-action d-flex justify-content-between align-items-center bg-dark text-light border-secondary border-opacity-25 py-2 px-3">
-                <div class="d-flex align-items-center gap-3">
-                  <span class="text-secondary font-monospace" style="font-size: 0.85rem; width: 40px;">
-                    {% firstof credit.release_date|slice:":4" credit.first_air_date|slice:":4" "—" %}
-                  </span>
-                  <div>
-                    <span class="fw-semibold text-white">{% firstof credit.title credit.name "Untitled" %}</span>
-                    {% if credit.job %}
-                      <span class="text-muted ms-1" style="font-size: 0.85rem;">• {{ credit.job }}</span>
-                    {% endif %}
-                  </div>
-                </div>
-                <span class="badge text-uppercase bg-secondary bg-opacity-50" style="font-size: 0.7rem;">
-                  {{ credit.media_type|default:"movie" }}
-                </span>
-              </a>
-            {% endfor %}
-          </div>
-        </div>
-        {% endif %}
-
-      </div>
+        </a>
+      {% endfor %}
     </div>
-
   </div>
+  {% endif %}
+
 </div>
 {% endblock %}

@@ -1,4 +1,5 @@
 import requests
+import re
 from django.shortcuts import render
 from django.conf import settings
 from datetime import datetime, timedelta
@@ -1073,7 +1074,6 @@ def get_replies(request, parent_id):
         })
 
     return JsonResponse({'success': True, 'replies': replies_data})
-
 @login_required
 def person_detail(request, person_id):
     api_key = settings.TMDB_API_KEY
@@ -1083,7 +1083,6 @@ def person_detail(request, person_id):
         'append_to_response': 'combined_credits'
     }
     
-    # Add a custom User-Agent header
     headers = {
         'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36'
     }
@@ -1098,9 +1097,22 @@ def person_detail(request, person_id):
         person_data = response.json()
 
     except requests.exceptions.RequestException as e:
-        # Catch network/connection errors gracefully instead of crashing with a 500
         print(f"Detail Fetch Error: {e}")
         raise Http404("Unable to fetch person details from TMDb at this time.")
+
+    # Process and shorten biography (takes first 2 complete sentences or first paragraph)
+    raw_bio = person_data.get('biography', '').strip()
+    if raw_bio:
+        first_para = raw_bio.split('\n\n')[0].strip()
+        # Extract up to the first 2 sentences using regex
+        sentences = re.findall(r'([^.!?]+[.!?])', first_para)
+        if sentences:
+            person_data['biography'] = ' '.join(sentences[:2]).strip()
+        else:
+            # Fallback if sentence punctuation isn't standard
+            person_data['biography'] = first_para[:250] + ('...' if len(first_para) > 250 else '')
+    else:
+        person_data['biography'] = ''
 
     credits = person_data.get('combined_credits', {})
     cast_credits = credits.get('cast', [])
@@ -1120,7 +1132,6 @@ def person_detail(request, person_id):
     }
 
     return render(request, 'movies/personinfo.html', context)
-
 
 @login_required
 def edit_review(request, activity_id):
