@@ -1074,6 +1074,7 @@ def get_replies(request, parent_id):
         })
 
     return JsonResponse({'success': True, 'replies': replies_data})
+
 @login_required
 def person_detail(request, person_id):
     api_key = settings.TMDB_API_KEY
@@ -1115,19 +1116,29 @@ def person_detail(request, person_id):
         person_data['biography'] = ''
 
     credits = person_data.get('combined_credits', {})
-    cast_credits = credits.get('cast', [])
     crew_credits = credits.get('crew', [])
+    cast_credits = credits.get('cast', [])
 
-    def get_release_date(item):
-        return item.get('release_date') or item.get('first_air_date') or ''
+    def normalize_credit(item):
+        item['display_title'] = item.get('title') or item.get('name') or 'Untitled'
+        item['display_date'] = item.get('release_date') or item.get('first_air_date') or ''
+        return item
 
-    cast_credits.sort(key=get_release_date, reverse=True)
-    crew_credits.sort(key=get_release_date, reverse=True)
+    # Normalize all entries
+    crew_credits = [normalize_credit(item) for item in crew_credits]
+    cast_credits = [normalize_credit(item) for item in cast_credits]
+    directing_credits = [item for item in crew_credits if item.get('job') == 'Director']
+
+    # Sort
+    directing_credits.sort(key=lambda x: x['display_date'], reverse=True)
+    cast_credits.sort(key=lambda x: x['display_date'], reverse=True)
+    crew_credits.sort(key=lambda x: x['display_date'], reverse=True)
 
     context = {
         'person': person_data,
         'cast_credits': cast_credits,
         'crew_credits': crew_credits,
+        'directing_credits': directing_credits,
         'tmdb_image_base': 'https://image.tmdb.org/t/p/w500',
     }
 

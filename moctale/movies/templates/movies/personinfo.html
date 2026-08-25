@@ -305,39 +305,69 @@
     </p>
   </div>
 
-  <!-- Filmography Grid -->
-  {% if cast_credits or crew_credits %}
-  <div>
-    <h2 class="section-title">Filmography</h2>
-    <div class="filmography-grid">
-      {% for credit in cast_credits %}
-        <a href="{% url 'media_detail' credit.media_type|default:'movie' credit.id %}" class="credit-card">
-          <div class="poster-container">
-            {% if credit.poster_path %}
-              <img src="https://image.tmdb.org/t/p/w342{{ credit.poster_path }}" 
-                   alt="{% firstof credit.title credit.name 'Poster' %}" 
-                   loading="lazy" 
-                   class="credit-poster">
-            {% else %}
-              <div class="credit-poster-empty">
-                <div class="moctale-icon"></div>
-              </div>
-            {% endif %}
-          </div>
-          <div class="credit-info">
-            <span class="credit-title">{% firstof credit.title credit.name "Untitled" %}</span>
-            <span class="credit-meta">
-              {{ credit.media_type|default:"Movie" }} • {% firstof credit.release_date|slice:":4" credit.first_air_date|slice:":4" "TBA" %}
-            </span>
-            {% if credit.character %}
-              <span class="credit-role">as {{ credit.character }}</span>
-            {% endif %}
-          </div>
-        </a>
-      {% endfor %}
-    </div>
+ <!-- Directed By Grid -->
+{% if directing_credits %}
+<div>
+  <h2 class="section-title">Directed by {{ person.name }}</h2>
+  <div class="filmography-grid">
+    {% for item in directing_credits %}
+      <a href="{% url 'media_detail' item.media_type|default:'movie' item.id %}" class="credit-card">
+        <div class="poster-container">
+          {% if item.poster_path %}
+            <img src="https://image.tmdb.org/t/p/w342{{ item.poster_path }}" 
+                 alt="{% firstof item.display_title item.title item.name 'Poster' %}" 
+                 loading="lazy" 
+                 class="credit-poster">
+          {% else %}
+            <div class="credit-poster-empty">
+              <div class="moctale-icon"></div>
+            </div>
+          {% endif %}
+        </div>
+        <div class="credit-info">
+          <span class="credit-title">{% firstof item.display_title item.title item.name "Untitled" %}</span>
+          <span class="credit-meta">
+            {{ item.media_type|default:"Movie"|capfirst }} • {% firstof item.display_date|slice:":4" item.release_date|slice:":4" item.first_air_date|slice:":4" "TBA" %}
+          </span>
+          <span class="credit-role">Director</span>
+        </div>
+      </a>
+    {% endfor %}
   </div>
-  {% endif %}
-
 </div>
+{% endif %}
+
+<!-- Filmography / Cast Grid -->
+{% if cast_credits or crew_credits %}
+<div>
+  <h2 class="section-title">Filmography</h2>
+  <div class="filmography-grid">
+    {% for credit in cast_credits %}
+      <a href="{% url 'media_detail' credit.media_type|default:'movie' credit.id %}" class="credit-card">
+        <div class="poster-container">
+          {% if credit.poster_path %}
+            <img src="https://image.tmdb.org/t/p/w342{{ credit.poster_path }}" 
+                 alt="{% firstof credit.title credit.name 'Poster' %}" 
+                 loading="lazy" 
+                 class="credit-poster">
+          {% else %}
+            <div class="credit-poster-empty">
+              <div class="moctale-icon"></div>
+            </div>
+          {% endif %}
+        </div>
+        <div class="credit-info">
+          <span class="credit-title">{% firstof credit.title credit.name "Untitled" %}</span>
+          <span class="credit-meta">
+            {{ credit.media_type|default:"Movie"|capfirst }} • {% firstof credit.release_date|slice:":4" credit.first_air_date|slice:":4" "TBA" %}
+          </span>
+          {% if credit.character %}
+            <span class="credit-role">as {{ credit.character }}</span>
+          {% endif %}
+        </div>
+      </a>
+    {% endfor %}
+  </div>
+</div>
+{% endif %}
 {% endblock %}

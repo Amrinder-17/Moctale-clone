@@ -133,6 +133,7 @@
                 <div class="avatar-five-column-grid">
                     {% for actor in credits.cast %}
                         {% if actor.order < 5 %}
+                        <a href="{% url 'person_detail' actor.id %}" class="profile-avatar-card text-center text-decoration-none d-block">
                             <div class="profile-avatar-card text-center">
                                 <div class="avatar-wrapper mb-2">
                                     {% if actor.profile_path %}
@@ -144,6 +145,7 @@
                                 <span class="d-block member-real-name fw-bold small text-white">{{ actor.name }}</span>
                                 <span class="d-block member-role-title text-muted extra-small">as {{ actor.character }}</span>
                             </div>
+                            </a>
                         {% endif %}
                     {% empty %}
                         <p class="text-muted">No cast listings verified.</p>
